@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Admin</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --surface: #111111;
+    --border: #222222;
+    --accent: #f0e040;
+    --accent2: #40e0d0;
+    --danger: #ff4444;
+    --success: #44ff88;
+    --text: #e8e8e8;
+    --muted: #666;
+    --font-mono: 'Space Mono', monospace;
+    --font-display: 'Syne', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-mono);
+    min-height: 100vh;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: 
+      linear-gradient(rgba(240,224,64,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(240,224,64,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(10,10,10,0.97);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 52px;
+  }
+
+  .logo {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 1.1rem;
+    letter-spacing: -0.02em;
+  }
+  .logo span { color: var(--accent); }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: 0.65rem;
+    color: var(--muted);
+  }
+
+  .status-dot {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+  .status-dot::before {
+    content: '';
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--success);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  /* NAV TABS */
+  .tabs {
+    position: sticky;
+    top: 52px;
+    z-index: 99;
+    background: rgba(10,10,10,0.97);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    padding: 0 1.25rem;
+  }
+
+  .tab {
+    padding: 0.75rem 1rem;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    color: var(--muted);
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s;
+    background: none;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    font-family: var(--font-mono);
+  }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab:hover { color: var(--text); }
+
+  /* PAGES */
+  .page { display: none; padding: 1.25rem; position: relative; z-index: 1; }
+  .page.active { display: block; }
+
+  /* STATS */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+  }
+
+  @media(min-width: 768px) {
+    .stats-grid { grid-template-columns: repeat(4, 1fr); }
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 0.875rem 1rem;
+  }
+  .stat-label { font-size: 0.6rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.4rem; }
+  .stat-value { font-family: var(--font-display); font-size: 1.6rem; font-weight: 800; color: var(--accent); line-height: 1; }
+  .stat-sub { font-size: 0.6rem; color: var(--muted); margin-top: 0.25rem; }
+
+  /* SECTION LABEL */
+  .section-label {
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--accent);
+    margin-bottom: 0.6rem;
+  }
+
+  /* CARD */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 1.25rem;
+  }
+
+  .card-header {
+    padding: 0.6rem 0.875rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.65rem;
+  }
+
+  /* BRIEF FORM */
+  .brief-form {
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+  }
+
+  @media(min-width: 600px) {
+    .form-row-3 { grid-template-columns: 1fr 1fr 1fr; }
+  }
+
+  select, textarea, input {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    padding: 0.55rem 0.75rem;
+    border-radius: 2px;
+    outline: none;
+    transition: border-color 0.2s;
+    width: 100%;
+    -webkit-appearance: none;
+  }
+  select:focus, textarea:focus, input:focus { border-color: var(--accent); }
+  textarea { resize: vertical; min-height: 80px; }
+
+  .btn {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    padding: 0.55rem 1rem;
+    border: 1px solid;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    transition: all 0.15s;
+    border-radius: 2px;
+    white-space: nowrap;
+  }
+  .btn-primary { background: var(--accent); border-color: var(--accent); color: #000; font-weight: 700; }
+  .btn-primary:hover { background: #fff; border-color: #fff; }
+  .btn-ghost { background: transparent; border-color: var(--border); color: var(--muted); }
+  .btn-ghost:hover { border-color: var(--text); color: var(--text); }
+  .btn-danger { background: transparent; border-color: var(--danger); color: var(--danger); }
+  .btn-danger:hover { background: var(--danger); color: #000; }
+  .btn-success { background: transparent; border-color: var(--success); color: var(--success); }
+  .btn-success:hover { background: var(--success); color: #000; }
+  .btn-full { width: 100%; text-align: center; }
+
+  /* BADGE */
+  .badge {
+    font-size: 0.55rem;
+    padding: 0.15rem 0.4rem;
+    border-radius: 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 700;
+  }
+  .badge-pending { background: rgba(240,224,64,0.15); color: var(--accent); }
+  .badge-staging { background: rgba(64,224,208,0.15); color: var(--accent2); }
+  .badge-live { background: rgba(68,255,136,0.15); color: var(--success); }
+  .badge-rejected { background: rgba(255,68,68,0.15); color: var(--danger); }
+
+  /* QUEUE ITEMS */
+  .queue-item {
+    padding: 0.875rem;
+    border-bottom: 1px solid var(--border);
+    animation: flash-in 0.3s ease;
+  }
+  .queue-item:last-child { border-bottom: none; }
+
+  @keyframes flash-in { from{opacity:0;transform:translateY(-6px)} to{opacity:1;transform:translateY(0)} }
+
+  .item-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+  .item-agent { font-size: 0.6rem; color: var(--accent2); text-transform: uppercase; letter-spacing: 0.1em; }
+  .item-time { font-size: 0.6rem; color: var(--muted); margin-left: auto; }
+
+  .item-content {
+    font-size: 0.75rem;
+    line-height: 1.5;
+    padding: 0.625rem;
+    background: var(--bg);
+    border-left: 2px solid var(--border);
+    border-radius: 0 2px 2px 0;
+    margin-bottom: 0.625rem;
+    max-height: 100px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+  }
+
+  .item-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+  /* FEED */
+  .feed-item {
+    padding: 0.75rem 0.875rem;
+    border-bottom: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: 26px 1fr;
+    gap: 0.625rem;
+    align-items: start;
+  }
+  .feed-icon {
+    width: 26px; height: 26px;
+    border-radius: 2px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.7rem; flex-shrink: 0;
+  }
+  .fi-email { background: rgba(240,224,64,0.15); color: var(--accent); }
+  .fi-github { background: rgba(255,255,255,0.1); color: #fff; }
+  .fi-drive { background: rgba(66,133,244,0.15); color: #4285f4; }
+  .fi-image { background: rgba(64,224,208,0.15); color: var(--accent2); }
+  .fi-ok { background: rgba(68,255,136,0.15); color: var(--success); }
+  .fi-err { background: rgba(255,68,68,0.15); color: var(--danger); }
+
+  .feed-title { font-size: 0.72rem; margin-bottom: 0.15rem; }
+  .feed-sub { font-size: 0.6rem; color: var(--muted); }
+
+  /* HISTORY TABLE */
+  .history-table { width: 100%; border-collapse: collapse; font-size: 0.7rem; }
+  .history-table th {
+    padding: 0.5rem 0.75rem;
+    text-align: left;
+    font-size: 0.6rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    border-bottom: 1px solid var(--border);
+  }
+  .history-table td {
+    padding: 0.6rem 0.75rem;
+    border-bottom: 1px solid rgba(34,34,34,0.5);
+    vertical-align: middle;
+  }
+  .history-table tr:last-child td { border-bottom: none; }
+
+  .empty { padding: 2.5rem 1rem; text-align: center; color: var(--muted); font-size: 0.7rem; }
+  .empty-icon { font-size: 1.5rem; margin-bottom: 0.4rem; opacity: 0.3; }
+
+  ::-webkit-scrollbar { width: 3px; height: 3px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); }
+
+  /* DESKTOP LAYOUT */
+  @media(min-width: 900px) {
+    .page { padding: 1.5rem 2rem; max-width: 1200px; margin: 0 auto; }
+    .desktop-grid { display: grid; grid-template-columns: 1fr 340px; gap: 1.5rem; }
+    .desktop-grid .card { margin-bottom: 0; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo"><span>Admin</span></div>
+  <div class="header-right">
+    <span class="status-dot" id="n8n-status">n8n</span>
+    <span id="clock"></span>
+  </div>
+</header>
+
+<div class="tabs">
+  <button class="tab active" onclick="showPage('dashboard')">Dashboard</button>
+  <button class="tab" onclick="showPage('brief')">Brief</button>
+  <button class="tab" onclick="showPage('queue')">Fronta <span id="queue-badge"></span></button>
+  <button class="tab" onclick="showPage('history')">Historie</button>
+</div>
+
+<!-- DASHBOARD -->
+<div class="page active" id="page-dashboard">
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-label">Výstupy dnes</div>
+      <div class="stat-value" id="s-outputs">0</div>
+      <div class="stat-sub">agenti</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Čeká na schválení</div>
+      <div class="stat-value" id="s-pending">0</div>
+      <div class="stat-sub">ve frontě</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Schváleno týden</div>
+      <div class="stat-value" id="s-approved">0</div>
+      <div class="stat-sub">publikováno</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Aktivní agenti</div>
+      <div class="stat-value">2</div>
+      <div class="stat-sub">Asistentka, Copywriter</div>
+    </div>
+  </div>
+
+  <div class="section-label">// live feed</div>
+  <div class="card">
+    <div class="card-header">
+      <span>Aktivita</span>
+      <span class="badge badge-live">živě</span>
+    </div>
+    <div id="feed-list">
+      <div class="feed-item">
+        <div class="feed-icon fi-ok">✓</div>
+        <div><div class="feed-title">Systém spuštěn</div><div class="feed-sub">n8n · ntfy · weby online</div></div>
+      </div>
+      <div class="feed-item">
+        <div class="feed-icon fi-email">✉</div>
+        <div><div class="feed-title">Asistentka aktivní</div><div class="feed-sub">Sleduje info@3rstudio.eu + roman@romanpavlorek.eu</div></div>
+      </div>
+      <div class="feed-item">
+        <div class="feed-icon fi-github">⌥</div>
+        <div><div class="feed-title">Weby nasazeny</div><div class="feed-sub">romanpavlorek.eu + 3rstudio.eu · auto-deploy aktivní</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BRIEF -->
+<div class="page" id="page-brief">
+  <div class="section-label">// nový brief</div>
+  <div class="card">
+    <div class="card-header"><span>Zadat úkol agentovi</span></div>
+    <div class="brief-form">
+      <div class="form-row">
+        <div>
+          <div class="section-label" style="margin-bottom:0.4rem">Agent</div>
+          <select id="brief-agent">
+            <option value="">— vyber agenta —</option>
+            <option value="Copywriter">Copywriter</option>
+            <option value="Web Master">Web Master</option>
+            <option value="Image Gen">Image Gen</option>
+            <option value="Social Media">Social Media</option>
+            <option value="QA Tester">QA Tester</option>
+            <option value="Překladač">Překladač</option>
+          </select>
+        </div>
+        <div>
+          <div class="section-label" style="margin-bottom:0.4rem">Entita</div>
+          <select id="brief-entity">
+            <option value="">— vyber entitu —</option>
+            <option value="Pavler">Pavler</option>
+            <option value="3R Studio">3R Studio</option>
+            <option value="Roman Pavlorek">Roman Pavlorek</option>
+            <option value="Gream">Gream</option>
+            <option value="CONFLUX">CONFLUX</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <div class="section-label" style="margin-bottom:0.4rem">Brief</div>
+        <textarea id="brief-text" placeholder="Napiš brief...&#10;Příklad: TikTok caption + 5 hashtagů pro novou píseň, energický tón"></textarea>
+      </div>
+      <div class="form-row">
+        <div>
+          <div class="section-label" style="margin-bottom:0.4rem">Výstup</div>
+          <select id="brief-staging">
+            <option value="staging">→ Staging (vyžaduje schválení)</option>
+            <option value="direct">→ Přímý výstup</option>
+          </select>
+        </div>
+        <div>
+          <div class="section-label" style="margin-bottom:0.4rem">Priorita</div>
+          <select id="brief-priority">
+            <option value="normal">Normální</option>
+            <option value="high">Vysoká</option>
+            <option value="low">Nízká</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn btn-primary btn-full" onclick="submitBrief()">Odeslat brief ↗ (Cmd+Enter)</button>
+    </div>
+  </div>
+</div>
+
+<!-- QUEUE -->
+<div class="page" id="page-queue">
+  <div class="section-label">// fronta ke schválení</div>
+  <div class="card">
+    <div class="card-header">
+      <span>Výstupy agentů</span>
+      <span class="badge badge-pending" id="queue-count">0 položek</span>
+    </div>
+    <div id="queue-list">
+      <div class="empty"><div class="empty-icon">◻</div>Fronta je prázdná</div>
+    </div>
+  </div>
+</div>
+
+<!-- HISTORY -->
+<div class="page" id="page-history">
+  <div class="section-label">// historie — posledních 7 dní</div>
+  <div class="card">
+    <div class="card-header">
+      <span>Záznamy</span>
+      <button class="btn btn-ghost" onclick="clearHistory()" style="padding:0.2rem 0.5rem;font-size:0.6rem">Smazat vše</button>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="history-table">
+        <thead>
+          <tr>
+            <th>Čas</th>
+            <th>Agent</th>
+            <th>Entita</th>
+            <th>Akce</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="history-body">
+          <tr><td colspan="5"><div class="empty"><div class="empty-icon">◻</div>Žádná historie</div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+  // STATE
+  let queue = [];
+  let history = JSON.parse(localStorage.getItem('admin_history') || '[]');
+  
+  // Prune history older than 7 days
+  const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+  history = history.filter(h => h.ts > sevenDaysAgo);
+  saveHistory();
+
+  // CLOCK
+  setInterval(() => {
+    document.getElementById('clock').textContent = 
+      new Date().toLocaleTimeString('cs-CZ', {hour:'2-digit',minute:'2-digit'});
+  }, 1000);
+
+  // TABS
+  function showPage(id) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('page-' + id).classList.add('active');
+    event.target.classList.add('active');
+    if (id === 'history') renderHistory();
+  }
+
+  // BRIEF
+  function submitBrief() {
+    const agent = document.getElementById('brief-agent').value;
+    const text = document.getElementById('brief-text').value.trim();
+    const entity = document.getElementById('brief-entity').value;
+    const staging = document.getElementById('brief-staging').value;
+    const priority = document.getElementById('brief-priority').value;
+
+    if (!agent || !text) { alert('Vyplň agenta a brief.'); return; }
+
+    addFeed('✦', 'fi-email', `Brief → ${agent}`, `${entity} · ${priority}`);
+
+    // Simulate agent response
+    setTimeout(() => {
+      addToQueue({
+        id: Date.now(),
+        agent, entity, staging, priority,
+        content: `[Simulovaný výstup — ${agent}]\n\nBrief: ${text}\n\nToto je placeholder. Napoj n8n webhook pro živá data.`,
+        time: new Date().toLocaleTimeString('cs-CZ', {hour:'2-digit',minute:'2-digit'}),
+        ts: Date.now()
+      });
+    }, 1500 + Math.random() * 1000);
+
+    document.getElementById('brief-text').value = '';
+    addHistoryEntry(agent, entity, 'Brief odeslán', 'pending');
+  }
+
+  // QUEUE
+  function addToQueue(item) {
+    queue.push(item);
+    renderQueue();
+    updateBadge();
+    addFeed('◈', 'fi-image', `Výstup čeká`, `${item.agent} · ${item.entity}`);
+    document.getElementById('s-outputs').textContent = 
+      parseInt(document.getElementById('s-outputs').textContent) + 1;
+    document.getElementById('s-pending').textContent = queue.length;
+  }
+
+  function renderQueue() {
+    const list = document.getElementById('queue-list');
+    document.getElementById('queue-count').textContent = queue.length + ' položek';
+    document.getElementById('s-pending').textContent = queue.length;
+
+    if (!queue.length) {
+      list.innerHTML = '<div class="empty"><div class="empty-icon">◻</div>Fronta je prázdná</div>';
+      return;
+    }
+
+    list.innerHTML = queue.map(item => `
+      <div class="queue-item" id="qi-${item.id}">
+        <div class="item-meta">
+          <span class="item-agent">${item.agent}</span>
+          <span class="badge badge-staging">${item.entity}</span>
+          <span class="badge ${item.staging==='staging'?'badge-staging':'badge-live'}">${item.staging}</span>
+          <span class="item-time">${item.time}</span>
+        </div>
+        <div class="item-content">${item.content}</div>
+        <div class="item-actions">
+          <button class="btn btn-success" onclick="approve(${item.id})">✓ Schválit</button>
+          <button class="btn btn-danger" onclick="rejectItem(${item.id})">✗ Odmítnout</button>
+          <button class="btn btn-ghost" onclick="editItem(${item.id})">⌘ Upravit</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function approve(id) {
+    const item = queue.find(i => i.id === id);
+    queue = queue.filter(i => i.id !== id);
+    renderQueue(); updateBadge();
+    addFeed('✓', 'fi-ok', `Schváleno → ${item.staging==='staging'?'merge do main':'publikováno'}`, `${item.agent} · ${item.entity}`);
+    addHistoryEntry(item.agent, item.entity, 'Schváleno', 'approved');
+    document.getElementById('s-approved').textContent = 
+      parseInt(document.getElementById('s-approved').textContent) + 1;
+  }
+
+  function rejectItem(id) {
+    const item = queue.find(i => i.id === id);
+    queue = queue.filter(i => i.id !== id);
+    renderQueue(); updateBadge();
+    addFeed('✗', 'fi-err', `Odmítnuto`, `${item.agent} · ${item.entity}`);
+    addHistoryEntry(item.agent, item.entity, 'Odmítnuto', 'rejected');
+  }
+
+  function editItem(id) {
+    const item = queue.find(i => i.id === id);
+    const nc = prompt('Uprav výstup:', item.content);
+    if (nc !== null) { item.content = nc; renderQueue(); }
+  }
+
+  function updateBadge() {
+    const b = document.getElementById('queue-badge');
+    b.textContent = queue.length ? ` (${queue.length})` : '';
+  }
+
+  // FEED
+  function addFeed(icon, cls, title, sub) {
+    const feed = document.getElementById('feed-list');
+    const d = document.createElement('div');
+    d.className = 'feed-item';
+    d.style.animation = 'flash-in 0.3s ease';
+    d.innerHTML = `
+      <div class="feed-icon ${cls}">${icon}</div>
+      <div>
+        <div class="feed-title">${title}</div>
+        <div class="feed-sub">${sub} · ${new Date().toLocaleTimeString('cs-CZ',{hour:'2-digit',minute:'2-digit'})}</div>
+      </div>`;
+    feed.insertBefore(d, feed.firstChild);
+    // Max 50 items
+    while (feed.children.length > 50) feed.removeChild(feed.lastChild);
+  }
+
+  // HISTORY
+  function addHistoryEntry(agent, entity, action, status) {
+    history.unshift({ ts: Date.now(), agent, entity, action, status,
+      time: new Date().toLocaleString('cs-CZ', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) });
+    // Keep 7 days
+    const cutoff = Date.now() - 7*24*60*60*1000;
+    history = history.filter(h => h.ts > cutoff);
+    saveHistory();
+  }
+
+  function saveHistory() { localStorage.setItem('admin_history', JSON.stringify(history)); }
+
+  function renderHistory() {
+    const tbody = document.getElementById('history-body');
+    if (!history.length) {
+      tbody.innerHTML = '<tr><td colspan="5"><div class="empty"><div class="empty-icon">◻</div>Žádná historie</div></td></tr>';
+      return;
+    }
+    const statusColors = { approved:'badge-live', rejected:'badge-rejected', pending:'badge-pending' };
+    tbody.innerHTML = history.map(h => `
+      <tr>
+        <td style="color:var(--muted);white-space:nowrap">${h.time}</td>
+        <td style="color:var(--accent2)">${h.agent}</td>
+        <td>${h.entity}</td>
+        <td>${h.action}</td>
+        <td><span class="badge ${statusColors[h.status]||'badge-staging'}">${h.status}</span></td>
+      </tr>`).join('');
+  }
+
+  function clearHistory() {
+    if (confirm('Smazat celou historii?')) { history = []; saveHistory(); renderHistory(); }
+  }
+
+  // KEYBOARD
+  document.addEventListener('keydown', e => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') submitBrief();
+  });
+</script>
+</body>
+</html>
