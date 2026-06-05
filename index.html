@@ -3,671 +3,1798 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Admin</title>
-
+<title>Admin Studio</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #0a0a0a;
-    --surface: #111111;
-    --border: #222222;
-    --accent: #f0e040;
-    --accent2: #40e0d0;
-    --danger: #ff4444;
-    --success: #44ff88;
-    --text: #e8e8e8;
-    --muted: #666;
-    --font-mono: 'Space Mono', monospace;
-    --font-display: 'Syne', sans-serif;
-  }
+:root {
+  --bg:#080808; --surface:#0f0f0f; --surface2:#141414; --surface3:#1a1a1a;
+  --border:#1e1e1e; --border2:#252525; --border3:#2e2e2e;
+  --accent:#c8b800; --accent2:#00b8a0; --accent3:#9944dd;
+  --danger:#ff4455; --success:#22cc66; --warning:#dd8800; --info:#2266dd;
+  --text:#e0e0e0; --text2:#aaa; --text3:#666;
+  --font-mono:'Space Mono',monospace; --font-display:'Syne',sans-serif;
+}
+.light-mode {
+  --bg:#f5f4ef; --surface:#ffffff; --surface2:#f0efe8; --surface3:#e8e6dc;
+  --border:#dddbd0; --border2:#ccc9bc; --border3:#bbb8aa;
+  --accent:#8a7800; --accent2:#007a6c; --accent3:#6622aa;
+  --danger:#cc2233; --success:#117744; --warning:#996600; --info:#1144bb;
+  --text:#1a1a14; --text2:#555544; --text3:#888877;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;}
+body{background:var(--bg);color:var(--text);font-family:var(--font-mono);display:flex;flex-direction:column;}
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+/* GRID */
+.app{display:flex;flex-direction:column;height:100vh;}
+@media(min-width:700px){.app{display:grid;grid-template-columns:56px 1fr;grid-template-rows:52px 1fr;}}
+@media(min-width:900px){.app{grid-template-columns:56px 220px 1fr 280px;}}
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--font-mono);
-    min-height: 100vh;
-  }
+/* TOPBAR */
+.topbar{flex-shrink:0;background:rgba(8,8,8,0.98);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 0.75rem;gap:0.75rem;height:52px;z-index:100;
+  width:100%;grid-column:1/-1;}
+.logo{font-family:var(--font-display);font-weight:800;font-size:0.95rem;letter-spacing:-0.02em;color:var(--accent);white-space:nowrap;flex-shrink:0;}
+.topbar-center{flex:1;display:flex;align-items:center;gap:0.5rem;overflow:hidden;min-width:0;}
+.model-badge{font-size:0.6rem;padding:0.2rem 0.5rem;border:1px solid var(--border3);border-radius:2px;color:var(--text3);white-space:nowrap;display:none;}
+@media(min-width:500px){.model-badge{display:inline;}}
+.topbar-right{display:flex;align-items:center;gap:0.4rem;font-size:0.65rem;color:var(--text3);flex-shrink:0;}
+.dot-live{width:5px;height:5px;border-radius:50%;background:var(--success);animation:pulse 2s infinite;flex-shrink:0;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+#clock{font-size:0.65rem;color:var(--text3);}
 
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image: 
-      linear-gradient(rgba(240,224,64,0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(240,224,64,0.03) 1px, transparent 1px);
-    background-size: 40px 40px;
-    pointer-events: none;
-    z-index: 0;
-  }
+/* ICON NAV */
+.icon-nav{background:var(--surface);border-top:1px solid var(--border);display:flex;flex-direction:row;align-items:center;justify-content:space-around;padding:0.25rem 0;order:10;flex-shrink:0;}
+@media(min-width:700px){.icon-nav{border-top:none;border-right:1px solid var(--border);flex-direction:column;justify-content:flex-start;padding:0.5rem 0;gap:0.25rem;order:0;flex-shrink:0;width:56px;}}
+.nav-icon{height:44px;border-radius:4px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text3);font-size:1.2rem;transition:all 0.15s;border:1px solid transparent;position:relative;flex:1;}
+@media(min-width:700px){.nav-icon{flex:none;width:40px;height:40px;font-size:1rem;}}
+.nav-icon:hover{color:var(--text);background:var(--surface2);}
+.nav-icon.active{color:var(--accent);background:rgba(240,224,64,0.08);border-color:rgba(240,224,64,0.2);}
+.nav-icon .badge{position:absolute;top:4px;right:4px;width:14px;height:14px;border-radius:50%;background:var(--danger);font-size:0.5rem;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;}
+.nav-sep{width:30px;height:1px;background:var(--border);margin:0.25rem 0;display:none;}
+@media(min-width:700px){.nav-sep{display:block;}}
+.hide-mobile-nav{display:none!important;}
+@media(min-width:700px){.hide-mobile-nav{display:flex!important;}}
 
-  header {
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    background: rgba(10,10,10,0.97);
-    backdrop-filter: blur(10px);
-    border-bottom: 1px solid var(--border);
-    padding: 0 1.25rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    height: 52px;
-  }
+/* SIDEBAR */
+.sidebar{display:none;background:var(--surface);border-right:1px solid var(--border);overflow-y:auto;padding:0.75rem 0;width:220px;flex-shrink:0;}
+@media(min-width:900px){.sidebar{display:block;}}
+.sidebar-section{padding:0 0.75rem;margin-bottom:1rem;}
+.sidebar-label{font-size:0.55rem;text-transform:uppercase;letter-spacing:0.15em;color:var(--text3);margin-bottom:0.4rem;padding:0 0.25rem;}
+.sidebar-item{padding:0.4rem 0.5rem;border-radius:3px;cursor:pointer;font-size:0.7rem;color:var(--text2);transition:all 0.1s;display:flex;align-items:center;gap:0.5rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sidebar-item:hover{background:var(--surface2);color:var(--text);}
+.sidebar-item.active{background:rgba(240,224,64,0.08);color:var(--accent);}
+.sidebar-item .si-icon{font-size:0.8rem;flex-shrink:0;}
+.template-item{border:1px solid var(--border);border-radius:3px;padding:0.4rem 0.5rem;margin-bottom:0.3rem;cursor:pointer;font-size:0.65rem;color:var(--text2);transition:all 0.1s;}
+.template-item:hover{border-color:var(--accent);color:var(--accent);}
 
-  .logo {
-    font-family: var(--font-display);
-    font-weight: 800;
-    font-size: 1.1rem;
-    letter-spacing: -0.02em;
-  }
-  .logo span { color: var(--accent); }
+/* MAIN */
+.main{flex:1;overflow:hidden;display:flex;flex-direction:column;background:var(--bg);}
+.panel{display:none;flex-direction:column;flex:1;overflow:hidden;}
+.panel.active{display:flex;}
+@media(max-width:699px){.panel{min-height:0;}}
 
-  .header-right {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    font-size: 0.65rem;
-    color: var(--muted);
-  }
+/* CHAT */
+.chat-messages{flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:0.75rem;min-height:0;}
+.msg{max-width:100%;animation:msg-in 0.2s ease;}
+@keyframes msg-in{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.msg-user{align-self:flex-end;}
+.msg-assistant{align-self:flex-start;max-width:85%;}
+.msg-bubble{padding:0.75rem 1rem;border-radius:3px;font-size:0.8rem;line-height:1.65;white-space:pre-wrap;word-break:break-word;}
+.msg-user .msg-bubble{background:rgba(240,224,64,0.1);border:1px solid rgba(240,224,64,0.2);color:var(--text);}
+.msg-assistant .msg-bubble{background:var(--surface);border:1px solid var(--border2);color:var(--text);}
+.msg-actions{display:flex;gap:0.4rem;margin-top:0.4rem;flex-wrap:wrap;}
+.msg-btn{font-family:var(--font-mono);font-size:0.55rem;padding:0.2rem 0.5rem;border:1px solid var(--border3);background:transparent;color:var(--text3);cursor:pointer;border-radius:2px;transition:all 0.1s;text-transform:uppercase;letter-spacing:0.05em;}
+.msg-btn:hover{border-color:var(--text2);color:var(--text);}
+.msg-meta{font-size:0.55rem;color:var(--text3);margin-bottom:0.25rem;display:flex;align-items:center;gap:0.5rem;}
+.thinking-dots{display:inline-flex;gap:3px;align-items:center;}
+.thinking-dots span{width:5px;height:5px;border-radius:50%;background:var(--accent2);animation:blink 1.2s infinite;}
+.thinking-dots span:nth-child(2){animation-delay:0.2s;}
+.thinking-dots span:nth-child(3){animation-delay:0.4s;}
+@keyframes blink{0%,80%,100%{opacity:0.2}40%{opacity:1}}
 
-  .status-dot {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-  }
-  .status-dot::before {
-    content: '';
-    width: 5px; height: 5px;
-    border-radius: 50%;
-    background: var(--success);
-    animation: pulse 2s infinite;
-  }
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+/* INPUT AREA */
+.input-area{border-top:1px solid var(--border);padding:0.75rem;background:var(--surface);flex-shrink:0;}
+.input-row{display:flex;gap:0.5rem;align-items:flex-end;}
+.input-wrap{flex:1;background:var(--bg);border:1px solid var(--border2);border-radius:3px;padding:0.5rem 0.75rem;transition:border-color 0.2s;}
+.input-wrap:focus-within{border-color:var(--accent);}
+#chat-input{width:100%;background:transparent;border:none;color:var(--text);font-family:var(--font-mono);font-size:0.78rem;resize:none;outline:none;min-height:20px;max-height:120px;overflow-y:auto;line-height:1.5;}
+.input-tools{display:flex;gap:0.4rem;margin-top:0.4rem;flex-wrap:wrap;}
+.tool-btn{font-family:var(--font-mono);font-size:0.6rem;padding:0.25rem 0.6rem;border:1px solid var(--border3);background:transparent;color:var(--text3);cursor:pointer;border-radius:2px;transition:all 0.1s;text-transform:uppercase;letter-spacing:0.05em;display:flex;align-items:center;gap:0.3rem;}
+.tool-btn:hover{border-color:var(--text2);color:var(--text);}
+.tool-btn.active{border-color:var(--accent);color:var(--accent);}
+.send-btn{width:38px;height:38px;background:var(--accent);border:none;border-radius:3px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;transition:all 0.15s;}
+.send-btn:hover{background:#fff;}
+.send-btn:disabled{opacity:0.4;cursor:not-allowed;}
 
-  /* NAV TABS */
-  .tabs {
-    position: sticky;
-    top: 52px;
-    z-index: 99;
-    background: rgba(10,10,10,0.97);
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    padding: 0 1.25rem;
-  }
+/* QUEUE PANEL */
+.panel-header{padding:0.75rem 1rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;font-size:0.65rem;background:var(--surface);}
+.panel-scroll{flex:1;overflow-y:auto;min-height:0;}
+.queue-item{border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.1s;}
+.queue-item:hover{background:var(--surface2);}
+.qi-header{padding:0.75rem 1rem;display:flex;flex-direction:column;gap:0.3rem;}
+.qi-meta{display:flex;align-items:center;gap:0.4rem;flex-wrap:wrap;}
+.qi-brief{font-size:0.72rem;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.qi-body{padding:0 1rem 0.75rem;display:none;}
+.qi-body.open{display:block;}
+.qi-content{background:var(--bg);border:1px solid var(--border2);border-radius:2px;padding:0.75rem;font-size:0.75rem;line-height:1.6;white-space:pre-wrap;max-height:250px;overflow-y:auto;margin-bottom:0.6rem;}
+.qi-edit{width:100%;background:var(--bg);border:1px solid var(--accent);color:var(--text);font-family:var(--font-mono);font-size:0.75rem;line-height:1.6;padding:0.75rem;border-radius:2px;resize:vertical;min-height:100px;margin-bottom:0.6rem;display:none;}
+.qi-comment{width:100%;background:var(--bg);border:1px solid var(--border2);color:var(--text);font-family:var(--font-mono);font-size:0.7rem;padding:0.5rem 0.75rem;border-radius:2px;resize:none;min-height:50px;margin-bottom:0.5rem;}
+.qi-actions{display:flex;gap:0.4rem;flex-wrap:wrap;}
 
-  .tab {
-    padding: 0.75rem 1rem;
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    cursor: pointer;
-    color: var(--muted);
-    border-bottom: 2px solid transparent;
-    transition: all 0.15s;
-    background: none;
-    border-top: none;
-    border-left: none;
-    border-right: none;
-    font-family: var(--font-mono);
-  }
-  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
-  .tab:hover { color: var(--text); }
+/* RIGHT PANEL */
+.right-panel{display:none;background:var(--surface);border-left:1px solid var(--border);flex-direction:column;overflow:hidden;width:280px;flex-shrink:0;}
+@media(min-width:900px){.right-panel{display:flex;}}
+.rp-tabs{display:flex;border-bottom:1px solid var(--border);}
+.rp-tab{flex:1;padding:0.5rem;font-size:0.6rem;text-transform:uppercase;letter-spacing:0.1em;cursor:pointer;color:var(--text3);text-align:center;border-bottom:2px solid transparent;transition:all 0.15s;background:none;border-top:none;border-left:none;border-right:none;font-family:var(--font-mono);}
+.rp-tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+.rp-body{flex:1;overflow-y:auto;}
+.rp-section{padding:0.75rem;border-bottom:1px solid var(--border);}
+.rp-label{font-size:0.55rem;text-transform:uppercase;letter-spacing:0.15em;color:var(--accent);margin-bottom:0.5rem;}
+.project-card{background:var(--surface2);border:1px solid var(--border2);border-radius:2px;padding:0.6rem 0.75rem;margin-bottom:0.4rem;cursor:pointer;transition:border-color 0.15s;}
+.project-card:hover{border-color:var(--border3);}
+.pc-name{font-size:0.75rem;font-weight:700;margin-bottom:0.2rem;}
+.pc-status{font-size:0.6rem;color:var(--text3);}
+.token-bar{height:3px;background:var(--border2);border-radius:2px;overflow:hidden;margin-top:0.3rem;}
+.token-fill{height:100%;background:var(--accent);border-radius:2px;transition:width 0.3s;}
 
-  /* PAGES */
-  .page { display: none; padding: 1.25rem; position: relative; z-index: 1; }
-  .page.active { display: block; }
+/* BADGES */
+.badge{font-size:0.5rem;padding:0.1rem 0.35rem;border-radius:2px;text-transform:uppercase;letter-spacing:0.08em;font-weight:700;white-space:nowrap;}
+.b-pending{background:rgba(240,224,64,0.15);color:var(--accent);}
+.b-ok{background:rgba(68,255,136,0.15);color:var(--success);}
+.b-err{background:rgba(255,68,85,0.15);color:var(--danger);}
+.b-staging{background:rgba(64,224,208,0.15);color:var(--accent2);}
+.b-info{background:rgba(68,136,255,0.15);color:var(--info);}
+.b-ret{background:rgba(255,170,0,0.15);color:var(--warning);}
 
-  /* STATS */
-  .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.75rem;
-    margin-bottom: 1.25rem;
-  }
+/* BUTTONS */
+.btn{font-family:var(--font-mono);font-size:0.65rem;padding:0.35rem 0.75rem;border:1px solid;cursor:pointer;text-transform:uppercase;letter-spacing:0.05em;transition:all 0.12s;border-radius:2px;white-space:nowrap;}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:#000;font-weight:700;}
+.btn-primary:hover{background:#fff;border-color:#fff;}
+.btn-ghost{background:transparent;border-color:var(--border3);color:var(--text3);}
+.btn-ghost:hover{border-color:var(--text2);color:var(--text);}
+.btn-danger{background:transparent;border-color:var(--danger);color:var(--danger);}
+.btn-danger:hover{background:var(--danger);color:#000;}
+.btn-success{background:transparent;border-color:var(--success);color:var(--success);}
+.btn-success:hover{background:var(--success);color:#000;}
+.btn-info{background:transparent;border-color:var(--accent2);color:var(--accent2);}
+.btn-info:hover{background:var(--accent2);color:#000;}
+.btn-sm{padding:0.25rem 0.5rem;font-size:0.58rem;}
 
-  @media(min-width: 768px) {
-    .stats-grid { grid-template-columns: repeat(4, 1fr); }
-  }
+/* HISTORY */
+.hi-item{border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.1s;}
+.hi-item:hover{background:var(--surface2);}
+.hi-header{padding:0.6rem 1rem;}
+.hi-meta{display:flex;align-items:center;gap:0.4rem;flex-wrap:wrap;margin-bottom:0.2rem;}
+.hi-brief{font-size:0.68rem;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.hi-detail{padding:0 1rem 0.75rem;display:none;}
+.hi-detail.open{display:block;}
+.hi-content{background:var(--bg);border:1px solid var(--border2);border-radius:2px;padding:0.75rem;font-size:0.72rem;line-height:1.6;white-space:pre-wrap;max-height:200px;overflow-y:auto;margin-bottom:0.5rem;}
+.hi-comment{font-size:0.65rem;color:var(--warning);padding:0.4rem 0;border-top:1px solid var(--border);}
 
-  .stat-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 2px;
-    padding: 0.875rem 1rem;
-  }
-  .stat-label { font-size: 0.6rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.4rem; }
-  .stat-value { font-family: var(--font-display); font-size: 1.6rem; font-weight: 800; color: var(--accent); line-height: 1; }
-  .stat-sub { font-size: 0.6rem; color: var(--muted); margin-top: 0.25rem; }
+/* VOICE */
+.voice-active{border-color:var(--danger)!important;color:var(--danger)!important;animation:voice-pulse 1s infinite;}
+@keyframes voice-pulse{0%,100%{opacity:1}50%{opacity:0.5}}
 
-  /* SECTION LABEL */
-  .section-label {
-    font-size: 0.6rem;
-    text-transform: uppercase;
-    letter-spacing: 0.15em;
-    color: var(--accent);
-    margin-bottom: 0.6rem;
-  }
+/* DOWNLOAD MENU */
+.dl-menu{position:absolute;bottom:100%;left:0;background:var(--surface);border:1px solid var(--border2);border-radius:3px;padding:0.25rem;min-width:140px;z-index:200;display:none;}
+.dl-menu.open{display:block;}
+.dl-item{padding:0.4rem 0.6rem;font-size:0.65rem;cursor:pointer;border-radius:2px;display:flex;align-items:center;gap:0.5rem;color:var(--text2);transition:all 0.1s;}
+.dl-item:hover{background:var(--surface2);color:var(--text);}
+.dl-wrap{position:relative;}
 
-  /* CARD */
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 2px;
-    overflow: hidden;
-    margin-bottom: 1.25rem;
-  }
+/* IMAGE PANEL */
+.img-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;padding:1rem;}
+.img-placeholder{aspect-ratio:1;background:var(--surface2);border:1px solid var(--border2);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:0.65rem;color:var(--text3);}
+.img-generated{aspect-ratio:1;border-radius:3px;overflow:hidden;position:relative;}
+.img-generated img{width:100%;height:100%;object-fit:cover;}
+.img-dl{position:absolute;bottom:4px;right:4px;background:rgba(0,0,0,0.7);border:none;color:#fff;cursor:pointer;padding:3px 6px;border-radius:2px;font-size:0.55rem;}
 
-  .card-header {
-    padding: 0.6rem 0.875rem;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    font-size: 0.65rem;
-  }
+/* CALENDAR */
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;padding:0.75rem;}
+.cal-day{aspect-ratio:1;border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:0.6rem;cursor:pointer;background:var(--surface2);color:var(--text3);transition:all 0.1s;}
+.cal-day:hover{background:var(--surface3);color:var(--text);}
+.cal-day.has-event{background:rgba(240,224,64,0.1);color:var(--accent);}
+.cal-day.today{border:1px solid var(--accent);}
 
-  /* BRIEF FORM */
-  .brief-form {
-    padding: 1rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-  }
+/* EMPTY */
+.empty{padding:2rem;text-align:center;color:var(--text3);font-size:0.7rem;}
 
-  .form-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.75rem;
-  }
+/* SCROLLBAR */
+::-webkit-scrollbar{width:3px;height:3px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border2);}
 
-  @media(min-width: 600px) {
-    .form-row-3 { grid-template-columns: 1fr 1fr 1fr; }
-  }
+/* MARKDOWN in chat */
+.msg-bubble strong{color:var(--accent);}
+.msg-bubble code{background:var(--surface2);padding:0.1em 0.3em;border-radius:2px;font-size:0.85em;}
+.msg-bubble pre{background:var(--surface2);border:1px solid var(--border2);border-radius:3px;padding:0.75rem;overflow-x:auto;margin:0.5rem 0;}
+.msg-bubble h1,.msg-bubble h2,.msg-bubble h3{color:var(--accent2);margin:0.5rem 0 0.25rem;}
+.msg-bubble ul,.msg-bubble ol{padding-left:1.2rem;margin:0.25rem 0;}
 
-  select, textarea, input {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    color: var(--text);
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    padding: 0.55rem 0.75rem;
-    border-radius: 2px;
-    outline: none;
-    transition: border-color 0.2s;
-    width: 100%;
-    -webkit-appearance: none;
-  }
-  select:focus, textarea:focus, input:focus { border-color: var(--accent); }
-  textarea { resize: vertical; min-height: 80px; }
+@keyframes flash-in{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
 
-  .btn {
-    font-family: var(--font-mono);
-    font-size: 0.7rem;
-    padding: 0.55rem 1rem;
-    border: 1px solid;
-    cursor: pointer;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    transition: all 0.15s;
-    border-radius: 2px;
-    white-space: nowrap;
-  }
-  .btn-primary { background: var(--accent); border-color: var(--accent); color: #000; font-weight: 700; }
-  .btn-primary:hover { background: #fff; border-color: #fff; }
-  .btn-ghost { background: transparent; border-color: var(--border); color: var(--muted); }
-  .btn-ghost:hover { border-color: var(--text); color: var(--text); }
-  .btn-danger { background: transparent; border-color: var(--danger); color: var(--danger); }
-  .btn-danger:hover { background: var(--danger); color: #000; }
-  .btn-success { background: transparent; border-color: var(--success); color: var(--success); }
-  .btn-success:hover { background: var(--success); color: #000; }
-  .btn-full { width: 100%; text-align: center; }
+/* HTML PREVIEW MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:500;display:none;align-items:center;justify-content:center;padding:1rem;}
+.modal-overlay.open{display:flex;}
+.modal-box{background:var(--surface);border:1px solid var(--border2);border-radius:4px;width:100%;max-width:900px;max-height:90vh;display:flex;flex-direction:column;overflow:hidden;}
+.modal-header{padding:0.75rem 1rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;font-size:0.7rem;flex-shrink:0;}
+.modal-close{background:none;border:none;color:var(--text3);cursor:pointer;font-size:1.2rem;line-height:1;}
+.modal-close:hover{color:var(--text);}
+.preview-iframe{flex:1;border:none;background:#fff;min-height:400px;}
+.preview-tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0;}
+.preview-tab{padding:0.5rem 0.875rem;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em;cursor:pointer;color:var(--text3);border-bottom:2px solid transparent;background:none;border-top:none;border-left:none;border-right:none;font-family:var(--font-mono);}
+.preview-tab.active{color:var(--accent);border-bottom-color:var(--accent);}
 
-  /* BADGE */
-  .badge {
-    font-size: 0.55rem;
-    padding: 0.15rem 0.4rem;
-    border-radius: 2px;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    font-weight: 700;
-  }
-  .badge-pending { background: rgba(240,224,64,0.15); color: var(--accent); }
-  .badge-staging { background: rgba(64,224,208,0.15); color: var(--accent2); }
-  .badge-live { background: rgba(68,255,136,0.15); color: var(--success); }
-  .badge-rejected { background: rgba(255,68,68,0.15); color: var(--danger); }
+/* SESSION PANEL */
+.session-list{padding:0.5rem;}
+.session-item{padding:0.5rem 0.625rem;border-radius:3px;cursor:pointer;font-size:0.68rem;color:var(--text2);transition:all 0.1s;border:1px solid transparent;margin-bottom:0.25rem;display:flex;align-items:center;justify-content:space-between;}
+.session-item:hover{background:var(--surface2);border-color:var(--border2);}
+.session-item.active{background:rgba(240,224,64,0.08);border-color:rgba(240,224,64,0.2);color:var(--accent);}
+.session-del{background:none;border:none;color:var(--text3);cursor:pointer;font-size:0.7rem;padding:0.1rem 0.25rem;border-radius:2px;}
+.session-del:hover{color:var(--danger);}
 
-  /* QUEUE ITEMS */
-  .queue-item {
-    padding: 0.875rem;
-    border-bottom: 1px solid var(--border);
-    animation: flash-in 0.3s ease;
-  }
-  .queue-item:last-child { border-bottom: none; }
-
-  @keyframes flash-in { from{opacity:0;transform:translateY(-6px)} to{opacity:1;transform:translateY(0)} }
-
-  .item-meta {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.5rem;
-    margin-bottom: 0.5rem;
-  }
-  .item-agent { font-size: 0.6rem; color: var(--accent2); text-transform: uppercase; letter-spacing: 0.1em; }
-  .item-time { font-size: 0.6rem; color: var(--muted); margin-left: auto; }
-
-  .item-content {
-    font-size: 0.75rem;
-    line-height: 1.5;
-    padding: 0.625rem;
-    background: var(--bg);
-    border-left: 2px solid var(--border);
-    border-radius: 0 2px 2px 0;
-    margin-bottom: 0.625rem;
-    max-height: 100px;
-    overflow-y: auto;
-    white-space: pre-wrap;
-  }
-
-  .item-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
-
-  /* FEED */
-  .feed-item {
-    padding: 0.75rem 0.875rem;
-    border-bottom: 1px solid var(--border);
-    display: grid;
-    grid-template-columns: 26px 1fr;
-    gap: 0.625rem;
-    align-items: start;
-  }
-  .feed-icon {
-    width: 26px; height: 26px;
-    border-radius: 2px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 0.7rem; flex-shrink: 0;
-  }
-  .fi-email { background: rgba(240,224,64,0.15); color: var(--accent); }
-  .fi-github { background: rgba(255,255,255,0.1); color: #fff; }
-  .fi-drive { background: rgba(66,133,244,0.15); color: #4285f4; }
-  .fi-image { background: rgba(64,224,208,0.15); color: var(--accent2); }
-  .fi-ok { background: rgba(68,255,136,0.15); color: var(--success); }
-  .fi-err { background: rgba(255,68,68,0.15); color: var(--danger); }
-
-  .feed-title { font-size: 0.72rem; margin-bottom: 0.15rem; }
-  .feed-sub { font-size: 0.6rem; color: var(--muted); }
-
-  /* HISTORY TABLE */
-  .history-table { width: 100%; border-collapse: collapse; font-size: 0.7rem; }
-  .history-table th {
-    padding: 0.5rem 0.75rem;
-    text-align: left;
-    font-size: 0.6rem;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    border-bottom: 1px solid var(--border);
-  }
-  .history-table td {
-    padding: 0.6rem 0.75rem;
-    border-bottom: 1px solid rgba(34,34,34,0.5);
-    vertical-align: middle;
-  }
-  .history-table tr:last-child td { border-bottom: none; }
-
-  .empty { padding: 2.5rem 1rem; text-align: center; color: var(--muted); font-size: 0.7rem; }
-  .empty-icon { font-size: 1.5rem; margin-bottom: 0.4rem; opacity: 0.3; }
-
-  ::-webkit-scrollbar { width: 3px; height: 3px; }
-  ::-webkit-scrollbar-track { background: var(--bg); }
-  ::-webkit-scrollbar-thumb { background: var(--border); }
-
-  /* DESKTOP LAYOUT */
-  @media(min-width: 900px) {
-    .page { padding: 1.5rem 2rem; max-width: 1200px; margin: 0 auto; }
-    .desktop-grid { display: grid; grid-template-columns: 1fr 340px; gap: 1.5rem; }
-    .desktop-grid .card { margin-bottom: 0; }
-  }
+/* MEMORY INDICATOR */
+.memory-dot{width:6px;height:6px;border-radius:50%;background:var(--success);display:inline-block;margin-right:0.3rem;}
+.memory-dot.saving{background:var(--warning);animation:pulse 0.5s infinite;}
 </style>
 </head>
 <body>
+<div class="app">
 
-<header>
-  <div class="logo"><span>Admin</span></div>
-  <div class="header-right">
-    <span class="status-dot" id="n8n-status">n8n</span>
+<!-- TOPBAR -->
+<header class="topbar">
+  <div class="logo">Admin Studio</div>
+  <div class="topbar-center">
+    <span class="model-badge" id="model-label">Claude Sonnet 4.6</span>
+    <span class="model-badge" id="mode-label">Chat</span>
+    <span style="font-size:0.6rem;color:var(--text3);display:flex;align-items:center;gap:0.25rem">
+      <span class="memory-dot" id="memory-dot"></span>
+      <span id="memory-label">paměť</span>
+    </span>
+  </div>
+  <div class="topbar-right">
+    <span class="dot-live"></span>
     <span id="clock"></span>
+    <span id="token-display" style="color:var(--text3);display:none;">0 tokenů</span>
+    <button onclick="toggleTheme()" style="background:none;border:1px solid var(--border2);color:var(--text3);cursor:pointer;padding:0.2rem 0.5rem;border-radius:2px;font-size:0.65rem;font-family:var(--font-mono)" id="theme-btn">☀ Světlý</button>
   </div>
 </header>
 
-<div class="tabs">
-  <button class="tab active" onclick="showPage('dashboard')">Dashboard</button>
-  <button class="tab" onclick="showPage('brief')">Brief</button>
-  <button class="tab" onclick="showPage('queue')">Fronta <span id="queue-badge"></span></button>
-  <button class="tab" onclick="showPage('history')">Historie</button>
-</div>
+<!-- ICON NAV -->
+<nav class="icon-nav">
+  <div class="nav-icon active" onclick="setMode('chat')" title="Chat" data-mode="chat">💬</div>
+  <div class="nav-icon" onclick="setMode('queue')" title="Fronta" data-mode="queue">
+    📥<span class="badge" id="queue-badge-icon" style="display:none">0</span>
+  </div>
+  <div class="nav-icon" onclick="setMode('history')" title="Historie" data-mode="history">📋</div>
+  <div class="nav-icon" onclick="setMode('images')" title="Obrázky" data-mode="images">🖼</div>
+  <div class="nav-sep"></div>
+  <div class="nav-icon" onclick="setMode('projects')" title="Projekty" data-mode="projects">📁</div>
+  <div class="nav-icon" onclick="setMode('calendar')" title="Kalendář" data-mode="calendar">📅</div>
+  <div class="nav-sep"></div>
+  <div class="nav-icon" onclick="clearChat()" title="Nový chat" style="margin-top:auto;" class="hide-mobile-nav">🗑</div>
+</nav>
 
-<!-- DASHBOARD -->
-<div class="page active" id="page-dashboard">
-  <div class="stats-grid">
-    <div class="stat-card">
-      <div class="stat-label">Výstupy dnes</div>
-      <div class="stat-value" id="s-outputs">0</div>
-      <div class="stat-sub">agenti</div>
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-section">
+    <div class="sidebar-label">Šablony</div>
+    <div class="template-item" onclick="useTemplate('tiktok')">🎵 TikTok caption Pavler</div>
+    <div class="template-item" onclick="useTemplate('blog')">📝 Blogpost romanpavlorek.eu</div>
+    <div class="template-item" onclick="useTemplate('gream-task')">🎮 Výzva pro Gream</div>
+    <div class="template-item" onclick="useTemplate('conflux-card')">🃏 CONFLUX karta/dialog</div>
+    <div class="template-item" onclick="useTemplate('appstore')">📱 App Store popis</div>
+    <div class="template-item" onclick="useTemplate('web-fix')">🔧 Oprava webu</div>
+    <div class="template-item" onclick="useTemplate('preklad')">🌐 Překlad EN</div>
+    <div class="template-item" onclick="useTemplate('presskit')">📣 Press kit</div>
+    <div class="template-item" onclick="useTemplate('instagram')">📸 Instagram post</div>
+    <div class="template-item" onclick="useTemplate('youtube')">▶ YouTube popis</div>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">Kontext</div>
+    <div class="sidebar-item active" onclick="setContext('orchestrator')"><span class="si-icon">🤖</span>Orchestrátor</div>
+    <div class="sidebar-item" onclick="setContext('copywriter')"><span class="si-icon">✍</span>Copywriter</div>
+    <div class="sidebar-item" onclick="setContext('herni')"><span class="si-icon">🎮</span>Herní designér</div>
+    <div class="sidebar-item" onclick="setContext('direct')"><span class="si-icon">⚡</span>Přímý chat</div>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">Rychlé akce</div>
+    <div class="sidebar-item" onclick="quickAction('digest')"><span class="si-icon">📊</span>Denní digest</div>
+    <div class="sidebar-item" onclick="quickAction('content-plan')"><span class="si-icon">📆</span>Plán obsahu</div>
+    <div class="sidebar-item" onclick="quickAction('gream-status')"><span class="si-icon">📈</span>Status Gream</div>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-label" style="display:flex;align-items:center;justify-content:space-between">
+      <span>Sessions</span>
+      <button onclick="newSession()" style="background:none;border:none;color:var(--accent);cursor:pointer;font-size:0.7rem;font-family:var(--font-mono)">+ Nová</button>
     </div>
-    <div class="stat-card">
-      <div class="stat-label">Čeká na schválení</div>
-      <div class="stat-value" id="s-pending">0</div>
-      <div class="stat-sub">ve frontě</div>
+    <div class="session-list" id="session-list"></div>
+  </div>
+</aside>
+
+<!-- MAIN PANELS -->
+<main class="main">
+
+  <!-- CHAT PANEL -->
+  <div class="panel active" id="panel-chat">
+    <div class="chat-messages" id="chat-messages">
+      <div class="msg msg-assistant">
+        <div class="msg-meta"><span>Admin Studio</span><span class="badge b-ok">připraven</span></div>
+        <div class="msg-bubble">Ahoj! Jsem tvůj kreativní asistent pro 3R Studio. Můžeš mi zadat jakýkoli brief — vygeneruji texty, navrhnu obsah, pomůžu s vývojem Gream nebo CONFLUX, přeložím, opravím web nebo připravím podklady pro Pavler.
+
+Výstupy můžeš stáhnout jako TXT, MD nebo PDF. Hlasový vstup funguje přes mikrofon. 🎙</div>
+      </div>
     </div>
-    <div class="stat-card">
-      <div class="stat-label">Schváleno týden</div>
-      <div class="stat-value" id="s-approved">0</div>
-      <div class="stat-sub">publikováno</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Aktivní agenti</div>
-      <div class="stat-value">2</div>
-      <div class="stat-sub">Asistentka, Copywriter</div>
+    <div class="input-area">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.35rem;font-size:0.58rem;color:var(--text3)">
+        <span id="ctx-label">0/50 zpráv v kontextu</span>
+        <span id="ctx-tokens" style="color:var(--text3)"></span>
+      </div>
+      <div style="height:2px;background:var(--border);border-radius:1px;margin-bottom:0.5rem;overflow:hidden">
+        <div id="ctx-bar" style="height:100%;background:var(--success);border-radius:1px;transition:width 0.3s;width:0%"></div>
+      </div>
+      <div class="input-tools">
+        <button class="tool-btn" id="voice-btn" onclick="toggleVoice()">🎙 Hlas</button>
+        <button class="tool-btn" onclick="previewLastHtml()" title="Zobraz HTML z poslední odpovědi">🌐 HTML náhled</button>
+        <div class="dl-wrap">
+          <button class="tool-btn" onclick="toggleDlMenu()">⬇ Stáhnout</button>
+          <div class="dl-menu" id="dl-menu">
+            <div class="dl-item" onclick="downloadLast('txt')">📄 TXT</div>
+            <div class="dl-item" onclick="downloadLast('md')">📝 Markdown</div>
+            <div class="dl-item" onclick="downloadLast('pdf')">📑 PDF</div>
+            <div class="dl-item" onclick="downloadAll('txt')">📦 Celý chat (TXT)</div>
+          </div>
+        </div>
+        <button class="tool-btn" onclick="sendToQueue()">📥 Do fronty</button>
+        <button class="tool-btn" id="orchestrator-toggle" onclick="toggleOrchestrator()" title="Přes Orchestrátor nebo přímo přes Claude">🤖 Orchestrátor</button>
+      </div>
+      <div class="input-row" style="margin-top:0.5rem">
+        <div class="input-wrap">
+          <textarea id="chat-input" placeholder="Napiš brief nebo otázku... (Enter = odeslat, Shift+Enter = nový řádek)" rows="1"
+            oninput="autoResize(this)" onkeydown="handleKey(event)"></textarea>
+        </div>
+        <button class="send-btn" id="send-btn" onclick="sendMessage()">↑</button>
+      </div>
     </div>
   </div>
 
-  <div class="section-label">// live feed</div>
-  <div class="card">
-    <div class="card-header">
-      <span>Aktivita</span>
-      <span class="badge badge-live">živě</span>
+  <!-- QUEUE PANEL -->
+  <div class="panel" id="panel-queue">
+    <div class="panel-header">
+      <span>Fronta ke schválení</span>
+      <div style="display:flex;gap:0.5rem;align-items:center">
+        <span class="badge b-pending" id="queue-count-label">0 položek</span>
+        <button class="btn btn-ghost btn-sm" onclick="loadQueue()">↺</button>
+      </div>
     </div>
-    <div id="feed-list">
-      <div class="feed-item">
-        <div class="feed-icon fi-ok">✓</div>
-        <div><div class="feed-title">Systém spuštěn</div><div class="feed-sub">n8n · ntfy · weby online</div></div>
+    <div class="panel-scroll" id="queue-list">
+      <div class="empty">Načítám frontu...</div>
+    </div>
+  </div>
+
+  <!-- HISTORY PANEL -->
+  <div class="panel" id="panel-history">
+    <div class="panel-header">
+      <span>Historie</span>
+      <button class="btn btn-ghost btn-sm" onclick="clearHistory()">Smazat vše</button>
+    </div>
+    <div class="panel-scroll" id="history-list">
+      <div class="empty">Žádná historie</div>
+    </div>
+  </div>
+
+  <!-- IMAGES PANEL -->
+  <div class="panel" id="panel-images">
+    <div class="panel-header"><span>Generátor obrázků</span></div>
+    <div style="padding:1rem;display:flex;flex-direction:column;gap:0.75rem;border-bottom:1px solid var(--border)">
+      <textarea id="img-prompt" placeholder="Popiš obrázek... (např: pixel art charakter pro Gream, příroda, světlé barvy, děti)" style="background:var(--bg);border:1px solid var(--border2);color:var(--text);font-family:var(--font-mono);font-size:0.75rem;padding:0.6rem;border-radius:2px;resize:none;min-height:60px;outline:none;" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
+      <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+        <select id="img-size" style="background:var(--bg);border:1px solid var(--border2);color:var(--text);font-family:var(--font-mono);font-size:0.65rem;padding:0.3rem 0.5rem;border-radius:2px;">
+          <option value="1024x1024">1024×1024 (čtverec)</option>
+          <option value="1792x1024">1792×1024 (wide)</option>
+          <option value="1024x1792">1024×1792 (portrait)</option>
+        </select>
+        <select id="img-style" style="background:var(--bg);border:1px solid var(--border2);color:var(--text);font-family:var(--font-mono);font-size:0.65rem;padding:0.3rem 0.5rem;border-radius:2px;">
+          <option value="">Vivid</option>
+          <option value="natural">Natural</option>
+        </select>
+        <button class="btn btn-primary" onclick="generateImage()" style="font-size:0.65rem">🖼 Generovat</button>
       </div>
-      <div class="feed-item">
-        <div class="feed-icon fi-email">✉</div>
-        <div><div class="feed-title">Asistentka aktivní</div><div class="feed-sub">Sleduje info@3rstudio.eu + roman@romanpavlorek.eu</div></div>
-      </div>
-      <div class="feed-item">
-        <div class="feed-icon fi-github">⌥</div>
-        <div><div class="feed-title">Weby nasazeny</div><div class="feed-sub">romanpavlorek.eu + 3rstudio.eu · auto-deploy aktivní</div></div>
+    </div>
+    <div class="panel-scroll">
+      <div class="img-grid" id="img-grid">
+        <div class="img-placeholder" style="grid-column:1/-1;aspect-ratio:auto;padding:2rem">
+          <span style="color:var(--text3)">Zadej prompt a klikni Generovat</span>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-<!-- BRIEF -->
-<div class="page" id="page-brief">
-  <div class="section-label">// nový brief</div>
-  <div class="card">
-    <div class="card-header"><span>Zadat úkol agentovi</span></div>
-    <div class="brief-form">
-      <div class="form-row">
-        <div>
-          <div class="section-label" style="margin-bottom:0.4rem">Agent</div>
-          <select id="brief-agent">
-            <option value="">— vyber agenta —</option>
-            <option value="Copywriter">Copywriter</option>
-            <option value="Web Master">Web Master</option>
-            <option value="Image Gen">Image Gen</option>
-            <option value="Social Media">Social Media</option>
-            <option value="QA Tester">QA Tester</option>
-            <option value="Překladač">Překladač</option>
-          </select>
-        </div>
-        <div>
-          <div class="section-label" style="margin-bottom:0.4rem">Entita</div>
-          <select id="brief-entity">
-            <option value="">— vyber entitu —</option>
-            <option value="Pavler">Pavler</option>
-            <option value="3R Studio">3R Studio</option>
-            <option value="Roman Pavlorek">Roman Pavlorek</option>
-            <option value="Gream">Gream</option>
-            <option value="CONFLUX">CONFLUX</option>
-          </select>
-        </div>
-      </div>
-      <div>
-        <div class="section-label" style="margin-bottom:0.4rem">Brief</div>
-        <textarea id="brief-text" placeholder="Napiš brief...&#10;Příklad: TikTok caption + 5 hashtagů pro novou píseň, energický tón"></textarea>
-      </div>
-      <div class="form-row">
-        <div>
-          <div class="section-label" style="margin-bottom:0.4rem">Výstup</div>
-          <select id="brief-staging">
-            <option value="staging">→ Staging (vyžaduje schválení)</option>
-            <option value="direct">→ Přímý výstup</option>
-          </select>
-        </div>
-        <div>
-          <div class="section-label" style="margin-bottom:0.4rem">Priorita</div>
-          <select id="brief-priority">
-            <option value="normal">Normální</option>
-            <option value="high">Vysoká</option>
-            <option value="low">Nízká</option>
-          </select>
-        </div>
-      </div>
-      <button class="btn btn-primary btn-full" onclick="submitBrief()">Odeslat brief ↗ (Cmd+Enter)</button>
+  <!-- PROJECTS PANEL -->
+  <div class="panel" id="panel-projects">
+    <div class="panel-header"><span>Projekty</span><button class="btn btn-ghost btn-sm" onclick="loadProjects()">↺</button></div>
+    <div class="panel-scroll" id="projects-content">
+      <div class="empty">Načítám projekty z Drive...</div>
     </div>
   </div>
-</div>
 
-<!-- QUEUE -->
-<div class="page" id="page-queue">
-  <div class="section-label">// fronta ke schválení</div>
-  <div class="card">
-    <div class="card-header">
-      <span>Výstupy agentů</span>
-      <span class="badge badge-pending" id="queue-count">0 položek</span>
+  <!-- CALENDAR PANEL -->
+  <div class="panel" id="panel-calendar">
+    <div class="panel-header"><span>Obsahový kalendář</span><span id="cal-month" style="color:var(--text3)"></span></div>
+    <div style="padding:0.5rem 0.75rem;border-bottom:1px solid var(--border);display:grid;grid-template-columns:repeat(7,1fr);gap:2px;">
+      <div style="font-size:0.55rem;text-align:center;color:var(--text3);padding:0.3rem">Po</div>
+      <div style="font-size:0.55rem;text-align:center;color:var(--text3);padding:0.3rem">Út</div>
+      <div style="font-size:0.55rem;text-align:center;color:var(--text3);padding:0.3rem">St</div>
+      <div style="font-size:0.55rem;text-align:center;color:var(--text3);padding:0.3rem">Čt</div>
+      <div style="font-size:0.55rem;text-align:center;color:var(--text3);padding:0.3rem">Pá</div>
+      <div style="font-size:0.55rem;text-align:center;color:var(--text3);padding:0.3rem">So</div>
+      <div style="font-size:0.55rem;text-align:center;color:var(--text3);padding:0.3rem">Ne</div>
     </div>
-    <div id="queue-list">
-      <div class="empty"><div class="empty-icon">◻</div>Fronta je prázdná</div>
+    <div class="cal-grid" id="cal-grid"></div>
+    <div id="cal-events" style="padding:0.75rem;border-top:1px solid var(--border);overflow-y:auto;flex:1"></div>
+  </div>
+
+</main>
+
+<!-- RIGHT PANEL -->
+<aside class="right-panel">
+  <div class="rp-tabs">
+    <button class="rp-tab active" onclick="setRpTab('info',this)">Info</button>
+    <button class="rp-tab" onclick="setRpTab('projects',this)">Projekty</button>
+    <button class="rp-tab" onclick="setRpTab('tokens',this)">Tokeny</button>
+  </div>
+  <div class="rp-body">
+    <!-- INFO TAB -->
+    <div id="rp-info" class="rp-tab-content">
+      <div class="rp-section">
+        <div class="rp-label">Agenti</div>
+        <div style="display:flex;flex-direction:column;gap:0.3rem">
+          <div style="display:flex;justify-content:space-between;font-size:0.65rem"><span>Orchestrátor</span><span class="badge b-ok">aktivní</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:0.65rem"><span>Copywriter</span><span class="badge b-ok">aktivní</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:0.65rem"><span>Asistentka</span><span class="badge b-ok">aktivní</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:0.65rem"><span>Web Master</span><span class="badge b-staging">příprava</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:0.65rem"><span>Image Gen</span><span class="badge b-staging">příprava</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:0.65rem"><span>QA/Tester</span><span class="badge b-staging">příprava</span></div>
+        </div>
+      </div>
+      <div class="rp-section">
+        <div class="rp-label">Infrastruktura</div>
+        <div style="display:flex;flex-direction:column;gap:0.25rem;font-size:0.63rem;color:var(--text2)">
+          <div style="display:flex;justify-content:space-between"><span>Hetzner CX23</span><span class="badge b-ok">online</span></div>
+          <div style="display:flex;justify-content:space-between"><span>n8n</span><span class="badge b-ok">online</span></div>
+          <div style="display:flex;justify-content:space-between"><span>ntfy</span><span class="badge b-ok">online</span></div>
+          <div style="display:flex;justify-content:space-between"><span>Deploy</span><span class="badge b-ok">auto</span></div>
+        </div>
+      </div>
+      <div class="rp-section">
+        <div class="rp-label">Deadliny</div>
+        <div style="display:flex;flex-direction:column;gap:0.4rem">
+          <div style="font-size:0.65rem">
+            <div style="display:flex;justify-content:space-between;margin-bottom:0.15rem"><span style="color:var(--danger)">Gream launch</span><span style="color:var(--text3)">srpen 2026</span></div>
+            <div class="token-bar"><div class="token-fill" style="width:45%;background:var(--danger)"></div></div>
+          </div>
+          <div style="font-size:0.65rem">
+            <div style="display:flex;justify-content:space-between;margin-bottom:0.15rem"><span style="color:var(--warning)">CONFLUX itch.io</span><span style="color:var(--text3)">srpen 2026</span></div>
+            <div class="token-bar"><div class="token-fill" style="width:35%;background:var(--warning)"></div></div>
+          </div>
+          <div style="font-size:0.65rem">
+            <div style="display:flex;justify-content:space-between;margin-bottom:0.15rem"><span style="color:var(--accent2)">Pavler start</span><span style="color:var(--text3)">co nejdříve</span></div>
+            <div class="token-bar"><div class="token-fill" style="width:20%;background:var(--accent2)"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- PROJECTS TAB -->
+    <div id="rp-projects" class="rp-tab-content" style="display:none">
+      <div class="rp-section" id="rp-projects-content">
+        <div class="project-card">
+          <div class="pc-name">🎮 Gream</div>
+          <div class="pc-status">artworky · bug-fix · EN lokalizace · Google Play</div>
+          <div class="token-bar" style="margin-top:0.4rem"><div class="token-fill" style="width:60%"></div></div>
+        </div>
+        <div class="project-card">
+          <div class="pc-name">🃏 CONFLUX</div>
+          <div class="pc-status">příběh · artworky · bug-fix · itch.io</div>
+          <div class="token-bar" style="margin-top:0.4rem"><div class="token-fill" style="width:40%"></div></div>
+        </div>
+        <div class="project-card">
+          <div class="pc-name">🎵 Pavler</div>
+          <div class="pc-status">profily · Buffer · první obsah</div>
+          <div class="token-bar" style="margin-top:0.4rem"><div class="token-fill" style="width:15%;background:var(--accent2)"></div></div>
+        </div>
+        <div class="project-card">
+          <div class="pc-name">🌐 Weby</div>
+          <div class="pc-status">opravy · blog · auto-deploy aktivní</div>
+          <div class="token-bar" style="margin-top:0.4rem"><div class="token-fill" style="width:80%;background:var(--success)"></div></div>
+        </div>
+      </div>
+    </div>
+    <!-- TOKENS TAB -->
+    <div id="rp-tokens" class="rp-tab-content" style="display:none">
+      <div class="rp-section">
+        <div class="rp-label">Tato session</div>
+        <div style="display:flex;flex-direction:column;gap:0.3rem;font-size:0.65rem">
+          <div style="display:flex;justify-content:space-between"><span>Input tokeny</span><span id="t-input">0</span></div>
+          <div style="display:flex;justify-content:space-between"><span>Output tokeny</span><span id="t-output">0</span></div>
+          <div style="display:flex;justify-content:space-between"><span>Celkem</span><span id="t-total">0</span></div>
+          <div style="display:flex;justify-content:space-between"><span style="color:var(--accent)">Odhadovaná cena</span><span id="t-cost" style="color:var(--accent)">0 Kč</span></div>
+        </div>
+        <div class="token-bar" style="margin-top:0.75rem"><div class="token-fill" id="t-bar" style="width:0%"></div></div>
+        <div style="font-size:0.55rem;color:var(--text3);margin-top:0.25rem">Denní limit: 100K tokenů</div>
+      </div>
+      <div class="rp-section">
+        <div class="rp-label">Modely v použití</div>
+        <div style="display:flex;flex-direction:column;gap:0.25rem;font-size:0.63rem;color:var(--text2)">
+          <div style="display:flex;justify-content:space-between"><span>Claude Sonnet</span><span>$3/1M</span></div>
+          <div style="display:flex;justify-content:space-between"><span>DeepSeek V4 Flash</span><span>$0.14/1M</span></div>
+          <div style="display:flex;justify-content:space-between"><span>GPT-4.1-mini</span><span>$0.40/1M</span></div>
+          <div style="display:flex;justify-content:space-between"><span>GPT Image 2</span><span>~$0.10/obr</span></div>
+        </div>
+      </div>
     </div>
   </div>
+</aside>
+
 </div>
 
-<!-- HISTORY -->
-<div class="page" id="page-history">
-  <div class="section-label">// historie — posledních 7 dní</div>
-  <div class="card">
-    <div class="card-header">
-      <span>Záznamy</span>
-      <button class="btn btn-ghost" onclick="clearHistory()" style="padding:0.2rem 0.5rem;font-size:0.6rem">Smazat vše</button>
+<!-- HTML PREVIEW MODAL -->
+<div class="modal-overlay" id="html-modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div style="display:flex;align-items:center;gap:0.5rem">
+        <span>HTML Preview</span>
+        <span class="memory-dot" id="preview-dot" style="display:none"></span>
+      </div>
+      <div style="display:flex;gap:0.5rem">
+        <button class="btn btn-ghost btn-sm" onclick="downloadPreviewHtml()">↓ Stáhnout HTML</button>
+        <button class="btn btn-ghost btn-sm" onclick="openPreviewInTab()">↗ Otevřít v nové záložce</button>
+        <button class="modal-close" onclick="closeHtmlModal()">✕</button>
+      </div>
     </div>
-    <div style="overflow-x:auto">
-      <table class="history-table">
-        <thead>
-          <tr>
-            <th>Čas</th>
-            <th>Agent</th>
-            <th>Entita</th>
-            <th>Akce</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody id="history-body">
-          <tr><td colspan="5"><div class="empty"><div class="empty-icon">◻</div>Žádná historie</div></td></tr>
-        </tbody>
-      </table>
+    <div class="preview-tabs">
+      <button class="preview-tab active" onclick="setPreviewTab('render',this)">Náhled</button>
+      <button class="preview-tab" onclick="setPreviewTab('code',this)">Kód</button>
     </div>
+    <iframe class="preview-iframe" id="preview-iframe" sandbox="allow-scripts allow-same-origin"></iframe>
+    <pre id="preview-code" style="display:none;flex:1;overflow:auto;padding:1rem;font-size:0.72rem;line-height:1.5;background:var(--bg);margin:0;white-space:pre-wrap;word-break:break-all;min-height:400px;"></pre>
   </div>
 </div>
 
 <script>
-  // STATE
-  let queue = [];
-  let history = JSON.parse(localStorage.getItem('admin_history') || '[]');
-  
-  // Prune history older than 7 days
-  const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
-  history = history.filter(h => h.ts > sevenDaysAgo);
-  saveHistory();
+// ═══════════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════════
+const ORCHESTRATOR_URL = '/api/webhook/orchestrator';
+const QUEUE_URL = '/api/webhook/read-queue';
+const SAVE_QUEUE_URL = '/api/webhook/save-queue';
+const CHAT_URL = '/api/webhook/chat'; // n8n proxy → Claude API
+const ADMIN_APPROVE_URL = '/api/webhook/admin-approve'; // approve/reject backend
 
-  // CLOCK
-  setInterval(() => {
-    document.getElementById('clock').textContent = 
-      new Date().toLocaleTimeString('cs-CZ', {hour:'2-digit',minute:'2-digit'});
-  }, 1000);
+const SYSTEM_PROMPT = `Jsi kreativní asistent pro 3R Studio Romana Pavlorka.
 
-  // TABS
-  function showPage(id) {
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    document.getElementById('page-' + id).classList.add('active');
-    event.target.classList.add('active');
-    if (id === 'history') renderHistory();
-  }
+== KDO JE ROMAN ==
+Indie developer a kreativec, Ostrava, CZ. Provozuje 3R Studio.
+Dual persona: Pavler (AI virální obsah, TikTok/YouTube/IG) a Roman (autorská tvorba).
+Hodnoty: rodina, znalosti, kreativita. Obsah musí být family-friendly.
 
-  // BRIEF
-  function submitBrief() {
-    const agent = document.getElementById('brief-agent').value;
-    const text = document.getElementById('brief-text').value.trim();
-    const entity = document.getElementById('brief-entity').value;
-    const staging = document.getElementById('brief-staging').value;
-    const priority = document.getElementById('brief-priority').value;
+== AKTIVNÍ PROJEKTY ==
+- Gream: vzdělávací PWA pro děti 7-15, gamifikace průzkumu okolí, Greamíci, pixel art, launch srpen 2026
+- CONFLUX: narativní karetní hra ~283 nodů, itch.io → Steam, srpen 2026
+- Pavler: AI virální hudba + obsah, Gen Z tón, TikTok/YouTube/IG
+- romanpavlorek.eu: osobní web, tmavě fialová + žlutá + teal, Instrument Serif
+- 3rstudio.eu: studio hub, černá + žlutá, Riot-inspired
 
-    if (!agent || !text) { alert('Vyplň agenta a brief.'); return; }
+== STYLY ==
+- Pavler: virální, energický, Gen Z, emoji, krátké věty, hashtagy
+- 3R Studio: profesionální, herní komunita, nadšený ale seriózní
+- Roman: osobní, autentický, filozofický, thoughtful (NIKDY nenahrazovat bez schválení)
+- Gream: hravý, dobrodružný, přátelský pro děti 7-15
+- CONFLUX: tajemný, napínavý, narativní
 
-    addFeed('✦', 'fi-email', `Brief → ${agent}`, `${entity} · ${priority}`);
+== PRAVIDLA ==
+- Nikdy nezveřejňovat osobní rodinné informace
+- Osobní tvorba (hudba, Paleta, fyzická teorie) = Roman rozhoduje, ty jen asistuješ
+- Piš česky pokud není specifikováno jinak
+- Při výstupu vždy navrhni co s ním Roman může dělat dál`;
 
-    // Simulate agent response
-    setTimeout(() => {
-      addToQueue({
-        id: Date.now(),
-        agent, entity, staging, priority,
-        content: `[Simulovaný výstup — ${agent}]\n\nBrief: ${text}\n\nToto je placeholder. Napoj n8n webhook pro živá data.`,
-        time: new Date().toLocaleTimeString('cs-CZ', {hour:'2-digit',minute:'2-digit'}),
+// ═══════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════
+let messages = []; // chat history for API
+let queueData = [];
+let historyData = [];
+let currentMode = 'chat';
+let useOrchestrator = true;
+let isRecording = false;
+let recognition = null;
+let totalInputTokens = 0;
+let totalOutputTokens = 0;
+let generatedImages = [];
+
+// ═══════════════════════════════════════════
+// CLOCK
+// ═══════════════════════════════════════════
+setInterval(() => {
+  document.getElementById('clock').textContent = new Date().toLocaleTimeString('cs-CZ',{hour:'2-digit',minute:'2-digit'});
+}, 1000);
+
+// ═══════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════
+function setMode(mode) {
+  currentMode = mode;
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-icon').forEach(n => n.classList.remove('active'));
+  document.getElementById('panel-' + mode).classList.add('active');
+  document.querySelector(`[data-mode="${mode}"]`)?.classList.add('active');
+  document.getElementById('mode-label').textContent = {
+    chat:'Chat', queue:'Fronta', history:'Historie',
+    images:'Obrázky', projects:'Projekty', calendar:'Kalendář'
+  }[mode] || mode;
+  if (mode === 'queue') loadQueue();
+  if (mode === 'history') renderHistory();
+  if (mode === 'calendar') renderCalendar();
+  if (mode === 'projects') renderProjectsPanel();
+}
+
+function setRpTab(tab, el) {
+  document.querySelectorAll('.rp-tab-content').forEach(t => t.style.display='none');
+  document.querySelectorAll('.rp-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('rp-' + tab).style.display = 'block';
+  el.classList.add('active');
+}
+
+// ═══════════════════════════════════════════
+// CHAT
+// ═══════════════════════════════════════════
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+}
+
+function toggleOrchestrator() {
+  useOrchestrator = !useOrchestrator;
+  const btn = document.getElementById('orchestrator-toggle');
+  btn.classList.toggle('active', useOrchestrator);
+  btn.textContent = useOrchestrator ? '🤖 Orchestrátor' : '⚡ Přímý chat';
+  document.getElementById('model-label').textContent = useOrchestrator ? 'DeepSeek + Claude' : 'Claude Sonnet 4.6';
+}
+
+async function sendMessage() {
+  const input = document.getElementById('chat-input');
+  const text = input.value.trim();
+  if (!text) return;
+
+  input.value = '';
+  input.style.height = 'auto';
+
+  appendMessage('user', text);
+  messages.push({ role: 'user', content: text });
+  scheduleSave();
+
+  const sendBtn = document.getElementById('send-btn');
+  sendBtn.disabled = true;
+
+  const thinkingEl = appendThinking();
+
+  try {
+    let responseText = '';
+
+    if (useOrchestrator) {
+      // Via n8n Orchestrator
+      // Include last 50 messages as context
+      const recentMsgs = messages.slice(-51, -1);
+      const olderCount = Math.max(0, messages.length - 51);
+      const olderNote = olderCount > 0 ? `[Poznámka: Existuje ještě ${olderCount} starších zpráv v historii session.]\n\n` : '';
+      const ctx = recentMsgs.length > 0
+        ? '\n\n---\nKontext konverzace:\n' + olderNote +
+          recentMsgs.map(m => (m.role === 'user' ? 'Roman' : 'Agent') + ': ' + m.content.substring(0, 800)).join('\n\n')
+        : '';
+
+      const res = await fetch(ORCHESTRATOR_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ brief: text + ctx, session_id: currentSessionId })
+      });
+      const raw = await res.text();
+      try {
+        const data = JSON.parse(raw);
+        responseText = data.output || data[0]?.output || raw;
+      } catch {
+        try { responseText = atob(raw); } catch { responseText = raw; }
+      }
+    } else {
+      // Direct Claude via n8n proxy
+      const res = await fetch(CHAT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          system: SYSTEM_PROMPT,
+          messages: messages,
+          max_tokens: 2000
+        })
+      });
+      const raw = await res.text();
+      try {
+        const data = JSON.parse(raw);
+        responseText = data.output || data.content?.[0]?.text || raw;
+        // Update token counts
+        if (data.usage) {
+          totalInputTokens += data.usage.input_tokens || 0;
+          totalOutputTokens += data.usage.output_tokens || 0;
+          updateTokenDisplay();
+        }
+      } catch { responseText = raw; }
+    }
+
+    thinkingEl.remove();
+    messages.push({ role: 'assistant', content: responseText });
+    appendMessage('assistant', responseText, true);
+    scheduleSave();
+    updateContextIndicator();
+
+    // Auto-add to queue only if response contains [FRONTA] tag
+    if (useOrchestrator && responseText && responseText.includes('[FRONTA]')) {
+      const cleanContent = responseText.replace('[FRONTA]', '').trim();
+      queueData.push({
+        id: Date.now().toString(),
+        brief: text.substring(0, 80),
+        agent: 'Orchestrátor',
+        content: cleanContent,
+        time: new Date().toLocaleTimeString('cs-CZ', {hour:'2-digit', minute:'2-digit'}),
         ts: Date.now()
       });
-    }, 1500 + Math.random() * 1000);
-
-    document.getElementById('brief-text').value = '';
-    addHistoryEntry(agent, entity, 'Brief odeslán', 'pending');
-  }
-
-  // QUEUE
-  function addToQueue(item) {
-    queue.push(item);
-    renderQueue();
-    updateBadge();
-    addFeed('◈', 'fi-image', `Výstup čeká`, `${item.agent} · ${item.entity}`);
-    document.getElementById('s-outputs').textContent = 
-      parseInt(document.getElementById('s-outputs').textContent) + 1;
-    document.getElementById('s-pending').textContent = queue.length;
-  }
-
-  function renderQueue() {
-    const list = document.getElementById('queue-list');
-    document.getElementById('queue-count').textContent = queue.length + ' položek';
-    document.getElementById('s-pending').textContent = queue.length;
-
-    if (!queue.length) {
-      list.innerHTML = '<div class="empty"><div class="empty-icon">◻</div>Fronta je prázdná</div>';
-      return;
+      if (queueData.length > 20) {
+        const oldest = queueData.shift();
+        oldest.status = 'auto-rejected';
+        historyData.unshift(oldest);
+      }
+      await saveQueue();
+      updateQueueBadge();
+      addFeed('📥','fi-agent','Výstup přidán do fronty', text.substring(0,50));
     }
 
-    list.innerHTML = queue.map(item => `
-      <div class="queue-item" id="qi-${item.id}">
-        <div class="item-meta">
-          <span class="item-agent">${item.agent}</span>
-          <span class="badge badge-staging">${item.entity}</span>
-          <span class="badge ${item.staging==='staging'?'badge-staging':'badge-live'}">${item.staging}</span>
-          <span class="item-time">${item.time}</span>
+  } catch (err) {
+    thinkingEl.remove();
+    appendMessage('assistant', `⚠ Chyba: ${err.message}`);
+  }
+
+  sendBtn.disabled = false;
+}
+
+function appendMessage(role, content, withActions = false) {
+  const container = document.getElementById('chat-messages');
+  const div = document.createElement('div');
+  div.className = `msg msg-${role}`;
+
+  const meta = role === 'assistant' 
+    ? `<div class="msg-meta"><span>${useOrchestrator ? 'Orchestrátor' : 'Claude Sonnet'}</span></div>`
+    : '';
+
+  const formatted = formatMarkdown(content);
+  const hasHtml = content.includes('<!DOCTYPE') || content.includes('<html') || content.includes('<div') || content.includes('```html') || content.includes('<section');
+
+  let actions = '';
+  if (withActions && role === 'assistant') {
+    actions = `<div class="msg-actions">
+      <button class="msg-btn" onclick="approveMsg(this)" style="color:var(--success);border-color:var(--success)">✓ Schválit</button>
+      <button class="msg-btn" onclick="rejectMsg(this)" style="color:var(--danger);border-color:var(--danger)">✗ Zamítnout</button>
+      <button class="msg-btn" onclick="copyMsg(this)">⎘ Kopírovat</button>
+      <button class="msg-btn" onclick="downloadMsgTxt(this)">↓ TXT</button>
+      <button class="msg-btn" onclick="downloadMsgMd(this)">↓ MD</button>
+      <button class="msg-btn" onclick="downloadMsgPdf(this)">↓ PDF</button>
+      ${hasHtml ? '<button class="msg-btn" onclick="previewMsgHtml(this)" style="color:var(--accent2);border-color:var(--accent2)">🌐 HTML náhled</button>' : ''}
+      <button class="msg-btn" onclick="addToQueueFromMsg(this)">📥 Do fronty</button>
+    </div>`;
+  }
+
+  div.innerHTML = `${meta}<div class="msg-bubble">${formatted}</div>${actions}`;
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+  return div;
+}
+
+function appendThinking() {
+  const container = document.getElementById('chat-messages');
+  const div = document.createElement('div');
+  div.className = 'msg msg-assistant';
+  div.innerHTML = `<div class="msg-bubble"><div class="thinking-dots"><span></span><span></span><span></span></div></div>`;
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+  return div;
+}
+
+function formatMarkdown(text) {
+  return text
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g,'<em>$1</em>')
+    .replace(/`([^`]+)`/g,'<code>$1</code>')
+    .replace(/^### (.+)$/gm,'<h3>$1</h3>')
+    .replace(/^## (.+)$/gm,'<h2>$1</h2>')
+    .replace(/^# (.+)$/gm,'<h1>$1</h1>')
+    .replace(/^---$/gm,'<hr style="border-color:var(--border2);margin:0.5rem 0">')
+    .replace(/\n/g,'<br>');
+}
+
+function clearChat() {
+  if (messages.length > 1 && !confirm('Smazat celý chat?')) return;
+  newSession();
+}
+
+// ═══════════════════════════════════════════
+// DOWNLOAD
+// ═══════════════════════════════════════════
+function getLastAssistantMsg() {
+  const reversed = [...messages].reverse();
+  const last = reversed.find(m => m.role === 'assistant');
+  return last ? last.content : '';
+}
+
+function getMsgContent(btn) {
+  return btn.closest('.msg').querySelector('.msg-bubble').innerText;
+}
+
+function copyMsg(btn) {
+  navigator.clipboard.writeText(getMsgContent(btn));
+}
+
+function downloadMsgTxt(btn) {
+  download(getMsgContent(btn), 'vystup.txt', 'text/plain');
+}
+
+function downloadMsgMd(btn) {
+  download(getMsgContent(btn), 'vystup.md', 'text/markdown');
+}
+
+function downloadMsgPdf(btn) {
+  var txt = getMsgContent(btn);
+  var w = window.open('', '_blank');
+  w.document.open();
+  w.document.write('<html><head><title>Vystup</title><style>body{font-family:Georgia,serif;max-width:800px;margin:2rem auto;line-height:1.7;font-size:14px}pre{white-space:pre-wrap;font-family:inherit}</style></head><body><pre>' + txt + '</pre></body></html>');
+  w.document.close();
+  setTimeout(function(){ w.print(); }, 500);
+}
+
+function downloadLast(format) {
+  document.getElementById('dl-menu').classList.remove('open');
+  const content = getLastAssistantMsg() || getAllChatText();
+  if (format === 'txt') download(content, 'vystup.txt', 'text/plain');
+  if (format === 'md') download(content, 'vystup.md', 'text/markdown');
+  if (format === 'pdf') downloadMsgPdf({ closest: () => ({ querySelector: () => ({ innerText: content }) }) });
+}
+
+function downloadAll(format) {
+  document.getElementById('dl-menu').classList.remove('open');
+  const text = messages.map(m => `[${m.role.toUpperCase()}]\n${m.content}`).join('\n\n---\n\n');
+  download(text, 'chat-export.txt', 'text/plain');
+}
+
+function getAllChatText() {
+  return messages.filter(m=>m.role==='assistant').map(m=>m.content).join('\n\n');
+}
+
+function download(content, filename, type) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([content], { type }));
+  a.download = filename;
+  a.click();
+}
+
+function toggleDlMenu() {
+  document.getElementById('dl-menu').classList.toggle('open');
+}
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('.dl-wrap')) document.getElementById('dl-menu').classList.remove('open');
+});
+
+// ═══════════════════════════════════════════
+// VOICE INPUT
+// ═══════════════════════════════════════════
+function toggleVoice() {
+  if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+    alert('Hlasový vstup není podporován v tomto prohlížeči.');
+    return;
+  }
+  if (isRecording) {
+    recognition?.stop();
+    return;
+  }
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SR();
+  recognition.lang = 'cs-CZ';
+  recognition.continuous = false;
+  recognition.interimResults = false;
+  recognition.onstart = () => {
+    isRecording = true;
+    document.getElementById('voice-btn').classList.add('voice-active');
+    document.getElementById('voice-btn').textContent = '🔴 Nahrávám...';
+  };
+  recognition.onresult = e => {
+    const transcript = e.results[0][0].transcript;
+    const input = document.getElementById('chat-input');
+    input.value = (input.value ? input.value + ' ' : '') + transcript;
+    autoResize(input);
+  };
+  recognition.onend = () => {
+    isRecording = false;
+    document.getElementById('voice-btn').classList.remove('voice-active');
+    document.getElementById('voice-btn').textContent = '🎙 Hlas';
+  };
+  recognition.start();
+}
+
+// ═══════════════════════════════════════════
+// TEMPLATES
+// ═══════════════════════════════════════════
+const TEMPLATES = {
+  tiktok: 'Napiš TikTok caption pro Pavler. Téma: [TÉMA]. Energický Gen Z tón, 2-3 věty + 5 hashtagů.',
+  blog: 'Napiš krátký blogpost pro romanpavlorek.eu. Téma: [TÉMA]. Osobní, autentický tón, cca 200 slov.',
+  'gream-task': 'Navrhni novou výzvu pro Gream. Svět: [SVĚT]. Věková skupina: [VĚK]. Výzva musí být vzdělávací, zábavná a realizovatelná venku.',
+  'conflux-card': 'Navrhni kartu nebo dialog pro CONFLUX. Typ: [KARta/NPC]. Jméno: [JMÉNO]. Efekt nebo text musí být tajemný a narativně zajímavý.',
+  appstore: 'Napiš App Store popis pro [HRU]. Jazyk: [CZ/EN]. Max 170 znaků krátký popis + 500 znaků dlouhý popis.',
+  'web-fix': 'Oprav následující část kódu na webu [WEB]. Problém: [POPIS PROBLÉMU]. Kód: [KÓD]',
+  preklad: 'Přelož následující text do angličtiny. Zachovej tón originálu. Text: [TEXT]',
+  presskit: 'Připrav press kit pro [PROJEKT]. Obsah: stručný popis, klíčové features, target audience, quote od vývojáře.',
+  instagram: 'Napiš Instagram post pro [PAVLER/3R STUDIO/GREAM]. Téma: [TÉMA]. 3-5 vět + hashtagy.',
+  youtube: 'Napiš YouTube popis videa. Název videa: [NÁZEV]. Délka: [DÉLKA]. Klíčová slova: [KW].',
+};
+
+function useTemplate(key) {
+  const t = TEMPLATES[key];
+  if (!t) return;
+  const input = document.getElementById('chat-input');
+  input.value = t;
+  autoResize(input);
+  input.focus();
+  setMode('chat');
+}
+
+function setContext(ctx) {
+  document.querySelectorAll('.sidebar-item').forEach(s => s.classList.remove('active'));
+  event.target.classList.add('active');
+  if (ctx === 'direct') { useOrchestrator = false; }
+  else { useOrchestrator = true; }
+  document.getElementById('orchestrator-toggle').classList.toggle('active', useOrchestrator);
+  document.getElementById('orchestrator-toggle').textContent = useOrchestrator ? '🤖 Orchestrátor' : '⚡ Přímý chat';
+}
+
+function quickAction(action) {
+  const prompts = {
+    digest: 'Připrav denní digest pro 3R Studio. Co je aktuálně potřeba udělat pro Gream, CONFLUX a Pavler? Seřaď podle priority.',
+    'content-plan': 'Navrhni týdenní content plán pro Pavler. TikTok, YouTube, Instagram. Zahrni témata, frekvenci a tipy pro engagement.',
+    'gream-status': 'Zhodnoť aktuální stav projektu Gream. Co chybí před launchem v srpnu 2026? Na co se zaměřit jako první?',
+  };
+  const input = document.getElementById('chat-input');
+  input.value = prompts[action] || '';
+  autoResize(input);
+  setMode('chat');
+}
+
+// ═══════════════════════════════════════════
+// QUEUE
+// ═══════════════════════════════════════════
+async function loadQueue() {
+  // Load localStorage first as fallback
+  try {
+    const saved = localStorage.getItem('admin-queue-backup');
+    if (saved) {
+      const b = JSON.parse(saved);
+      queueData = b.queue || [];
+      historyData = b.history || [];
+    }
+  } catch {}
+
+  try {
+    const res = await fetch(QUEUE_URL + '?t=' + Date.now(), {
+      method: 'GET', cache: 'no-store'
+    });
+    const raw = await res.text();
+    if (!raw || raw.includes('{{')) throw new Error('bad response');
+    let data = {};
+    try { data = JSON.parse(raw); } catch {}
+    // Try base64 if looks encoded
+    if (!data.queue && raw.length > 10 && !/[{}\[\]]/.test(raw.charAt(0))) {
+      try { data = JSON.parse(atob(raw.trim())); } catch {}
+    }
+    if (Array.isArray(data)) data = data[0] || {};
+    if (data.queue !== undefined) queueData = data.queue;
+    if (data.history !== undefined) historyData = data.history;
+    // Save to localStorage
+    localStorage.setItem('admin-queue-backup', JSON.stringify({ queue: queueData, history: historyData }));
+  } catch(e) {
+    console.warn('loadQueue server error:', e.message);
+  }
+
+  renderQueue();
+  renderHistory();
+  updateQueueBadge();
+}
+
+async function saveQueue() {
+  const payload = { queue: queueData, history: historyData };
+  // Always save locally as backup
+  localStorage.setItem('admin-queue-backup', JSON.stringify(payload));
+  try {
+    await fetch(SAVE_QUEUE_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+  } catch(e) { console.warn('Save queue remote failed:', e); }
+}
+
+function updateQueueBadge() {
+  const badge = document.getElementById('queue-badge-icon');
+  const label = document.getElementById('queue-count-label');
+  if (queueData.length > 0) {
+    badge.style.display = 'flex';
+    badge.textContent = queueData.length;
+  } else {
+    badge.style.display = 'none';
+  }
+  label.textContent = queueData.length + ' položek';
+}
+
+function renderQueue() {
+  updateQueueBadge();
+  const list = document.getElementById('queue-list');
+  if (!queueData.length) {
+    list.innerHTML = '<div class="empty">Fronta je prázdná</div>';
+    return;
+  }
+  // Save textarea contents and open panels before re-render
+  const savedComments = {};
+  const openPanels = {};
+  queueData.forEach(item => {
+    const ta = document.getElementById('qicom-' + item.id);
+    if (ta) savedComments[item.id] = ta.value;
+    const panel = document.getElementById('qi-' + item.id);
+    if (panel && panel.classList.contains('open')) openPanels[item.id] = true;
+  });
+  list.innerHTML = queueData.map(item => `
+    <div class="queue-item">
+      <div class="qi-header" onclick="toggleQi('qi-${item.id}')">
+        <div class="qi-meta">
+          <span style="font-size:0.62rem;color:var(--accent2);text-transform:uppercase">${item.agent||'Orchestrátor'}</span>
+          <span class="badge b-pending">čeká</span>
+          <span style="font-size:0.6rem;color:var(--text3);margin-left:auto">${item.time||''}</span>
         </div>
-        <div class="item-content">${item.content}</div>
-        <div class="item-actions">
-          <button class="btn btn-success" onclick="approve(${item.id})">✓ Schválit</button>
-          <button class="btn btn-danger" onclick="rejectItem(${item.id})">✗ Odmítnout</button>
-          <button class="btn btn-ghost" onclick="editItem(${item.id})">⌘ Upravit</button>
+        <div class="qi-brief">${item.brief||''}</div>
+      </div>
+      <div class="qi-body" id="qi-${item.id}">
+        <div class="qi-content" id="qic-${item.id}">${item.content||''}</div>
+        <textarea class="qi-edit" id="qie-${item.id}">${item.content||''}</textarea>
+        <textarea class="qi-comment" id="qicom-${item.id}" placeholder="Komentář nebo instrukce k iteraci..."></textarea>
+        <div class="qi-actions">
+          <button class="btn btn-success btn-sm" onclick="approveItem('${item.id}','publish')">✓ Schválit</button>
+          <button class="btn btn-info btn-sm" onclick="approveItem('${item.id}','staging')">⬆ Staging</button>
+          <button class="btn btn-danger btn-sm" onclick="rejectQueueItem('${item.id}')">✗ Odmítnout</button>
+          <button class="btn btn-ghost btn-sm" onclick="editQueueItem('${item.id}')">⌘ Upravit</button>
+          <button class="btn btn-ghost btn-sm" onclick="copyQueueItem('${item.id}')">⎘ Kopírovat</button>
+          <button class="btn btn-ghost btn-sm" onclick="downloadQueueItem('${item.id}','txt')">↓ TXT</button>
+          <button class="btn btn-ghost btn-sm" onclick="downloadQueueItem('${item.id}','md')">↓ MD</button>
+          <button class="btn btn-ghost btn-sm" onclick="sendCommentItem('${item.id}')">↩ Vrátit</button>
         </div>
       </div>
-    `).join('');
+    </div>
+  `).join('');
+  // Restore textarea contents and open panels
+  Object.keys(savedComments).forEach(id => {
+    const ta = document.getElementById('qicom-' + id);
+    if (ta && savedComments[id]) ta.value = savedComments[id];
+  });
+  Object.keys(openPanels).forEach(id => {
+    const panel = document.getElementById('qi-' + id);
+    if (panel) panel.classList.add('open');
+  });
+}
+
+function toggleQi(id) {
+  document.getElementById(id).classList.toggle('open');
+}
+
+function editQueueItem(id) {
+  const content = document.getElementById('qic-' + id);
+  const edit = document.getElementById('qie-' + id);
+  if (edit.style.display === 'block') {
+    const item = queueData.find(i => i.id === id);
+    if (item) item.content = edit.value;
+    content.textContent = edit.value;
+    edit.style.display = 'none'; content.style.display = 'block';
+  } else {
+    edit.style.display = 'block'; content.style.display = 'none';
   }
+}
 
-  function approve(id) {
-    const item = queue.find(i => i.id === id);
-    queue = queue.filter(i => i.id !== id);
-    renderQueue(); updateBadge();
-    addFeed('✓', 'fi-ok', `Schváleno → ${item.staging==='staging'?'merge do main':'publikováno'}`, `${item.agent} · ${item.entity}`);
-    addHistoryEntry(item.agent, item.entity, 'Schváleno', 'approved');
-    document.getElementById('s-approved').textContent = 
-      parseInt(document.getElementById('s-approved').textContent) + 1;
+function copyQueueItem(id) {
+  const item = queueData.find(i => i.id === id);
+  if (item) navigator.clipboard.writeText(item.content || '');
+}
+
+function downloadQueueItem(id, format) {
+  const item = queueData.find(i => i.id === id);
+  if (!item) return;
+  download(item.content || '', `vystup-${id}.${format}`, format === 'md' ? 'text/markdown' : 'text/plain');
+}
+
+// Notify backend (n8n Admin Approve workflow) about an approve/reject decision.
+// Non-blocking: UI updates immediately, backend handles ntfy + logging.
+async function notifyApproval({ sessionId, action, output, type, comment }) {
+  try {
+    const res = await fetch(ADMIN_APPROVE_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        sessionId: sessionId || currentSessionId || 'admin',
+        action,
+        output: output || '',
+        type: type || 'general',
+        comment: comment || '',
+        timestamp: new Date().toISOString()
+      })
+    });
+    const data = await res.json().catch(() => ({}));
+    return data && data.message ? data.message : null;
+  } catch (e) {
+    console.warn('notifyApproval failed:', e.message);
+    return null;
   }
+}
 
-  function rejectItem(id) {
-    const item = queue.find(i => i.id === id);
-    queue = queue.filter(i => i.id !== id);
-    renderQueue(); updateBadge();
-    addFeed('✗', 'fi-err', `Odmítnuto`, `${item.agent} · ${item.entity}`);
-    addHistoryEntry(item.agent, item.entity, 'Odmítnuto', 'rejected');
+function approveItem(id, mode) {
+  const item = queueData.find(i => i.id === id);
+  if (!item) return;
+  // Use edited content if the inline editor was open
+  const edit = document.getElementById('qie-' + id);
+  if (edit && edit.style.display === 'block') item.content = edit.value;
+  queueData = queueData.filter(i => i.id !== id);
+  historyData.unshift({...item, status: mode, actionTime: new Date().toLocaleString('cs-CZ',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})});
+  if (historyData.length > 100) historyData = historyData.slice(0,100);
+  saveQueue(); renderQueue(); renderHistory(); updateQueueBadge();
+  notifyApproval({ sessionId: item.id, action: 'approve', output: item.content, type: mode })
+    .then(msg => addFeed('✅','fi-agent', msg || (mode === 'staging' ? 'Posláno na staging' : 'Schváleno'), item.brief));
+}
+
+function rejectQueueItem(id) {
+  const item = queueData.find(i => i.id === id);
+  if (!item) return;
+  queueData = queueData.filter(i => i.id !== id);
+  historyData.unshift({...item, status:'rejected', actionTime: new Date().toLocaleString('cs-CZ',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})});
+  if (historyData.length > 100) historyData = historyData.slice(0,100);
+  saveQueue(); renderQueue(); renderHistory(); updateQueueBadge();
+  notifyApproval({ sessionId: item.id, action: 'reject', output: item.content, type: 'general' })
+    .then(msg => addFeed('✗','fi-agent', msg || 'Zamítnuto', item.brief));
+}
+
+function sendCommentItem(id) {
+  const item = queueData.find(i => i.id === id);
+  const comment = document.getElementById('qicom-' + id)?.value?.trim();
+  if (!item) return;
+  queueData = queueData.filter(i => i.id !== id);
+  historyData.unshift({...item, status:'returned', comment, actionTime: new Date().toLocaleString('cs-CZ',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})});
+  saveQueue(); renderQueue(); renderHistory(); updateQueueBadge();
+  notifyApproval({ sessionId: item.id, action: 'reject', output: item.content, type: 'returned', comment })
+    .then(msg => addFeed('↩','fi-agent', msg || 'Vráceno k přepracování', comment || item.brief));
+}
+
+// Iterate: send the queue item content + comment back to the Orchestrator as a new brief.
+// Referenced by the Ctrl+Enter handler on queue comments (was previously undefined → crash).
+async function iterateItem(id) {
+  const item = queueData.find(i => i.id === id);
+  if (!item) return;
+  const comment = document.getElementById('qicom-' + id)?.value?.trim() || '';
+  const brief = `Iteruj následující výstup podle instrukce.\n\nINSTRUKCE: ${comment || '(zlepši a uprav)'}\n\nPŮVODNÍ VÝSTUP:\n${item.content || ''}`;
+  // Move original to history as "returned"
+  queueData = queueData.filter(i => i.id !== id);
+  historyData.unshift({...item, status:'returned', comment, actionTime: new Date().toLocaleString('cs-CZ',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})});
+  saveQueue(); renderQueue(); renderHistory(); updateQueueBadge();
+  // Send to chat as a new brief
+  setMode('chat');
+  const input = document.getElementById('chat-input');
+  input.value = brief;
+  autoResize(input);
+  await sendMessage();
+}
+
+// Approve / reject a chat message directly (sends to backend, marks button done).
+async function approveMsg(btn) {
+  const content = getMsgContent(btn);
+  btn.disabled = true; btn.textContent = '… schvaluji';
+  const msg = await notifyApproval({ sessionId: currentSessionId, action: 'approve', output: content, type: 'chat' });
+  btn.textContent = '✓ Schváleno';
+  historyData.unshift({ id: Date.now().toString(), brief: content.substring(0,80), agent: 'Chat', content, status: 'publish', actionTime: new Date().toLocaleString('cs-CZ',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) });
+  saveQueue(); renderHistory();
+  addFeed('✅','fi-agent', msg || 'Schváleno', content.substring(0,50));
+}
+
+async function rejectMsg(btn) {
+  const content = getMsgContent(btn);
+  btn.disabled = true; btn.textContent = '… zamítám';
+  const msg = await notifyApproval({ sessionId: currentSessionId, action: 'reject', output: content, type: 'chat' });
+  btn.textContent = '✗ Zamítnuto';
+  addFeed('✗','fi-agent', msg || 'Zamítnuto', content.substring(0,50));
+}
+
+function addToQueueFromMsg(btn) {
+  const content = getMsgContent(btn);
+  const item = {
+    id: Date.now().toString(), brief: content.substring(0,80),
+    agent: 'Chat', content,
+    time: new Date().toLocaleTimeString('cs-CZ',{hour:'2-digit',minute:'2-digit'}), ts: Date.now()
+  };
+  queueData.push(item);
+  if (queueData.length > 20) {
+    const oldest = queueData.shift();
+    historyData.unshift({...oldest, status:'auto-rejected', actionTime: new Date().toLocaleString('cs-CZ')});
   }
+  saveQueue(); updateQueueBadge();
+}
 
-  function editItem(id) {
-    const item = queue.find(i => i.id === id);
-    const nc = prompt('Uprav výstup:', item.content);
-    if (nc !== null) { item.content = nc; renderQueue(); }
+function sendToQueue() {
+  const content = getLastAssistantMsg();
+  if (!content) { alert('Žádný výstup k odeslání.'); return; }
+  addToQueueFromMsg({ closest: () => ({ querySelector: () => ({ innerText: content }) }) });
+}
+
+// ═══════════════════════════════════════════
+// HISTORY
+// ═══════════════════════════════════════════
+const STATUS_LABEL = { publish:'schváleno', staging:'staging', rejected:'odmítnuto', returned:'vráceno', 'auto-rejected':'auto-odmítnuto' };
+const STATUS_BADGE = { publish:'b-ok', staging:'b-staging', rejected:'b-err', returned:'b-ret', 'auto-rejected':'b-err' };
+
+function renderHistory() {
+  const list = document.getElementById('history-list');
+  if (!historyData.length) {
+    list.innerHTML = '<div class="empty">Žádná historie</div>';
+    return;
   }
+  list.innerHTML = historyData.map(h => `
+    <div class="hi-item">
+      <div class="hi-header" onclick="toggleHi('hi-${h.id}')">
+        <div class="hi-meta">
+          <span style="font-size:0.62rem;color:var(--accent2);text-transform:uppercase">${h.agent||'Agent'}</span>
+          <span class="badge ${STATUS_BADGE[h.status]||'b-info'}">${STATUS_LABEL[h.status]||h.status}</span>
+          <span style="font-size:0.6rem;color:var(--text3);margin-left:auto">${h.actionTime||h.time||''}</span>
+        </div>
+        <div class="hi-brief">${h.brief||''}</div>
+        ${h.comment ? `<div style="font-size:0.62rem;color:var(--warning);margin-top:0.2rem">💬 ${h.comment}</div>` : ''}
+      </div>
+      <div class="hi-detail" id="hi-${h.id}">
+        <div class="hi-content">${h.content||''}</div>
+        <div style="display:flex;gap:0.4rem;flex-wrap:wrap">
+          <button class="btn btn-ghost btn-sm" onclick="copyHistItem('${h.id}')">⎘ Kopírovat</button>
+          <button class="btn btn-ghost btn-sm" onclick="dlHistItem('${h.id}','txt')">↓ TXT</button>
+          <button class="btn btn-ghost btn-sm" onclick="dlHistItem('${h.id}','md')">↓ MD</button>
+          <button class="btn btn-ghost btn-sm" onclick="reuseHistItem('${h.id}')">↗ Jako nový brief</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
 
-  function updateBadge() {
-    const b = document.getElementById('queue-badge');
-    b.textContent = queue.length ? ` (${queue.length})` : '';
+function toggleHi(id) { document.getElementById(id).classList.toggle('open'); }
+
+function copyHistItem(id) {
+  const h = historyData.find(i => i.id === id);
+  if (h) navigator.clipboard.writeText(h.content || '');
+}
+
+function dlHistItem(id, format) {
+  const h = historyData.find(i => i.id === id);
+  if (!h) return;
+  download(h.content || '', `historie-${id}.${format}`, format === 'md' ? 'text/markdown' : 'text/plain');
+}
+
+function reuseHistItem(id) {
+  const h = historyData.find(i => i.id === id);
+  if (!h) return;
+  const input = document.getElementById('chat-input');
+  input.value = h.brief || '';
+  autoResize(input);
+  setMode('chat');
+}
+
+function clearHistory() {
+  if (confirm('Smazat celou historii?')) {
+    historyData = [];
+    saveQueue();
+    renderHistory();
   }
+}
 
-  // FEED
-  function addFeed(icon, cls, title, sub) {
-    const feed = document.getElementById('feed-list');
-    const d = document.createElement('div');
-    d.className = 'feed-item';
-    d.style.animation = 'flash-in 0.3s ease';
-    d.innerHTML = `
-      <div class="feed-icon ${cls}">${icon}</div>
-      <div>
-        <div class="feed-title">${title}</div>
-        <div class="feed-sub">${sub} · ${new Date().toLocaleTimeString('cs-CZ',{hour:'2-digit',minute:'2-digit'})}</div>
-      </div>`;
-    feed.insertBefore(d, feed.firstChild);
-    // Max 50 items
-    while (feed.children.length > 50) feed.removeChild(feed.lastChild);
+// ═══════════════════════════════════════════
+// IMAGE GENERATION
+// ═══════════════════════════════════════════
+async function generateImage() {
+  const prompt = document.getElementById('img-prompt').value.trim();
+  if (!prompt) { alert('Zadej prompt.'); return; }
+
+  const grid = document.getElementById('img-grid');
+  const placeholder = document.createElement('div');
+  placeholder.className = 'img-placeholder';
+  placeholder.style.cssText = 'grid-column:1/-1;aspect-ratio:auto;padding:2rem';
+  placeholder.innerHTML = '<div class="thinking-dots"><span></span><span></span><span></span></div>';
+  grid.innerHTML = '';
+  grid.appendChild(placeholder);
+
+  try {
+    const res = await fetch('/api/webhook/image-gen', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        prompt,
+        size: document.getElementById('img-size').value,
+        style: document.getElementById('img-style').value || 'vivid'
+      })
+    });
+    const data = await res.json();
+    const imageUrl = data.url || data.image_url || data[0]?.url;
+
+    if (imageUrl) {
+      grid.innerHTML = `
+        <div class="img-generated" style="grid-column:1/-1">
+          <img src="${imageUrl}" alt="Generovaný obrázek" onerror="this.parentElement.innerHTML='<div class=img-placeholder style=grid-column:1/-1;padding:2rem>Obrázek se nepodařilo načíst</div>'">
+          <button class="img-dl" onclick="downloadImage('${imageUrl}')">⬇ Stáhnout</button>
+        </div>`;
+      generatedImages.push({ url: imageUrl, prompt });
+    } else {
+      grid.innerHTML = `<div class="img-placeholder" style="grid-column:1/-1;padding:2rem">
+        Image Gen agent zatím není napojen. Přidej /api/webhook/image-gen workflow v n8n.</div>`;
+    }
+  } catch(e) {
+    grid.innerHTML = `<div class="img-placeholder" style="grid-column:1/-1;padding:2rem">
+      Chyba: ${e.message}<br><br>
+      <small style="color:var(--text3)">Pro generování obrázků vytvoř workflow image-gen v n8n s GPT Image 2.</small></div>`;
   }
+}
 
-  // HISTORY
-  function addHistoryEntry(agent, entity, action, status) {
-    history.unshift({ ts: Date.now(), agent, entity, action, status,
-      time: new Date().toLocaleString('cs-CZ', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) });
-    // Keep 7 days
-    const cutoff = Date.now() - 7*24*60*60*1000;
-    history = history.filter(h => h.ts > cutoff);
-    saveHistory();
+function downloadImage(url) {
+  const a = document.createElement('a');
+  a.href = url; a.download = 'image-' + Date.now() + '.png'; a.target = '_blank'; a.click();
+}
+
+// ═══════════════════════════════════════════
+// PROJECTS
+// ═══════════════════════════════════════════
+function renderProjectsPanel() {
+  const content = document.getElementById('projects-content');
+  const projects = [
+    { name: '🎮 Gream', status: 'v-vyvoji', priority: 'vysoká', deadline: 'srpen 2026', needs: ['artworky','bug-fix (Safari, GPS)','EN lokalizace','20 testerů Google Play'], done: ['gameplay','Greamíci','PWA','OSM API'], progress: 60 },
+    { name: '🃏 CONFLUX', status: 'v-vyvoji', priority: 'vysoká', deadline: 'srpen 2026', needs: ['příběh','artworky','backgroundy','bug-fix'], done: ['283 nodů','mechanika'], progress: 40 },
+    { name: '🎵 Pavler', status: 'příprava', priority: 'střední', deadline: 'co nejdříve', needs: ['profily','Buffer','první písně'], done: ['strategie','pipeline'], progress: 15 },
+    { name: '🌐 romanpavlorek.eu', status: 'živý', priority: 'střední', deadline: 'průběžně', needs: ['opravy','blog obsah'], done: ['deploy','HTTPS','auto-deploy'], progress: 80 },
+    { name: '🌐 3rstudio.eu', status: 'živý', priority: 'střední', deadline: 'průběžně', needs: ['game pages','press kit'], done: ['deploy','HTTPS'], progress: 70 },
+    { name: '🎵 Spektrum barev', status: 'pozastaveno', priority: 'nízká', deadline: 'srpen 2026', needs: ['mastering','cover art','DistroKid'], done: ['skladby draft'], progress: 30 },
+  ];
+
+  content.innerHTML = projects.map(p => `
+    <div style="padding:0.875rem 1rem;border-bottom:1px solid var(--border)">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.4rem">
+        <span style="font-size:0.8rem;font-weight:700">${p.name}</span>
+        <span class="badge ${p.status==='živý'?'b-ok':p.status==='pozastaveno'?'b-err':'b-pending'}">${p.status}</span>
+      </div>
+      <div style="font-size:0.6rem;color:var(--text3);margin-bottom:0.5rem">Deadline: ${p.deadline} · Priorita: ${p.priority}</div>
+      <div class="token-bar"><div class="token-fill" style="width:${p.progress}%"></div></div>
+      <div style="font-size:0.6rem;color:var(--text3);margin-top:0.4rem">Potřeba: ${p.needs.join(' · ')}</div>
+      <div style="display:flex;gap:0.4rem;margin-top:0.5rem">
+        <button class="btn btn-ghost btn-sm" onclick="briefForProject('${p.name}')">↗ Brief</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function briefForProject(name) {
+  const input = document.getElementById('chat-input');
+  input.value = `Potřebuji pomoc s projektem ${name}: `;
+  autoResize(input);
+  setMode('chat');
+  input.focus();
+}
+
+// ═══════════════════════════════════════════
+// CALENDAR
+// ═══════════════════════════════════════════
+const calEvents = {
+  // key: YYYY-MM-DD, value: array of events
+};
+
+let calYear, calMonth;
+
+function renderCalendar() {
+  const now = new Date();
+  if (calYear === undefined) { calYear = now.getFullYear(); calMonth = now.getMonth(); }
+  
+  document.getElementById('cal-month').textContent = new Date(calYear, calMonth).toLocaleString('cs-CZ',{month:'long',year:'numeric'});
+
+  const firstDay = new Date(calYear, calMonth, 1).getDay();
+  const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+  const offset = firstDay === 0 ? 6 : firstDay - 1;
+  const todayD = now.getDate(), todayM = now.getMonth(), todayY = now.getFullYear();
+
+  const grid = document.getElementById('cal-grid');
+  let html = '';
+  for (let i = 0; i < offset; i++) html += '<div></div>';
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isToday = d === todayD && calMonth === todayM && calYear === todayY;
+    const hasEvent = calEvents[dateStr]?.length > 0;
+    html += `<div class="cal-day ${isToday?'today':''} ${hasEvent?'has-event':''}" onclick="showCalDay('${dateStr}')">${d}</div>`;
   }
+  grid.innerHTML = html;
+  document.getElementById('cal-events').innerHTML = `
+    <div style="font-size:0.65rem;color:var(--text3)">Klikni na den pro zobrazení nebo přidání události.</div>
+    <div style="margin-top:0.75rem;display:flex;gap:0.4rem;flex-wrap:wrap">
+      <button class="btn btn-ghost btn-sm" onclick="changeMonth(-1)">← Předchozí</button>
+      <button class="btn btn-ghost btn-sm" onclick="changeMonth(1)">Další →</button>
+      <button class="btn btn-ghost btn-sm" onclick="generateContentPlan()">🤖 Vygenerovat plán</button>
+    </div>`;
+}
 
-  function saveHistory() { localStorage.setItem('admin_history', JSON.stringify(history)); }
+function changeMonth(dir) {
+  calMonth += dir;
+  if (calMonth < 0) { calMonth = 11; calYear--; }
+  if (calMonth > 11) { calMonth = 0; calYear++; }
+  renderCalendar();
+}
 
-  function renderHistory() {
-    const tbody = document.getElementById('history-body');
-    if (!history.length) {
-      tbody.innerHTML = '<tr><td colspan="5"><div class="empty"><div class="empty-icon">◻</div>Žádná historie</div></td></tr>';
+function showCalDay(date) {
+  const events = calEvents[date] || [];
+  const eventsHtml = events.length ? events.map(e => `<div style="padding:0.3rem;background:var(--surface2);border-radius:2px;margin-bottom:0.3rem;font-size:0.65rem">${e}</div>`).join('') : '<div style="font-size:0.65rem;color:var(--text3)">Žádné události</div>';
+  document.getElementById('cal-events').innerHTML = `
+    <div style="font-size:0.7rem;color:var(--accent);margin-bottom:0.5rem">${date}</div>
+    ${eventsHtml}
+    <div style="margin-top:0.5rem;display:flex;gap:0.4rem">
+      <input id="new-event-input" placeholder="Nová událost..." style="flex:1;background:var(--bg);border:1px solid var(--border2);color:var(--text);font-family:var(--font-mono);font-size:0.65rem;padding:0.3rem 0.5rem;border-radius:2px;outline:none">
+      <button class="btn btn-ghost btn-sm" onclick="saveCalEvent('${date}')">Přidat</button>
+    </div>`;
+}
+
+function saveCalEvent(date) {
+  const val = document.getElementById('new-event-input')?.value?.trim();
+  if (!val) return;
+  if (!calEvents[date]) calEvents[date] = [];
+  calEvents[date].push(val);
+  renderCalendar();
+  showCalDay(date);
+}
+
+function generateContentPlan() {
+  const input = document.getElementById('chat-input');
+  input.value = 'Navrhni týdenní content plán pro Pavler na příští týden. TikTok 3x, YouTube 1x, Instagram 5x. Témata musí být energická a virální.';
+  autoResize(input);
+  setMode('chat');
+}
+
+// ═══════════════════════════════════════════
+// TOKEN TRACKING
+// ═══════════════════════════════════════════
+function updateTokenDisplay() {
+  const total = totalInputTokens + totalOutputTokens;
+  const costUSD = (totalInputTokens * 3 + totalOutputTokens * 15) / 1000000;
+  const costCZK = (costUSD * 23).toFixed(2);
+  document.getElementById('token-display').textContent = `${total.toLocaleString()} tokenů`;
+  document.getElementById('t-input').textContent = totalInputTokens.toLocaleString();
+  document.getElementById('t-output').textContent = totalOutputTokens.toLocaleString();
+  document.getElementById('t-total').textContent = total.toLocaleString();
+  document.getElementById('t-cost').textContent = costCZK + ' Kč';
+  document.getElementById('t-bar').style.width = Math.min(total / 1000, 100) + '%';
+}
+
+// ═══════════════════════════════════════════
+// HTML PREVIEW
+// ═══════════════════════════════════════════
+let currentPreviewHtml = '';
+
+function extractHtml(text) {
+  var marker = String.fromCharCode(96,96,96) + 'html';
+  var endMarker = String.fromCharCode(96,96,96);
+  var idx = text.indexOf(marker);
+  if (idx !== -1) {
+    var start = text.indexOf('\n', idx) + 1;
+    var end = text.indexOf(endMarker, start);
+    if (end !== -1) return text.slice(start, end).trim();
+  }
+  if (text.indexOf('<!DOCTYPE') !== -1 || text.indexOf('<html') !== -1) return text;
+  if (text.indexOf('<div') !== -1 || text.indexOf('<section') !== -1) return text;
+  return null;
+}
+
+function previewLastHtml() {
+  const last = messages.filter(m => m.role === 'assistant').pop();
+  if (!last) { alert('Žádná odpověď k zobrazení.'); return; }
+  const html = extractHtml(last.content) || last.content;
+  openHtmlModal(html);
+}
+
+function previewMsgHtml(btn) {
+  const text = getMsgContent(btn);
+  const html = extractHtml(text) || text;
+  openHtmlModal(html);
+}
+
+function openHtmlModal(html) {
+  currentPreviewHtml = html;
+  document.getElementById('html-modal').classList.add('open');
+  const iframe = document.getElementById('preview-iframe');
+  iframe.srcdoc = html;
+  document.getElementById('preview-code').textContent = html;
+}
+
+function closeHtmlModal() {
+  document.getElementById('html-modal').classList.remove('open');
+}
+
+function setPreviewTab(tab, el) {
+  document.querySelectorAll('.preview-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('preview-iframe').style.display = tab === 'render' ? 'block' : 'none';
+  document.getElementById('preview-code').style.display = tab === 'code' ? 'block' : 'none';
+}
+
+function downloadPreviewHtml() {
+  download(currentPreviewHtml, 'vystup.html', 'text/html');
+}
+
+function openPreviewInTab() {
+  const blob = new Blob([currentPreviewHtml], { type: 'text/html' });
+  window.open(URL.createObjectURL(blob), '_blank');
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeHtmlModal();
+});
+
+// ═══════════════════════════════════════════
+// PERSISTENT MEMORY / SESSIONS
+// ═══════════════════════════════════════════
+const CHAT_SAVE_URL = '/api/webhook/save-queue';
+let currentSessionId = null;
+let sessions = {};
+let memorySaveTimer = null;
+
+const SESSIONS_URL = '/api/webhook/read-sessions';
+const SESSIONS_SAVE_URL = '/api/webhook/save-sessions';
+
+async function initSessions() {
+  // Load from server first, fallback to localStorage
+  try {
+    const res = await fetch(SESSIONS_URL, { method: 'GET' });
+    if (res.ok) {
+      const raw = await res.text();
+      let data = {};
+      try {
+        data = JSON.parse(raw);
+        if (data.data) { try { data = JSON.parse(atob(data.data)); } catch { try { data = JSON.parse(data.data); } catch {} } }
+        if (Array.isArray(data)) data = data[0] || {};
+      } catch {}
+      if (data.sessions) sessions = data.sessions;
+    }
+  } catch {}
+
+  // Fallback/merge with localStorage
+  try {
+    const local = JSON.parse(localStorage.getItem('admin-sessions') || '{}');
+    sessions = Object.assign(local, sessions);
+  } catch {}
+
+  const lastId = localStorage.getItem('admin-last-session');
+  if (lastId && sessions[lastId]) {
+    loadSession(lastId);
+  } else {
+    newSession();
+  }
+  renderSessions();
+}
+
+function newSession() {
+  const id = Date.now().toString();
+  currentSessionId = id;
+  messages = [];
+  sessions[id] = {
+    id, 
+    created: new Date().toLocaleString('cs-CZ', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}),
+    title: 'Nová session',
+    messages: []
+  };
+  localStorage.setItem('admin-last-session', id);
+  saveSessions();
+  renderSessions();
+  
+  // Clear chat UI
+  document.getElementById('chat-messages').innerHTML = `
+    <div class="msg msg-assistant">
+      <div class="msg-bubble">Nová session zahájena. Co mohu udělat?</div>
+    </div>`;
+  updateMemoryIndicator('saved');
+}
+
+function loadSession(id) {
+  if (!sessions[id]) return;
+  currentSessionId = id;
+  messages = sessions[id].messages || [];
+  localStorage.setItem('admin-last-session', id);
+  
+  // Rebuild chat UI
+  const container = document.getElementById('chat-messages');
+  container.innerHTML = '';
+  if (messages.length === 0) {
+    container.innerHTML = '<div class="msg msg-assistant"><div class="msg-bubble">Session obnovena. Pokračuj kde jsi skončil.</div></div>';
+  } else {
+    messages.forEach(m => {
+      appendMessage(m.role, m.content, m.role === 'assistant');
+    });
+  }
+  renderSessions();
+  updateMemoryIndicator('saved');
+  updateContextIndicator();
+}
+
+function deleteSession(id, e) {
+  e.stopPropagation();
+  if (!confirm('Smazat tuto session?')) return;
+  delete sessions[id];
+  saveSessions();
+  if (currentSessionId === id) newSession();
+  else renderSessions();
+}
+
+function saveSessions() {
+  // Keep max 20 sessions
+  const keys = Object.keys(sessions);
+  if (keys.length > 20) {
+    keys.sort((a,b) => a-b);
+    keys.slice(0, keys.length - 20).forEach(k => delete sessions[k]);
+  }
+  localStorage.setItem('admin-sessions', JSON.stringify(sessions));
+  // Save to server async (non-blocking)
+  fetch(SESSIONS_SAVE_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ sessions })
+  }).catch(() => {});
+}
+
+function saveCurrentSession() {
+  if (!currentSessionId) return;
+  if (!sessions[currentSessionId]) sessions[currentSessionId] = { id: currentSessionId, created: '', messages: [] };
+  sessions[currentSessionId].messages = messages;
+  // Update title from first user message
+  const firstUser = messages.find(m => m.role === 'user');
+  if (firstUser) sessions[currentSessionId].title = firstUser.content.substring(0, 40);
+  saveSessions();
+  renderSessions();
+  updateMemoryIndicator('saved');
+}
+
+function scheduleSave() {
+  updateMemoryIndicator('saving');
+  clearTimeout(memorySaveTimer);
+  memorySaveTimer = setTimeout(saveCurrentSession, 1500);
+}
+
+function updateMemoryIndicator(state) {
+  const dot = document.getElementById('memory-dot');
+  const label = document.getElementById('memory-label');
+  if (state === 'saving') {
+    dot.classList.add('saving');
+    label.textContent = 'ukládám...';
+  } else {
+    dot.classList.remove('saving');
+    label.textContent = `paměť (${messages.length} zpráv)`;
+  }
+}
+
+function renderSessions() {
+  const list = document.getElementById('session-list');
+  if (!list) return;
+  const keys = Object.keys(sessions).sort((a,b) => b-a);
+  if (!keys.length) {
+    list.innerHTML = '<div style="font-size:0.62rem;color:var(--text3);padding:0.25rem">Žádné sessions</div>';
+    return;
+  }
+  list.innerHTML = keys.map(id => {
+    const s = sessions[id];
+    return `<div class="session-item ${id===currentSessionId?'active':''}" onclick="loadSession('${id}')">
+      <div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">${s.title||'Session'}</div>
+      <div style="display:flex;align-items:center;gap:0.25rem;flex-shrink:0">
+        <span style="font-size:0.55rem;color:var(--text3)">${(s.messages||[]).length}x</span>
+        <button class="session-del" onclick="deleteSession('${id}',event)">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════
+// FEED
+// ═══════════════════════════════════════════
+function addFeed(icon, cls, title, sub) {
+  const feed = document.getElementById('feed-list');
+  if (!feed) return;
+  const d = document.createElement('div');
+  d.className = 'feed-item';
+  d.style.animation = 'flash-in 0.3s ease';
+  d.innerHTML = '<div class="feed-icon ' + cls + '">' + icon + '</div><div><div class="feed-title">' + title + '</div><div class="feed-sub">' + (sub||'').substring(0,60) + ' · ' + new Date().toLocaleTimeString('cs-CZ',{hour:'2-digit',minute:'2-digit'}) + '</div></div>';
+  feed.insertBefore(d, feed.firstChild);
+  while (feed.children.length > 30) feed.removeChild(feed.lastChild);
+}
+
+// ═══════════════════════════════════════════
+// CONTEXT INDICATOR
+// ═══════════════════════════════════════════
+function updateContextIndicator() {
+  const total = messages.length;
+  const inContext = Math.min(total, 50);
+  const estTokens = messages.slice(-50).reduce((sum, m) => sum + Math.ceil(m.content.length / 4), 0);
+  const pct = Math.min(100, Math.round(estTokens / 640)); // 64K tokens = 100%
+  const color = pct > 80 ? 'var(--danger)' : pct > 60 ? 'var(--warning)' : 'var(--success)';
+
+  // Topbar memory indicator
+  const label = document.getElementById('memory-label');
+  const dot = document.getElementById('memory-dot');
+  if (label) label.textContent = `${inContext}/${total} zpráv · ~${Math.round(estTokens/1000)}K tokenů`;
+  if (dot) { dot.classList.remove('saving'); dot.style.background = color; }
+
+  // Token display
+  const td = document.getElementById('token-display');
+  if (td) { td.style.display = 'inline'; td.textContent = `~${Math.round(estTokens/1000)}K / 64K tokenů`; }
+
+  // Input area bar
+  const ctxLabel = document.getElementById('ctx-label');
+  const ctxBar = document.getElementById('ctx-bar');
+  const ctxTokens = document.getElementById('ctx-tokens');
+  if (ctxLabel) ctxLabel.textContent = `${inContext}/50 zpráv v kontextu${total > 50 ? ' (starší v historii)' : ''}`;
+  if (ctxBar) { ctxBar.style.width = pct + '%'; ctxBar.style.background = color; }
+  if (ctxTokens) ctxTokens.textContent = `~${Math.round(estTokens/1000)}K / 64K tokenů`;
+}
+
+// ═══════════════════════════════════════════
+// THEME
+// ═══════════════════════════════════════════
+let isDark = true;
+function toggleTheme() {
+  isDark = !isDark;
+  document.body.classList.toggle('light-mode', !isDark);
+  document.getElementById('theme-btn').textContent = isDark ? '☀ Světlý' : '🌙 Tmavý';
+  localStorage.setItem('admin-theme', isDark ? 'dark' : 'light');
+}
+// Load saved theme
+if (localStorage.getItem('admin-theme') === 'light') toggleTheme();
+
+// ═══════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+    // If focused on queue comment → iterate
+    const active = document.activeElement;
+    if (active && active.classList.contains('qi-comment')) {
+      const id = active.id.replace('qicom-', '');
+      iterateItem(id);
       return;
     }
-    const statusColors = { approved:'badge-live', rejected:'badge-rejected', pending:'badge-pending' };
-    tbody.innerHTML = history.map(h => `
-      <tr>
-        <td style="color:var(--muted);white-space:nowrap">${h.time}</td>
-        <td style="color:var(--accent2)">${h.agent}</td>
-        <td>${h.entity}</td>
-        <td>${h.action}</td>
-        <td><span class="badge ${statusColors[h.status]||'badge-staging'}">${h.status}</span></td>
-      </tr>`).join('');
+    // Otherwise send message
+    sendMessage();
   }
+});
 
-  function clearHistory() {
-    if (confirm('Smazat celou historii?')) { history = []; saveHistory(); renderHistory(); }
+// Auto-refresh queue every 30s - skip if user is typing
+setInterval(() => {
+  if (currentMode === 'queue') {
+    const active = document.activeElement;
+    const isTypingInQueue = active && active.classList.contains('qi-comment');
+    if (!isTypingInQueue) loadQueue();
   }
+}, 30000);
 
-  // KEYBOARD
-  document.addEventListener('keydown', e => {
-    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') submitBrief();
-  });
+loadQueue();
+renderCalendar();
 </script>
 </body>
 </html>
