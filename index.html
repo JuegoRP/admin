@@ -450,6 +450,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   await loadSessions();
   await loadQueue();
   loadSchedules();
+  loadSchedulesFromN8n();
   if (!currentSession) newSession();
   setTab('chat');
   startQueuePolling();
@@ -909,7 +910,7 @@ function dayName(d) { return ['neděle','pondělí','úterý','středa','čtvrte
 
 function toggleAddTask() { document.getElementById('task-form').classList.toggle('visible'); }
 
-function addSchedule() {
+async function addSchedule() {
   const title = document.getElementById('s-title').value.trim();
   const type = document.getElementById('s-type').value;
   const time = document.getElementById('s-time').value;
@@ -921,31 +922,93 @@ function addSchedule() {
 
   if (!title) { showToast('Zadej název úkolu'); return; }
 
-  const schedule = { id: 'sch_' + Date.now(), title, type, time, agent, project, prompt, dayOfWeek, active: true, created: new Date().toISOString() };
-  schedules.push(schedule);
-  saveSchedules();
-  registerScheduleInN8n(schedule);
-  renderSchedules();
-  document.getElementById('task-form').classList.remove('visible');
-  document.getElementById('s-title').value = '';
-  document.getElementById('s-prompt').value = '';
-  showToast('✓ Úkol naplánován', 'success');
+  const scheduleData = {
+    id: 'sch_' + Date.now(),
+    title, type, time, agent, project, prompt, dayOfWeek, active: true,
+    created: new Date().toISOString()
+  };
+
+  showToast('⟳ Vytvářím naplánovaný úkol...');
+
+  try {
+    const r = await fetch(API_BASE + '/schedule-create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(scheduleData)
+    });
+    const result = await r.json();
+
+    if (result.ok) {
+      scheduleData.n8nWorkflowId = result.n8nWorkflowId;
+      schedules.push(scheduleData);
+      saveSchedules();
+      renderSchedules();
+      document.getElementById('task-form').classList.remove('visible');
+      document.getElementById('s-title').value = '';
+      document.getElementById('s-prompt').value = '';
+      showToast('✓ Úkol naplánován a aktivován v n8n', 'success');
+    } else {
+      showToast('❌ Chyba při vytváření: ' + JSON.stringify(result), 'error');
+    }
+  } catch(e) {
+    showToast('❌ ' + e.message, 'error');
+  }
 }
 
-async function registerScheduleInN8n(schedule) {
+async function toggleSchedule(i) {
+  const s = schedules[i];
+  if (!s) return;
+  s.active = !s.active;
+
+  if (s.n8nWorkflowId) {
+    try {
+      await fetch(API_BASE + '/schedule-toggle', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ n8nWorkflowId: s.n8nWorkflowId, active: s.active })
+      });
+    } catch(e) {}
+  }
+
+  saveSchedules();
+  renderSchedules();
+  showToast(s.active ? '▶ Aktivováno' : '⏸ Pozastaveno');
+}
+
+async function deleteSchedule(i) {
+  const s = schedules[i];
+  if (!s) return;
+
+  if (s.n8nWorkflowId) {
+    try {
+      await fetch(API_BASE + '/schedule-delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ n8nWorkflowId: s.n8nWorkflowId })
+      });
+    } catch(e) {}
+  }
+
+  schedules.splice(i, 1);
+  saveSchedules();
+  renderSchedules();
+  showToast('Úkol odstraněn');
+}
+
+async function loadSchedulesFromN8n() {
   try {
-    await fetch(ENDPOINTS.orchestrator, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        message: `Vytvoř schedule workflow v n8n: "${schedule.title}". Typ: ${schedule.type}, čas: ${schedule.time}, den: ${schedule.dayOfWeek}. Agent: ${schedule.agent}. Instrukce: ${schedule.prompt}. ID: ${schedule.id}`,
-        sessionId: 'scheduler_' + schedule.id, source: 'scheduler'
-      })
-    });
+    const r = await fetch(API_BASE + '/schedule-list');
+    if (r.ok) {
+      const data = await r.json();
+      (data.schedules || []).forEach(remote => {
+        const local = schedules.find(s => s.n8nWorkflowId === remote.n8nWorkflowId);
+        if (local) local.active = remote.active;
+      });
+      saveSchedules();
+      renderSchedules();
+    }
   } catch(e) {}
 }
-
-function toggleSchedule(i) { schedules[i].active = !schedules[i].active; saveSchedules(); renderSchedules(); }
-function deleteSchedule(i) { schedules.splice(i, 1); saveSchedules(); renderSchedules(); showToast('Úkol odstraněn'); }
 
 // ===== INFO / DASHBOARD =====
 async function refreshInfo() {
