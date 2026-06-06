@@ -1,1800 +1,881 @@
 <!DOCTYPE html>
 <html lang="cs">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Admin Studio</title>
-<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
-<style>
-:root {
-  --bg:#080808; --surface:#0f0f0f; --surface2:#141414; --surface3:#1a1a1a;
-  --border:#1e1e1e; --border2:#252525; --border3:#2e2e2e;
-  --accent:#c8b800; --accent2:#00b8a0; --accent3:#9944dd;
-  --danger:#ff4455; --success:#22cc66; --warning:#dd8800; --info:#2266dd;
-  --text:#e0e0e0; --text2:#aaa; --text3:#666;
-  --font-mono:'Space Mono',monospace; --font-display:'Syne',sans-serif;
-}
-.light-mode {
-  --bg:#f5f4ef; --surface:#ffffff; --surface2:#f0efe8; --surface3:#e8e6dc;
-  --border:#dddbd0; --border2:#ccc9bc; --border3:#bbb8aa;
-  --accent:#8a7800; --accent2:#007a6c; --accent3:#6622aa;
-  --danger:#cc2233; --success:#117744; --warning:#996600; --info:#1144bb;
-  --text:#1a1a14; --text2:#555544; --text3:#888877;
-}
-*{margin:0;padding:0;box-sizing:border-box;}
-html,body{height:100%;}
-body{background:var(--bg);color:var(--text);font-family:var(--font-mono);display:flex;flex-direction:column;}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3R Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --surface: #12121a;
+      --surface2: #1a1a28;
+      --border: #2a2a3d;
+      --accent: #7c3aed;
+      --accent-dim: #4c1d95;
+      --text: #e2e8f0;
+      --muted: #64748b;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --radius: 10px;
+      --font: 'Inter', system-ui, sans-serif;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; overflow: hidden; }
+    body { font-family: var(--font); background: var(--bg); color: var(--text); display: flex; }
 
-/* GRID */
-.app{display:flex;flex-direction:column;height:100vh;}
-@media(min-width:700px){.app{display:grid;grid-template-columns:56px 1fr;grid-template-rows:52px 1fr;}}
-@media(min-width:900px){.app{grid-template-columns:56px 220px 1fr 280px;}}
+    /* SIDEBAR */
+    .sidebar { width: 72px; background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; padding: 16px 0; gap: 4px; flex-shrink: 0; overflow-y: auto; }
+    .brand { font-size: 11px; font-weight: 700; color: var(--accent); letter-spacing: 2px; margin-bottom: 12px; }
+    .nav-item { width: 56px; height: 54px; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 10px; cursor: pointer; text-decoration: none; color: var(--muted); gap: 3px; transition: all 0.15s; border: none; background: none; position: relative; }
+    .nav-item:hover { background: var(--surface2); color: var(--text); }
+    .nav-item.active { background: var(--accent-dim); color: #c4b5fd; }
+    .nav-icon { font-size: 20px; line-height: 1; }
+    .nav-label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .nav-divider { width: 32px; height: 1px; background: var(--border); margin: 8px 0; }
+    .nav-badge { background: var(--danger); color: white; border-radius: 50%; min-width: 16px; height: 16px; font-size: 10px; font-weight: 700; display: none; align-items: center; justify-content: center; position: absolute; top: 2px; right: 6px; padding: 0 3px; }
 
-/* TOPBAR */
-.topbar{flex-shrink:0;background:rgba(8,8,8,0.98);border-bottom:1px solid var(--border);
-  display:flex;align-items:center;padding:0 0.75rem;gap:0.75rem;height:52px;z-index:100;
-  width:100%;grid-column:1/-1;}
-.logo{font-family:var(--font-display);font-weight:800;font-size:0.95rem;letter-spacing:-0.02em;color:var(--accent);white-space:nowrap;flex-shrink:0;}
-.topbar-center{flex:1;display:flex;align-items:center;gap:0.5rem;overflow:hidden;min-width:0;}
-.model-badge{font-size:0.6rem;padding:0.2rem 0.5rem;border:1px solid var(--border3);border-radius:2px;color:var(--text3);white-space:nowrap;display:none;}
-@media(min-width:500px){.model-badge{display:inline;}}
-.topbar-right{display:flex;align-items:center;gap:0.4rem;font-size:0.65rem;color:var(--text3);flex-shrink:0;}
-.dot-live{width:5px;height:5px;border-radius:50%;background:var(--success);animation:pulse 2s infinite;flex-shrink:0;}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
-#clock{font-size:0.65rem;color:var(--text3);}
+    /* MAIN LAYOUT */
+    .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+    .content { flex: 1; overflow-y: auto; padding: 24px; }
 
-/* ICON NAV */
-.icon-nav{background:var(--surface);border-top:1px solid var(--border);display:flex;flex-direction:row;align-items:center;justify-content:space-around;padding:0.25rem 0;order:10;flex-shrink:0;}
-@media(min-width:700px){.icon-nav{border-top:none;border-right:1px solid var(--border);flex-direction:column;justify-content:flex-start;padding:0.5rem 0;gap:0.25rem;order:0;flex-shrink:0;width:56px;}}
-.nav-icon{height:44px;border-radius:4px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text3);font-size:1.2rem;transition:all 0.15s;border:1px solid transparent;position:relative;flex:1;}
-@media(min-width:700px){.nav-icon{flex:none;width:40px;height:40px;font-size:1rem;}}
-.nav-icon:hover{color:var(--text);background:var(--surface2);}
-.nav-icon.active{color:var(--accent);background:rgba(240,224,64,0.08);border-color:rgba(240,224,64,0.2);}
-.nav-icon .badge{position:absolute;top:4px;right:4px;width:14px;height:14px;border-radius:50%;background:var(--danger);font-size:0.5rem;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;}
-.nav-sep{width:30px;height:1px;background:var(--border);margin:0.25rem 0;display:none;}
-@media(min-width:700px){.nav-sep{display:block;}}
-.hide-mobile-nav{display:none!important;}
-@media(min-width:700px){.hide-mobile-nav{display:flex!important;}}
+    /* VIEWS */
+    .view { display: none; max-width: 860px; }
 
-/* SIDEBAR */
-.sidebar{display:none;background:var(--surface);border-right:1px solid var(--border);overflow-y:auto;padding:0.75rem 0;width:220px;flex-shrink:0;}
-@media(min-width:900px){.sidebar{display:block;}}
-.sidebar-section{padding:0 0.75rem;margin-bottom:1rem;}
-.sidebar-label{font-size:0.55rem;text-transform:uppercase;letter-spacing:0.15em;color:var(--text3);margin-bottom:0.4rem;padding:0 0.25rem;}
-.sidebar-item{padding:0.4rem 0.5rem;border-radius:3px;cursor:pointer;font-size:0.7rem;color:var(--text2);transition:all 0.1s;display:flex;align-items:center;gap:0.5rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.sidebar-item:hover{background:var(--surface2);color:var(--text);}
-.sidebar-item.active{background:rgba(240,224,64,0.08);color:var(--accent);}
-.sidebar-item .si-icon{font-size:0.8rem;flex-shrink:0;}
-.template-item{border:1px solid var(--border);border-radius:3px;padding:0.4rem 0.5rem;margin-bottom:0.3rem;cursor:pointer;font-size:0.65rem;color:var(--text2);transition:all 0.1s;}
-.template-item:hover{border-color:var(--accent);color:var(--accent);}
+    /* CHAT */
+    .chat-view { display: flex; flex-direction: column; height: 100%; }
+    .chat-header { padding: 16px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+    #chat-messages { flex: 1; overflow-y: auto; padding: 20px 24px; display: flex; flex-direction: column; gap: 12px; }
+    .btn-ghost-sm { background: none; border: 1px solid var(--border); color: var(--muted); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; }
+    .msg { max-width: 80%; padding: 12px 16px; border-radius: 12px; line-height: 1.6; font-size: 14px; }
+    .msg.user { align-self: flex-end; background: var(--accent-dim); color: var(--text); border-bottom-right-radius: 4px; }
+    .msg.agent { align-self: flex-start; background: var(--surface2); border-bottom-left-radius: 4px; }
+    .msg .msg-meta { font-size: 11px; color: var(--muted); margin-top: 6px; }
+    .typing-indicator { display: flex; gap: 4px; align-items: center; padding: 4px 0; }
+    .typing-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); animation: bounce 1.2s infinite; }
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes bounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-6px)} }
 
-/* MAIN */
-.main{flex:1;overflow:hidden;display:flex;flex-direction:column;background:var(--bg);}
-.panel{display:none;flex-direction:column;flex:1;overflow:hidden;}
-.panel.active{display:flex;}
-@media(max-width:699px){.panel{min-height:0;}}
+    /* CHAT INPUT BAR */
+    .chat-input-bar { border-top: 1px solid var(--border); padding: 12px 24px; background: var(--surface); flex-shrink: 0; }
+    .chat-input-inner { display: flex; gap: 10px; align-items: flex-end; }
+    #chat-input { flex: 1; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; color: var(--text); font-size: 14px; font-family: var(--font); resize: none; line-height: 1.5; max-height: 150px; overflow-y: auto; }
+    #chat-input:focus { outline: none; border-color: var(--accent); }
+    .send-btn { background: var(--accent); color: white; border: none; width: 40px; height: 40px; border-radius: 10px; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .input-hint { font-size: 11px; color: var(--muted); margin-top: 6px; }
 
-/* CHAT */
-.chat-messages{flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:0.75rem;min-height:0;}
-.msg{max-width:100%;animation:msg-in 0.2s ease;}
-@keyframes msg-in{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
-.msg-user{align-self:flex-end;}
-.msg-assistant{align-self:flex-start;max-width:85%;}
-.msg-bubble{padding:0.75rem 1rem;border-radius:3px;font-size:0.8rem;line-height:1.65;white-space:pre-wrap;word-break:break-word;}
-.msg-user .msg-bubble{background:rgba(240,224,64,0.1);border:1px solid rgba(240,224,64,0.2);color:var(--text);}
-.msg-assistant .msg-bubble{background:var(--surface);border:1px solid var(--border2);color:var(--text);}
-.msg-actions{display:flex;gap:0.4rem;margin-top:0.4rem;flex-wrap:wrap;}
-.msg-btn{font-family:var(--font-mono);font-size:0.55rem;padding:0.2rem 0.5rem;border:1px solid var(--border3);background:transparent;color:var(--text3);cursor:pointer;border-radius:2px;transition:all 0.1s;text-transform:uppercase;letter-spacing:0.05em;}
-.msg-btn:hover{border-color:var(--text2);color:var(--text);}
-.msg-meta{font-size:0.55rem;color:var(--text3);margin-bottom:0.25rem;display:flex;align-items:center;gap:0.5rem;}
-.thinking-dots{display:inline-flex;gap:3px;align-items:center;}
-.thinking-dots span{width:5px;height:5px;border-radius:50%;background:var(--accent2);animation:blink 1.2s infinite;}
-.thinking-dots span:nth-child(2){animation-delay:0.2s;}
-.thinking-dots span:nth-child(3){animation-delay:0.4s;}
-@keyframes blink{0%,80%,100%{opacity:0.2}40%{opacity:1}}
+    /* QUEUE VIEW */
+    .queue-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+    .queue-header h1 { font-size: 20px; font-weight: 700; }
+    .badge { background: var(--accent-dim); color: #c4b5fd; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+    .queue-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; transition: border-color 0.2s; }
+    .queue-card:hover { border-color: var(--accent); }
+    .card-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+    .project-tag { padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+    .project-tag.pavler { background: #1a1035; color: #a78bfa; }
+    .project-tag.conflux { background: #1a0a0a; color: #f87171; }
+    .project-tag.gream { background: #0a1a0a; color: #4ade80; }
+    .project-tag.recho { background: #0a0a1a; color: #60a5fa; }
+    .project-tag.spektrum { background: #1a150a; color: #fbbf24; }
+    .project-tag.weby { background: #0f1a1a; color: #2dd4bf; }
+    .agent-name { font-size: 12px; color: var(--text); }
+    .time-ago { margin-left: auto; font-size: 12px; color: var(--muted); }
+    .qa-score { font-size: 12px; font-weight: 600; }
+    .qa-score.good { color: var(--success); }
+    .qa-score.warn { color: var(--warning); }
+    .card-title { font-weight: 600; margin-bottom: 6px; }
+    .card-preview, .card-full { color: var(--muted); font-size: 14px; line-height: 1.5; white-space: pre-wrap; }
+    .card-full { color: var(--text); }
+    .expand-btn { background: none; border: none; color: var(--accent); cursor: pointer; font-size: 13px; margin: 6px 0; padding: 0; }
+    .card-actions { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+    .btn-approve { background: #065f46; color: #34d399; border: 1px solid #065f46; padding: 7px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; }
+    .btn-edit { background: var(--surface2); color: var(--text); border: 1px solid var(--border); padding: 7px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; }
+    .btn-feedback { background: var(--surface2); color: var(--warning); border: 1px solid var(--border); padding: 7px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; }
+    .btn-reject { background: none; color: var(--muted); border: 1px solid var(--border); padding: 7px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; }
+    .edit-area, .feedback-area { width: 100%; min-height: 120px; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 10px; color: var(--text); font-size: 14px; line-height: 1.5; resize: vertical; box-sizing: border-box; margin-top: 10px; font-family: var(--font); }
+    .editor-actions { display: flex; gap: 8px; margin-top: 8px; }
+    .btn-success { background: #065f46; color: #34d399; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; }
+    .btn-ghost { background: none; color: var(--muted); border: none; padding: 8px; cursor: pointer; font-size: 13px; }
+    .btn-primary { background: var(--accent); color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; }
 
-/* INPUT AREA */
-.input-area{border-top:1px solid var(--border);padding:0.75rem;background:var(--surface);flex-shrink:0;}
-.input-row{display:flex;gap:0.5rem;align-items:flex-end;}
-.input-wrap{flex:1;background:var(--bg);border:1px solid var(--border2);border-radius:3px;padding:0.5rem 0.75rem;transition:border-color 0.2s;}
-.input-wrap:focus-within{border-color:var(--accent);}
-#chat-input{width:100%;background:transparent;border:none;color:var(--text);font-family:var(--font-mono);font-size:0.78rem;resize:none;outline:none;min-height:20px;max-height:120px;overflow-y:auto;line-height:1.5;}
-.input-tools{display:flex;gap:0.4rem;margin-top:0.4rem;flex-wrap:wrap;}
-.tool-btn{font-family:var(--font-mono);font-size:0.6rem;padding:0.25rem 0.6rem;border:1px solid var(--border3);background:transparent;color:var(--text3);cursor:pointer;border-radius:2px;transition:all 0.1s;text-transform:uppercase;letter-spacing:0.05em;display:flex;align-items:center;gap:0.3rem;}
-.tool-btn:hover{border-color:var(--text2);color:var(--text);}
-.tool-btn.active{border-color:var(--accent);color:var(--accent);}
-.send-btn{width:38px;height:38px;background:var(--accent);border:none;border-radius:3px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;transition:all 0.15s;}
-.send-btn:hover{background:#fff;}
-.send-btn:disabled{opacity:0.4;cursor:not-allowed;}
+    /* DASHBOARD */
+    .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 24px; }
+    .dashboard-section { margin-bottom: 24px; }
+    .dashboard-section h3 { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 12px; }
+    .countdown .stat-value { color: var(--warning); }
+    .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
+    .stat-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); }
+    .stat-value { font-size: 32px; font-weight: 700; color: var(--accent); margin: 6px 0; }
+    .stat-sub { font-size: 12px; color: var(--muted); }
+    .exec-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+    .exec-row.muted { color: var(--muted); }
+    .projects-status { display: flex; flex-direction: column; gap: 10px; }
+    .proj-row { display: flex; align-items: center; gap: 10px; font-size: 14px; }
+    .proj-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .proj-dot.gream { background: var(--success); }
+    .proj-dot.spektrum { background: var(--warning); }
+    .proj-dot.conflux { background: var(--danger); }
+    .proj-dot.pavler { background: var(--accent); }
+    .proj-dot.recho { background: #60a5fa; }
+    .proj-tag { font-size: 11px; padding: 2px 8px; border-radius: 20px; background: var(--surface2); color: var(--muted); }
+    .proj-tag.priority { background: #064e3b; color: #34d399; }
+    .proj-tag.deadline { background: #78350f; color: #fbbf24; }
+    .proj-tag.muted { color: var(--muted); }
 
-/* QUEUE PANEL */
-.panel-header{padding:0.75rem 1rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;font-size:0.65rem;background:var(--surface);}
-.panel-scroll{flex:1;overflow-y:auto;min-height:0;}
-.queue-item{border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.1s;}
-.queue-item:hover{background:var(--surface2);}
-.qi-header{padding:0.75rem 1rem;display:flex;flex-direction:column;gap:0.3rem;}
-.qi-meta{display:flex;align-items:center;gap:0.4rem;flex-wrap:wrap;}
-.qi-brief{font-size:0.72rem;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.qi-body{padding:0 1rem 0.75rem;display:none;}
-.qi-body.open{display:block;}
-.qi-content{background:var(--bg);border:1px solid var(--border2);border-radius:2px;padding:0.75rem;font-size:0.75rem;line-height:1.6;white-space:pre-wrap;max-height:250px;overflow-y:auto;margin-bottom:0.6rem;}
-.qi-edit{width:100%;background:var(--bg);border:1px solid var(--accent);color:var(--text);font-family:var(--font-mono);font-size:0.75rem;line-height:1.6;padding:0.75rem;border-radius:2px;resize:vertical;min-height:100px;margin-bottom:0.6rem;display:none;}
-.qi-comment{width:100%;background:var(--bg);border:1px solid var(--border2);color:var(--text);font-family:var(--font-mono);font-size:0.7rem;padding:0.5rem 0.75rem;border-radius:2px;resize:none;min-height:50px;margin-bottom:0.5rem;}
-.qi-actions{display:flex;gap:0.4rem;flex-wrap:wrap;}
+    /* PROJECT VIEWS */
+    .project-header { margin-bottom: 24px; }
+    .project-header h2 { margin: 0 0 4px; font-size: 22px; }
+    .project-header p { margin: 0; color: var(--muted); font-size: 14px; }
+    .form-row { margin-bottom: 16px; }
+    .form-row label { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 8px; }
+    .form-row input, .form-row textarea, .form-row select { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; color: var(--text); font-size: 14px; box-sizing: border-box; font-family: var(--font); }
+    .form-row textarea { min-height: 100px; resize: vertical; line-height: 1.5; }
+    .form-row input:focus, .form-row textarea:focus { outline: none; border-color: var(--accent); }
+    .chip-group { display: flex; flex-wrap: wrap; gap: 6px; }
+    .chip { padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border); cursor: pointer; font-size: 13px; color: var(--muted); transition: all 0.15s; user-select: none; }
+    .chip.active { background: var(--accent-dim); border-color: var(--accent); color: #c4b5fd; }
+    .run-btn { background: var(--accent); color: white; border: none; padding: 12px 28px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 15px; margin-top: 8px; transition: opacity 0.15s; }
+    .run-btn:hover { opacity: 0.9; }
+    .run-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .conflux-btn { background: #7f1d1d; }
+    .gream-btn { background: #065f46; }
+    .recho-btn { background: #1e3a5f; }
+    .spektrum-btn { background: #78350f; }
 
-/* RIGHT PANEL */
-.right-panel{display:none;background:var(--surface);border-left:1px solid var(--border);flex-direction:column;overflow:hidden;width:280px;flex-shrink:0;}
-@media(min-width:900px){.right-panel{display:flex;}}
-.rp-tabs{display:flex;border-bottom:1px solid var(--border);}
-.rp-tab{flex:1;padding:0.5rem;font-size:0.6rem;text-transform:uppercase;letter-spacing:0.1em;cursor:pointer;color:var(--text3);text-align:center;border-bottom:2px solid transparent;transition:all 0.15s;background:none;border-top:none;border-left:none;border-right:none;font-family:var(--font-mono);}
-.rp-tab.active{color:var(--accent);border-bottom-color:var(--accent);}
-.rp-body{flex:1;overflow-y:auto;}
-.rp-section{padding:0.75rem;border-bottom:1px solid var(--border);}
-.rp-label{font-size:0.55rem;text-transform:uppercase;letter-spacing:0.15em;color:var(--accent);margin-bottom:0.5rem;}
-.project-card{background:var(--surface2);border:1px solid var(--border2);border-radius:2px;padding:0.6rem 0.75rem;margin-bottom:0.4rem;cursor:pointer;transition:border-color 0.15s;}
-.project-card:hover{border-color:var(--border3);}
-.pc-name{font-size:0.75rem;font-weight:700;margin-bottom:0.2rem;}
-.pc-status{font-size:0.6rem;color:var(--text3);}
-.token-bar{height:3px;background:var(--border2);border-radius:2px;overflow:hidden;margin-top:0.3rem;}
-.token-fill{height:100%;background:var(--accent);border-radius:2px;transition:width 0.3s;}
+    /* PIPELINE RESULT */
+    .pipeline-loading { color: var(--muted); padding: 20px 0; }
+    .pipeline-error { color: var(--danger); padding: 12px 0; }
+    .result-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+    .qa-pill { padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 700; }
+    .qa-good { background: #064e3b; color: #34d399; }
+    .qa-warn { background: #78350f; color: #fbbf24; }
+    .result-note { font-size: 13px; color: var(--muted); }
+    .result-block { margin-bottom: 14px; }
+    .result-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 6px; }
+    .result-hook { font-size: 20px; font-weight: 700; border-left: 3px solid var(--accent); padding-left: 12px; }
+    .result-scrollable { max-height: 250px; overflow-y: auto; background: var(--surface2); border-radius: 8px; padding: 12px; font-size: 14px; line-height: 1.6; white-space: pre-wrap; }
+    .result-text { background: var(--surface2); border-radius: 8px; padding: 12px; font-size: 14px; white-space: pre-wrap; }
+    .result-time { font-weight: 600; font-size: 16px; }
+    .thumb-preview { max-width: 280px; border-radius: 10px; display: block; }
+    .result-actions { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
 
-/* BADGES */
-.badge{font-size:0.5rem;padding:0.1rem 0.35rem;border-radius:2px;text-transform:uppercase;letter-spacing:0.08em;font-weight:700;white-space:nowrap;}
-.b-pending{background:rgba(240,224,64,0.15);color:var(--accent);}
-.b-ok{background:rgba(68,255,136,0.15);color:var(--success);}
-.b-err{background:rgba(255,68,85,0.15);color:var(--danger);}
-.b-staging{background:rgba(64,224,208,0.15);color:var(--accent2);}
-.b-info{background:rgba(68,136,255,0.15);color:var(--info);}
-.b-ret{background:rgba(255,170,0,0.15);color:var(--warning);}
-
-/* BUTTONS */
-.btn{font-family:var(--font-mono);font-size:0.65rem;padding:0.35rem 0.75rem;border:1px solid;cursor:pointer;text-transform:uppercase;letter-spacing:0.05em;transition:all 0.12s;border-radius:2px;white-space:nowrap;}
-.btn-primary{background:var(--accent);border-color:var(--accent);color:#000;font-weight:700;}
-.btn-primary:hover{background:#fff;border-color:#fff;}
-.btn-ghost{background:transparent;border-color:var(--border3);color:var(--text3);}
-.btn-ghost:hover{border-color:var(--text2);color:var(--text);}
-.btn-danger{background:transparent;border-color:var(--danger);color:var(--danger);}
-.btn-danger:hover{background:var(--danger);color:#000;}
-.btn-success{background:transparent;border-color:var(--success);color:var(--success);}
-.btn-success:hover{background:var(--success);color:#000;}
-.btn-info{background:transparent;border-color:var(--accent2);color:var(--accent2);}
-.btn-info:hover{background:var(--accent2);color:#000;}
-.btn-sm{padding:0.25rem 0.5rem;font-size:0.58rem;}
-
-/* HISTORY */
-.hi-item{border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.1s;}
-.hi-item:hover{background:var(--surface2);}
-.hi-header{padding:0.6rem 1rem;}
-.hi-meta{display:flex;align-items:center;gap:0.4rem;flex-wrap:wrap;margin-bottom:0.2rem;}
-.hi-brief{font-size:0.68rem;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.hi-detail{padding:0 1rem 0.75rem;display:none;}
-.hi-detail.open{display:block;}
-.hi-content{background:var(--bg);border:1px solid var(--border2);border-radius:2px;padding:0.75rem;font-size:0.72rem;line-height:1.6;white-space:pre-wrap;max-height:200px;overflow-y:auto;margin-bottom:0.5rem;}
-.hi-comment{font-size:0.65rem;color:var(--warning);padding:0.4rem 0;border-top:1px solid var(--border);}
-
-/* VOICE */
-.voice-active{border-color:var(--danger)!important;color:var(--danger)!important;animation:voice-pulse 1s infinite;}
-@keyframes voice-pulse{0%,100%{opacity:1}50%{opacity:0.5}}
-
-/* DOWNLOAD MENU */
-.dl-menu{position:absolute;bottom:100%;left:0;background:var(--surface);border:1px solid var(--border2);border-radius:3px;padding:0.25rem;min-width:140px;z-index:200;display:none;}
-.dl-menu.open{display:block;}
-.dl-item{padding:0.4rem 0.6rem;font-size:0.65rem;cursor:pointer;border-radius:2px;display:flex;align-items:center;gap:0.5rem;color:var(--text2);transition:all 0.1s;}
-.dl-item:hover{background:var(--surface2);color:var(--text);}
-.dl-wrap{position:relative;}
-
-/* IMAGE PANEL */
-.img-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;padding:1rem;}
-.img-placeholder{aspect-ratio:1;background:var(--surface2);border:1px solid var(--border2);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:0.65rem;color:var(--text3);}
-.img-generated{aspect-ratio:1;border-radius:3px;overflow:hidden;position:relative;}
-.img-generated img{width:100%;height:100%;object-fit:cover;}
-.img-dl{position:absolute;bottom:4px;right:4px;background:rgba(0,0,0,0.7);border:none;color:#fff;cursor:pointer;padding:3px 6px;border-radius:2px;font-size:0.55rem;}
-
-/* CALENDAR */
-.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;padding:0.75rem;}
-.cal-day{aspect-ratio:1;border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:0.6rem;cursor:pointer;background:var(--surface2);color:var(--text3);transition:all 0.1s;}
-.cal-day:hover{background:var(--surface3);color:var(--text);}
-.cal-day.has-event{background:rgba(240,224,64,0.1);color:var(--accent);}
-.cal-day.today{border:1px solid var(--accent);}
-
-/* EMPTY */
-.empty{padding:2rem;text-align:center;color:var(--text3);font-size:0.7rem;}
-
-/* SCROLLBAR */
-::-webkit-scrollbar{width:3px;height:3px;}
-::-webkit-scrollbar-track{background:transparent;}
-::-webkit-scrollbar-thumb{background:var(--border2);}
-
-/* MARKDOWN in chat */
-.msg-bubble strong{color:var(--accent);}
-.msg-bubble code{background:var(--surface2);padding:0.1em 0.3em;border-radius:2px;font-size:0.85em;}
-.msg-bubble pre{background:var(--surface2);border:1px solid var(--border2);border-radius:3px;padding:0.75rem;overflow-x:auto;margin:0.5rem 0;}
-.msg-bubble h1,.msg-bubble h2,.msg-bubble h3{color:var(--accent2);margin:0.5rem 0 0.25rem;}
-.msg-bubble ul,.msg-bubble ol{padding-left:1.2rem;margin:0.25rem 0;}
-
-@keyframes flash-in{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
-
-/* HTML PREVIEW MODAL */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:500;display:none;align-items:center;justify-content:center;padding:1rem;}
-.modal-overlay.open{display:flex;}
-.modal-box{background:var(--surface);border:1px solid var(--border2);border-radius:4px;width:100%;max-width:900px;max-height:90vh;display:flex;flex-direction:column;overflow:hidden;}
-.modal-header{padding:0.75rem 1rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;font-size:0.7rem;flex-shrink:0;}
-.modal-close{background:none;border:none;color:var(--text3);cursor:pointer;font-size:1.2rem;line-height:1;}
-.modal-close:hover{color:var(--text);}
-.preview-iframe{flex:1;border:none;background:#fff;min-height:400px;}
-.preview-tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0;}
-.preview-tab{padding:0.5rem 0.875rem;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em;cursor:pointer;color:var(--text3);border-bottom:2px solid transparent;background:none;border-top:none;border-left:none;border-right:none;font-family:var(--font-mono);}
-.preview-tab.active{color:var(--accent);border-bottom-color:var(--accent);}
-
-/* SESSION PANEL */
-.session-list{padding:0.5rem;}
-.session-item{padding:0.5rem 0.625rem;border-radius:3px;cursor:pointer;font-size:0.68rem;color:var(--text2);transition:all 0.1s;border:1px solid transparent;margin-bottom:0.25rem;display:flex;align-items:center;justify-content:space-between;}
-.session-item:hover{background:var(--surface2);border-color:var(--border2);}
-.session-item.active{background:rgba(240,224,64,0.08);border-color:rgba(240,224,64,0.2);color:var(--accent);}
-.session-del{background:none;border:none;color:var(--text3);cursor:pointer;font-size:0.7rem;padding:0.1rem 0.25rem;border-radius:2px;}
-.session-del:hover{color:var(--danger);}
-
-/* MEMORY INDICATOR */
-.memory-dot{width:6px;height:6px;border-radius:50%;background:var(--success);display:inline-block;margin-right:0.3rem;}
-.memory-dot.saving{background:var(--warning);animation:pulse 0.5s infinite;}
-</style>
+    /* MISC */
+    .empty-state { text-align: center; padding: 60px 20px; color: var(--muted); }
+    .empty-icon { font-size: 48px; margin-bottom: 12px; opacity: 0.3; }
+    .welcome-msg { background: var(--surface2); border-radius: 12px; padding: 16px; color: var(--muted); font-size: 14px; align-self: flex-start; }
+    .toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 10px 20px; border-radius: 8px; font-size: 14px; opacity: 0; transition: all 0.3s; z-index: 1000; white-space: nowrap; }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  </style>
 </head>
 <body>
-<div class="app">
 
-<!-- TOPBAR -->
-<header class="topbar">
-  <div class="logo">Admin Studio</div>
-  <div class="topbar-center">
-    <span class="model-badge" id="model-label">Claude Sonnet 4.6</span>
-    <span class="model-badge" id="mode-label">Chat</span>
-    <span style="font-size:0.6rem;color:var(--text3);display:flex;align-items:center;gap:0.25rem">
-      <span class="memory-dot" id="memory-dot"></span>
-      <span id="memory-label">paměť</span>
-    </span>
-  </div>
-  <div class="topbar-right">
-    <span class="dot-live"></span>
-    <span id="clock"></span>
-    <span id="token-display" style="color:var(--text3);display:none;">0 tokenů</span>
-    <button onclick="toggleTheme()" style="background:none;border:1px solid var(--border2);color:var(--text3);cursor:pointer;padding:0.2rem 0.5rem;border-radius:2px;font-size:0.65rem;font-family:var(--font-mono)" id="theme-btn">☀ Světlý</button>
-  </div>
-</header>
-
-<!-- ICON NAV -->
-<nav class="icon-nav">
-  <div class="nav-icon active" onclick="setMode('chat')" title="Chat" data-mode="chat">💬</div>
-  <div class="nav-icon" onclick="setMode('queue')" title="Fronta" data-mode="queue">
-    📥<span class="badge" id="queue-badge-icon" style="display:none">0</span>
-  </div>
-  <div class="nav-icon" onclick="setMode('history')" title="Historie" data-mode="history">📋</div>
-  <div class="nav-icon" onclick="setMode('images')" title="Obrázky" data-mode="images">🖼</div>
-  <div class="nav-sep"></div>
-  <div class="nav-icon" onclick="setMode('projects')" title="Projekty" data-mode="projects">📁</div>
-  <div class="nav-icon" onclick="setMode('calendar')" title="Kalendář" data-mode="calendar">📅</div>
-  <div class="nav-sep"></div>
-  <div class="nav-icon" onclick="clearChat()" title="Nový chat" style="margin-top:auto;" class="hide-mobile-nav">🗑</div>
-</nav>
-
-<!-- SIDEBAR -->
 <aside class="sidebar">
-  <div class="sidebar-section">
-    <div class="sidebar-label">Šablony</div>
-    <div class="template-item" onclick="useTemplate('tiktok')">🎵 TikTok caption Pavler</div>
-    <div class="template-item" onclick="useTemplate('blog')">📝 Blogpost romanpavlorek.eu</div>
-    <div class="template-item" onclick="useTemplate('gream-task')">🎮 Výzva pro Gream</div>
-    <div class="template-item" onclick="useTemplate('conflux-card')">🃏 CONFLUX karta/dialog</div>
-    <div class="template-item" onclick="useTemplate('appstore')">📱 App Store popis</div>
-    <div class="template-item" onclick="useTemplate('web-fix')">🔧 Oprava webu</div>
-    <div class="template-item" onclick="useTemplate('preklad')">🌐 Překlad EN</div>
-    <div class="template-item" onclick="useTemplate('presskit')">📣 Press kit</div>
-    <div class="template-item" onclick="useTemplate('instagram')">📸 Instagram post</div>
-    <div class="template-item" onclick="useTemplate('youtube')">▶ YouTube popis</div>
-  </div>
-  <div class="sidebar-section">
-    <div class="sidebar-label">Kontext</div>
-    <div class="sidebar-item active" onclick="setContext('orchestrator')"><span class="si-icon">🤖</span>Orchestrátor</div>
-    <div class="sidebar-item" onclick="setContext('copywriter')"><span class="si-icon">✍</span>Copywriter</div>
-    <div class="sidebar-item" onclick="setContext('herni')"><span class="si-icon">🎮</span>Herní designér</div>
-    <div class="sidebar-item" onclick="setContext('direct')"><span class="si-icon">⚡</span>Přímý chat</div>
-  </div>
-  <div class="sidebar-section">
-    <div class="sidebar-label">Rychlé akce</div>
-    <div class="sidebar-item" onclick="quickAction('digest')"><span class="si-icon">📊</span>Denní digest</div>
-    <div class="sidebar-item" onclick="quickAction('content-plan')"><span class="si-icon">📆</span>Plán obsahu</div>
-    <div class="sidebar-item" onclick="quickAction('gream-status')"><span class="si-icon">📈</span>Status Gream</div>
-  </div>
-  <div class="sidebar-section">
-    <div class="sidebar-label" style="display:flex;align-items:center;justify-content:space-between">
-      <span>Sessions</span>
-      <button onclick="newSession()" style="background:none;border:none;color:var(--accent);cursor:pointer;font-size:0.7rem;font-family:var(--font-mono)">+ Nová</button>
-    </div>
-    <div class="session-list" id="session-list"></div>
-  </div>
+  <div class="brand">3R</div>
+
+  <button class="nav-item active" data-view="queue" onclick="setView('queue')">
+    <span class="nav-icon">📋</span>
+    <span class="nav-label">Fronta</span>
+    <span class="nav-badge" id="queue-badge"></span>
+  </button>
+  <button class="nav-item" data-view="chat" onclick="setView('chat')">
+    <span class="nav-icon">💬</span>
+    <span class="nav-label">Chat</span>
+  </button>
+  <button class="nav-item" data-view="dashboard" onclick="setView('dashboard')">
+    <span class="nav-icon">📊</span>
+    <span class="nav-label">Info</span>
+  </button>
+
+  <div class="nav-divider"></div>
+
+  <button class="nav-item" data-view="pavler" onclick="setView('pavler')">
+    <span class="nav-icon">🎬</span>
+    <span class="nav-label">Pavler</span>
+  </button>
+  <button class="nav-item" data-view="spektrum" onclick="setView('spektrum')">
+    <span class="nav-icon">🎵</span>
+    <span class="nav-label">Spektrum</span>
+  </button>
+  <button class="nav-item" data-view="conflux" onclick="setView('conflux')">
+    <span class="nav-icon">⚔️</span>
+    <span class="nav-label">Conflux</span>
+  </button>
+  <button class="nav-item" data-view="gream" onclick="setView('gream')">
+    <span class="nav-icon">📱</span>
+    <span class="nav-label">Gream</span>
+  </button>
+  <button class="nav-item" data-view="recho" onclick="setView('recho')">
+    <span class="nav-icon">🗡️</span>
+    <span class="nav-label">RECHO</span>
+  </button>
+  <button class="nav-item" data-view="weby" onclick="setView('weby')">
+    <span class="nav-icon">🌐</span>
+    <span class="nav-label">Weby</span>
+  </button>
 </aside>
 
-<!-- MAIN PANELS -->
-<main class="main">
+<div class="main">
+  <!-- Chat view — full height, lives outside .content -->
+  <div id="view-chat" class="view chat-view">
+    <div class="chat-header">
+      <span style="font-weight:600">Orchestrátor</span>
+      <button onclick="newSession()" class="btn-ghost-sm">+ Nová konverzace</button>
+    </div>
+    <div id="chat-messages">
+      <div class="welcome-msg"><strong>Orchestrátor 3R Studia</strong><br>Čím mohu pomoci? Koordinuji všechny agenty studia — od herního designu po virální obsah.</div>
+    </div>
+  </div>
 
-  <!-- CHAT PANEL -->
-  <div class="panel active" id="panel-chat">
-    <div class="chat-messages" id="chat-messages">
-      <div class="msg msg-assistant">
-        <div class="msg-meta"><span>Admin Studio</span><span class="badge b-ok">připraven</span></div>
-        <div class="msg-bubble">Ahoj! Jsem tvůj kreativní asistent pro 3R Studio. Můžeš mi zadat jakýkoli brief — vygeneruji texty, navrhnu obsah, pomůžu s vývojem Gream nebo CONFLUX, přeložím, opravím web nebo připravím podklady pro Pavler.
-
-Výstupy můžeš stáhnout jako TXT, MD nebo PDF. Hlasový vstup funguje přes mikrofon. 🎙</div>
+  <div class="content" id="content-scroll">
+    <!-- QUEUE VIEW -->
+    <div id="view-queue" class="view" style="display:block">
+      <div class="queue-header">
+        <h1>Fronta schválení</h1>
+        <span class="badge" id="queue-count">Prázdná</span>
+        <button onclick="renderQueue()" class="btn-ghost-sm" style="margin-left:auto">↻ Obnovit</button>
+      </div>
+      <div id="queue-list">
+        <div class="empty-state"><div class="empty-icon">✓</div><p>Fronta je prázdná. Agenti pracují.</p></div>
       </div>
     </div>
-    <div class="input-area">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.35rem;font-size:0.58rem;color:var(--text3)">
-        <span id="ctx-label">0/50 zpráv v kontextu</span>
-        <span id="ctx-tokens" style="color:var(--text3)"></span>
+
+    <!-- DASHBOARD VIEW -->
+    <div id="view-dashboard" class="view">
+      <h1 style="margin-bottom:20px">Dashboard</h1>
+      <div class="dashboard-grid">
+        <div class="stat-card"><div class="stat-label">DeepSeek kredit</div><div class="stat-value" id="ds-bal">–</div><div class="stat-sub" id="ds-sub"></div></div>
+        <div class="stat-card"><div class="stat-label">Exekuce dnes</div><div class="stat-value" id="n8n-ex">–</div></div>
+        <div class="stat-card"><div class="stat-label">Ve frontě</div><div class="stat-value" id="queue-stat">0</div></div>
+        <div class="stat-card countdown"><div class="stat-label">Srpen 2026</div><div class="stat-value" id="countdown-days">–</div><div class="stat-sub">dní zbývá</div></div>
       </div>
-      <div style="height:2px;background:var(--border);border-radius:1px;margin-bottom:0.5rem;overflow:hidden">
-        <div id="ctx-bar" style="height:100%;background:var(--success);border-radius:1px;transition:width 0.3s;width:0%"></div>
+      <div class="dashboard-section"><h3>Exekuce per agent</h3><div id="exec-list"></div></div>
+      <div class="dashboard-section"><h3>Projekty</h3>
+        <div class="projects-status">
+          <div class="proj-row"><span class="proj-dot gream"></span>Gream <span class="proj-tag priority">PRIORITA · srpen 2026</span></div>
+          <div class="proj-row"><span class="proj-dot spektrum"></span>Spektrum barev <span class="proj-tag deadline">album · srpen 2026</span></div>
+          <div class="proj-row"><span class="proj-dot conflux"></span>CONFLUX <span class="proj-tag">itch.io → Steam</span></div>
+          <div class="proj-row"><span class="proj-dot pavler"></span>Pavler <span class="proj-tag">virální obsah</span></div>
+          <div class="proj-row"><span class="proj-dot recho"></span>RECHO <span class="proj-tag muted">long-term</span></div>
+        </div>
       </div>
-      <div class="input-tools">
-        <button class="tool-btn" id="voice-btn" onclick="toggleVoice()">🎙 Hlas</button>
-        <button class="tool-btn" onclick="previewLastHtml()" title="Zobraz HTML z poslední odpovědi">🌐 HTML náhled</button>
-        <div class="dl-wrap">
-          <button class="tool-btn" onclick="toggleDlMenu()">⬇ Stáhnout</button>
-          <div class="dl-menu" id="dl-menu">
-            <div class="dl-item" onclick="downloadLast('txt')">📄 TXT</div>
-            <div class="dl-item" onclick="downloadLast('md')">📝 Markdown</div>
-            <div class="dl-item" onclick="downloadLast('pdf')">📑 PDF</div>
-            <div class="dl-item" onclick="downloadAll('txt')">📦 Celý chat (TXT)</div>
+    </div>
+
+    <!-- PAVLER VIEW -->
+    <div id="view-pavler" class="view">
+      <div class="project-header"><h2>🎬 Pavler Pipeline</h2><p>Virální video obsah · TikTok · YouTube Shorts · IG Reels</p></div>
+      <form class="project-form" onsubmit="return false">
+        <div class="form-row">
+          <label>Téma videa *</label>
+          <input type="text" id="pav-topic" placeholder="např. AI mění způsob jak pracuji...">
+        </div>
+        <div class="form-row">
+          <label>Nálada / tón</label>
+          <div class="chip-group" data-name="pav-mood">
+            <label class="chip active" data-value="inspirativní">Inspirativní</label>
+            <label class="chip" data-value="kontroverzní">Kontroverzní</label>
+            <label class="chip" data-value="vzdělávací">Vzdělávací</label>
+            <label class="chip" data-value="osobní příběh">Osobní příběh</label>
+            <label class="chip" data-value="humorný">Humorný</label>
           </div>
         </div>
-        <button class="tool-btn" onclick="sendToQueue()">📥 Do fronty</button>
-        <button class="tool-btn" id="orchestrator-toggle" onclick="toggleOrchestrator()" title="Přes Orchestrátor nebo přímo přes Claude">🤖 Orchestrátor</button>
-      </div>
-      <div class="input-row" style="margin-top:0.5rem">
-        <div class="input-wrap">
-          <textarea id="chat-input" placeholder="Napiš brief nebo otázku... (Enter = odeslat, Shift+Enter = nový řádek)" rows="1"
-            oninput="autoResize(this)" onkeydown="handleKey(event)"></textarea>
-        </div>
-        <button class="send-btn" id="send-btn" onclick="sendMessage()">↑</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- QUEUE PANEL -->
-  <div class="panel" id="panel-queue">
-    <div class="panel-header">
-      <span>Fronta ke schválení</span>
-      <div style="display:flex;gap:0.5rem;align-items:center">
-        <span class="badge b-pending" id="queue-count-label">0 položek</span>
-        <button class="btn btn-ghost btn-sm" onclick="loadQueue()">↺</button>
-      </div>
-    </div>
-    <div class="panel-scroll" id="queue-list">
-      <div class="empty">Načítám frontu...</div>
-    </div>
-  </div>
-
-  <!-- HISTORY PANEL -->
-  <div class="panel" id="panel-history">
-    <div class="panel-header">
-      <span>Historie</span>
-      <button class="btn btn-ghost btn-sm" onclick="clearHistory()">Smazat vše</button>
-    </div>
-    <div class="panel-scroll" id="history-list">
-      <div class="empty">Žádná historie</div>
-    </div>
-  </div>
-
-  <!-- IMAGES PANEL -->
-  <div class="panel" id="panel-images">
-    <div class="panel-header"><span>Generátor obrázků</span></div>
-    <div style="padding:1rem;display:flex;flex-direction:column;gap:0.75rem;border-bottom:1px solid var(--border)">
-      <textarea id="img-prompt" placeholder="Popiš obrázek... (např: pixel art charakter pro Gream, příroda, světlé barvy, děti)" style="background:var(--bg);border:1px solid var(--border2);color:var(--text);font-family:var(--font-mono);font-size:0.75rem;padding:0.6rem;border-radius:2px;resize:none;min-height:60px;outline:none;" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
-      <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
-        <select id="img-size" style="background:var(--bg);border:1px solid var(--border2);color:var(--text);font-family:var(--font-mono);font-size:0.65rem;padding:0.3rem 0.5rem;border-radius:2px;">
-          <option value="1024x1024">1024×1024 (čtverec)</option>
-          <option value="1792x1024">1792×1024 (wide)</option>
-          <option value="1024x1792">1024×1792 (portrait)</option>
-        </select>
-        <select id="img-style" style="background:var(--bg);border:1px solid var(--border2);color:var(--text);font-family:var(--font-mono);font-size:0.65rem;padding:0.3rem 0.5rem;border-radius:2px;">
-          <option value="">Vivid</option>
-          <option value="natural">Natural</option>
-        </select>
-        <button class="btn btn-primary" onclick="generateImage()" style="font-size:0.65rem">🖼 Generovat</button>
-      </div>
-    </div>
-    <div class="panel-scroll">
-      <div class="img-grid" id="img-grid">
-        <div class="img-placeholder" style="grid-column:1/-1;aspect-ratio:auto;padding:2rem">
-          <span style="color:var(--text3)">Zadej prompt a klikni Generovat</span>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- PROJECTS PANEL -->
-  <div class="panel" id="panel-projects">
-    <div class="panel-header"><span>Projekty</span><button class="btn btn-ghost btn-sm" onclick="loadProjects()">↺</button></div>
-    <div class="panel-scroll" id="projects-content">
-      <div class="empty">Načítám projekty z Drive...</div>
-    </div>
-  </div>
-
-  <!-- CALENDAR PANEL -->
-  <div class="panel" id="panel-calendar">
-    <div class="panel-header"><span>Obsahový kalendář</span><span id="cal-month" style="color:var(--text3)"></span></div>
-    <div style="padding:0.5rem 0.75rem;border-bottom:1px solid var(--border);display:grid;grid-template-columns:repeat(7,1fr);gap:2px;">
-      <div style="font-size:0.55rem;text-align:center;color:var(--text3);padding:0.3rem">Po</div>
-      <div style="font-size:0.55rem;text-align:center;color:var(--text3);padding:0.3rem">Út</div>
-      <div style="font-size:0.55rem;text-align:center;color:var(--text3);padding:0.3rem">St</div>
-      <div style="font-size:0.55rem;text-align:center;color:var(--text3);padding:0.3rem">Čt</div>
-      <div style="font-size:0.55rem;text-align:center;color:var(--text3);padding:0.3rem">Pá</div>
-      <div style="font-size:0.55rem;text-align:center;color:var(--text3);padding:0.3rem">So</div>
-      <div style="font-size:0.55rem;text-align:center;color:var(--text3);padding:0.3rem">Ne</div>
-    </div>
-    <div class="cal-grid" id="cal-grid"></div>
-    <div id="cal-events" style="padding:0.75rem;border-top:1px solid var(--border);overflow-y:auto;flex:1"></div>
-  </div>
-
-</main>
-
-<!-- RIGHT PANEL -->
-<aside class="right-panel">
-  <div class="rp-tabs">
-    <button class="rp-tab active" onclick="setRpTab('info',this)">Info</button>
-    <button class="rp-tab" onclick="setRpTab('projects',this)">Projekty</button>
-    <button class="rp-tab" onclick="setRpTab('tokens',this)">Tokeny</button>
-  </div>
-  <div class="rp-body">
-    <!-- INFO TAB -->
-    <div id="rp-info" class="rp-tab-content">
-      <div class="rp-section">
-        <div class="rp-label">Agenti</div>
-        <div style="display:flex;flex-direction:column;gap:0.3rem">
-          <div style="display:flex;justify-content:space-between;font-size:0.65rem"><span>Orchestrátor</span><span class="badge b-ok">aktivní</span></div>
-          <div style="display:flex;justify-content:space-between;font-size:0.65rem"><span>Copywriter</span><span class="badge b-ok">aktivní</span></div>
-          <div style="display:flex;justify-content:space-between;font-size:0.65rem"><span>Asistentka</span><span class="badge b-ok">aktivní</span></div>
-          <div style="display:flex;justify-content:space-between;font-size:0.65rem"><span>Web Master</span><span class="badge b-staging">příprava</span></div>
-          <div style="display:flex;justify-content:space-between;font-size:0.65rem"><span>Image Gen</span><span class="badge b-staging">příprava</span></div>
-          <div style="display:flex;justify-content:space-between;font-size:0.65rem"><span>QA/Tester</span><span class="badge b-staging">příprava</span></div>
-        </div>
-      </div>
-      <div class="rp-section">
-        <div class="rp-label">Infrastruktura</div>
-        <div style="display:flex;flex-direction:column;gap:0.25rem;font-size:0.63rem;color:var(--text2)">
-          <div style="display:flex;justify-content:space-between"><span>Hetzner CX23</span><span class="badge b-ok">online</span></div>
-          <div style="display:flex;justify-content:space-between"><span>n8n</span><span class="badge b-ok">online</span></div>
-          <div style="display:flex;justify-content:space-between"><span>ntfy</span><span class="badge b-ok">online</span></div>
-          <div style="display:flex;justify-content:space-between"><span>Deploy</span><span class="badge b-ok">auto</span></div>
-        </div>
-      </div>
-      <div class="rp-section">
-        <div class="rp-label">Deadliny</div>
-        <div style="display:flex;flex-direction:column;gap:0.4rem">
-          <div style="font-size:0.65rem">
-            <div style="display:flex;justify-content:space-between;margin-bottom:0.15rem"><span style="color:var(--danger)">Gream launch</span><span style="color:var(--text3)">srpen 2026</span></div>
-            <div class="token-bar"><div class="token-fill" style="width:45%;background:var(--danger)"></div></div>
-          </div>
-          <div style="font-size:0.65rem">
-            <div style="display:flex;justify-content:space-between;margin-bottom:0.15rem"><span style="color:var(--warning)">CONFLUX itch.io</span><span style="color:var(--text3)">srpen 2026</span></div>
-            <div class="token-bar"><div class="token-fill" style="width:35%;background:var(--warning)"></div></div>
-          </div>
-          <div style="font-size:0.65rem">
-            <div style="display:flex;justify-content:space-between;margin-bottom:0.15rem"><span style="color:var(--accent2)">Pavler start</span><span style="color:var(--text3)">co nejdříve</span></div>
-            <div class="token-bar"><div class="token-fill" style="width:20%;background:var(--accent2)"></div></div>
+        <div class="form-row">
+          <label>Platforma</label>
+          <div class="chip-group" data-name="pav-plat">
+            <label class="chip active" data-value="both">Obě</label>
+            <label class="chip" data-value="tiktok">TikTok</label>
+            <label class="chip" data-value="youtube">YouTube</label>
           </div>
         </div>
-      </div>
+        <button class="run-btn" onclick="runPavler()">▶ Spustit pipeline</button>
+      </form>
+      <div id="pav-status" class="pipeline-status" style="display:none"></div>
+      <div id="pav-result" style="display:none"></div>
     </div>
-    <!-- PROJECTS TAB -->
-    <div id="rp-projects" class="rp-tab-content" style="display:none">
-      <div class="rp-section" id="rp-projects-content">
-        <div class="project-card">
-          <div class="pc-name">🎮 Gream</div>
-          <div class="pc-status">artworky · bug-fix · EN lokalizace · Google Play</div>
-          <div class="token-bar" style="margin-top:0.4rem"><div class="token-fill" style="width:60%"></div></div>
+
+    <!-- SPEKTRUM VIEW -->
+    <div id="view-spektrum" class="view">
+      <div class="project-header"><h2>🎵 Spektrum barev</h2><p>Osobní hudební album · Deadline srpen 2026</p></div>
+      <form class="project-form" onsubmit="return false">
+        <div class="form-row">
+          <label>Typ úkolu</label>
+          <div class="chip-group" data-name="spek-type">
+            <label class="chip active" data-value="text_pisne">Text písně</label>
+            <label class="chip" data-value="popis_alba">Popis alba</label>
+            <label class="chip" data-value="press_kit">Press kit</label>
+            <label class="chip" data-value="artwork_brief">Artwork brief</label>
+          </div>
         </div>
-        <div class="project-card">
-          <div class="pc-name">🃏 CONFLUX</div>
-          <div class="pc-status">příběh · artworky · bug-fix · itch.io</div>
-          <div class="token-bar" style="margin-top:0.4rem"><div class="token-fill" style="width:40%"></div></div>
+        <div class="form-row">
+          <label>Název / téma písně</label>
+          <input type="text" id="spek-title" placeholder="např. Spektrum II — rozpad">
         </div>
-        <div class="project-card">
-          <div class="pc-name">🎵 Pavler</div>
-          <div class="pc-status">profily · Buffer · první obsah</div>
-          <div class="token-bar" style="margin-top:0.4rem"><div class="token-fill" style="width:15%;background:var(--accent2)"></div></div>
+        <div class="form-row">
+          <label>Nálada / emoce</label>
+          <input type="text" id="spek-mood" placeholder="např. melancholická, naděje skrze chaos...">
         </div>
-        <div class="project-card">
-          <div class="pc-name">🌐 Weby</div>
-          <div class="pc-status">opravy · blog · auto-deploy aktivní</div>
-          <div class="token-bar" style="margin-top:0.4rem"><div class="token-fill" style="width:80%;background:var(--success)"></div></div>
+        <div class="form-row">
+          <label>Poznámky / kontext</label>
+          <textarea id="spek-notes" placeholder="Volitelně: o čem píseň je, motivace, reference..."></textarea>
         </div>
-      </div>
+        <button class="run-btn spektrum-btn" onclick="runSpektrum()">▶ Generovat</button>
+      </form>
     </div>
-    <!-- TOKENS TAB -->
-    <div id="rp-tokens" class="rp-tab-content" style="display:none">
-      <div class="rp-section">
-        <div class="rp-label">Tato session</div>
-        <div style="display:flex;flex-direction:column;gap:0.3rem;font-size:0.65rem">
-          <div style="display:flex;justify-content:space-between"><span>Input tokeny</span><span id="t-input">0</span></div>
-          <div style="display:flex;justify-content:space-between"><span>Output tokeny</span><span id="t-output">0</span></div>
-          <div style="display:flex;justify-content:space-between"><span>Celkem</span><span id="t-total">0</span></div>
-          <div style="display:flex;justify-content:space-between"><span style="color:var(--accent)">Odhadovaná cena</span><span id="t-cost" style="color:var(--accent)">0 Kč</span></div>
+
+    <!-- CONFLUX VIEW -->
+    <div id="view-conflux" class="view">
+      <div class="project-header"><h2>⚔️ CONFLUX</h2><p>Narativní karetní hra · Dark fantasy · itch.io → Steam</p></div>
+      <form class="project-form" onsubmit="return false">
+        <div class="form-row">
+          <label>Oblast</label>
+          <div class="chip-group" data-name="cf-area">
+            <label class="chip active" data-value="game_balance">Game Balance</label>
+            <label class="chip" data-value="story">Příběh / lore</label>
+            <label class="chip" data-value="mechanic">Mechanika</label>
+            <label class="chip" data-value="artwork">Artwork brief</label>
+          </div>
         </div>
-        <div class="token-bar" style="margin-top:0.75rem"><div class="token-fill" id="t-bar" style="width:0%"></div></div>
-        <div style="font-size:0.55rem;color:var(--text3);margin-top:0.25rem">Denní limit: 100K tokenů</div>
-      </div>
-      <div class="rp-section">
-        <div class="rp-label">Modely v použití</div>
-        <div style="display:flex;flex-direction:column;gap:0.25rem;font-size:0.63rem;color:var(--text2)">
-          <div style="display:flex;justify-content:space-between"><span>Claude Sonnet</span><span>$3/1M</span></div>
-          <div style="display:flex;justify-content:space-between"><span>DeepSeek V4 Flash</span><span>$0.14/1M</span></div>
-          <div style="display:flex;justify-content:space-between"><span>GPT-4.1-mini</span><span>$0.40/1M</span></div>
-          <div style="display:flex;justify-content:space-between"><span>GPT Image 2</span><span>~$0.10/obr</span></div>
+        <div class="form-row">
+          <label>Zadání *</label>
+          <textarea id="cf-brief" placeholder="Navrhuji nový mechanic pro fusion karty... / Potřebuji balancovat karty 3. třídy... / Příběh pro act 2..."></textarea>
         </div>
-      </div>
+        <button class="run-btn conflux-btn" onclick="runConflux()">▶ Odeslat hernímu designérovi</button>
+      </form>
+    </div>
+
+    <!-- GREAM VIEW -->
+    <div id="view-gream" class="view">
+      <div class="project-header"><h2>📱 Gream</h2><p>Vzdělávací PWA · Děti 7–15 · <strong style="color:var(--danger)">Deadline srpen 2026 🔴</strong></p></div>
+      <form class="project-form" onsubmit="return false">
+        <div class="form-row">
+          <label>Oblast</label>
+          <div class="chip-group" data-name="gr-area">
+            <label class="chip active" data-value="feature">Nová feature</label>
+            <label class="chip" data-value="level">Level design</label>
+            <label class="chip" data-value="content">Vzdělávací obsah</label>
+            <label class="chip" data-value="ui">UI/UX</label>
+            <label class="chip" data-value="artwork">Artwork</label>
+          </div>
+        </div>
+        <div class="form-row">
+          <label>Zadání *</label>
+          <textarea id="gr-brief" placeholder="Potřebuji level pro matematiku 3. třídy... / Nová mini-hra pro procvičování čtení..."></textarea>
+        </div>
+        <button class="run-btn gream-btn" onclick="runGream()">▶ Odeslat</button>
+      </form>
+    </div>
+
+    <!-- RECHO VIEW -->
+    <div id="view-recho" class="view">
+      <div class="project-header"><h2>🗡️ RECHO</h2><p>Gothic Sci-Fi RPG · Godot 4 · Long-term</p></div>
+      <form class="project-form" onsubmit="return false">
+        <div class="form-row">
+          <label>Oblast</label>
+          <div class="chip-group" data-name="re-area">
+            <label class="chip active" data-value="gdd">GDD sekce</label>
+            <label class="chip" data-value="scene">Scéna / dialog</label>
+            <label class="chip" data-value="mechanic">Mechanika</label>
+            <label class="chip" data-value="artwork">Artwork</label>
+          </div>
+        </div>
+        <div class="form-row">
+          <label>Zadání *</label>
+          <textarea id="re-brief" placeholder="Tuner mechanika pro... / Dialog scéna kde... / Artwork pro lokaci..."></textarea>
+        </div>
+        <button class="run-btn recho-btn" onclick="runRecho()">▶ Odeslat</button>
+      </form>
+    </div>
+
+    <!-- WEBY VIEW -->
+    <div id="view-weby" class="view">
+      <div class="project-header"><h2>🌐 Weby</h2><p>romanpavlorek.eu · 3rstudio.eu</p></div>
+      <form class="project-form" onsubmit="return false">
+        <div class="form-row">
+          <label>Web</label>
+          <div class="chip-group" data-name="web-site">
+            <label class="chip active" data-value="romanpavlorek">romanpavlorek.eu</label>
+            <label class="chip" data-value="3rstudio">3rstudio.eu</label>
+          </div>
+        </div>
+        <div class="form-row">
+          <label>Co změnit *</label>
+          <textarea id="web-brief" placeholder="Aktualizuj sekci O mně... / Přidej projekt Gream do portfolia... / Oprav broken link na..."></textarea>
+        </div>
+        <button class="run-btn" onclick="runWeby()">▶ Odeslat Web Masterovi</button>
+      </form>
     </div>
   </div>
-</aside>
 
-</div>
-
-<!-- HTML PREVIEW MODAL -->
-<div class="modal-overlay" id="html-modal">
-  <div class="modal-box">
-    <div class="modal-header">
-      <div style="display:flex;align-items:center;gap:0.5rem">
-        <span>HTML Preview</span>
-        <span class="memory-dot" id="preview-dot" style="display:none"></span>
-      </div>
-      <div style="display:flex;gap:0.5rem">
-        <button class="btn btn-ghost btn-sm" onclick="downloadPreviewHtml()">↓ Stáhnout HTML</button>
-        <button class="btn btn-ghost btn-sm" onclick="openPreviewInTab()">↗ Otevřít v nové záložce</button>
-        <button class="modal-close" onclick="closeHtmlModal()">✕</button>
-      </div>
+  <!-- PERSISTENT CHAT INPUT -->
+  <div class="chat-input-bar" id="chat-input-bar">
+    <div class="chat-input-inner">
+      <textarea id="chat-input" placeholder="Napiš Orchestrátoru..." rows="1"
+        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat()}"
+        oninput="autoResize(this)"></textarea>
+      <button onclick="sendChat()" class="send-btn" id="send-btn">→</button>
     </div>
-    <div class="preview-tabs">
-      <button class="preview-tab active" onclick="setPreviewTab('render',this)">Náhled</button>
-      <button class="preview-tab" onclick="setPreviewTab('code',this)">Kód</button>
-    </div>
-    <iframe class="preview-iframe" id="preview-iframe" sandbox="allow-scripts allow-same-origin"></iframe>
-    <pre id="preview-code" style="display:none;flex:1;overflow:auto;padding:1rem;font-size:0.72rem;line-height:1.5;background:var(--bg);margin:0;white-space:pre-wrap;word-break:break-all;min-height:400px;"></pre>
+    <div class="input-hint">Enter = odeslat · Shift+Enter = nový řádek · <span id="session-info"></span></div>
   </div>
 </div>
 
 <script>
-// ═══════════════════════════════════════════
-// CONFIG
-// ═══════════════════════════════════════════
-const ORCHESTRATOR_URL = '/api/webhook/orchestrator';
-const QUEUE_URL = '/api/webhook/read-queue';
-const SAVE_QUEUE_URL = '/api/webhook/save-queue';
-const CHAT_URL = '/api/webhook/chat'; // n8n proxy → Claude API
-const ADMIN_APPROVE_URL = '/api/webhook/admin-approve'; // approve/reject backend
-
-const SYSTEM_PROMPT = `Jsi kreativní asistent pro 3R Studio Romana Pavlorka.
-
-== KDO JE ROMAN ==
-Indie developer a kreativec, Ostrava, CZ. Provozuje 3R Studio.
-Dual persona: Pavler (AI virální obsah, TikTok/YouTube/IG) a Roman (autorská tvorba).
-Hodnoty: rodina, znalosti, kreativita. Obsah musí být family-friendly.
-
-== AKTIVNÍ PROJEKTY ==
-- Gream: vzdělávací PWA pro děti 7-15, gamifikace průzkumu okolí, Greamíci, pixel art, launch srpen 2026
-- CONFLUX: narativní karetní hra ~283 nodů, itch.io → Steam, srpen 2026
-- Pavler: AI virální hudba + obsah, Gen Z tón, TikTok/YouTube/IG
-- romanpavlorek.eu: osobní web, tmavě fialová + žlutá + teal, Instrument Serif
-- 3rstudio.eu: studio hub, černá + žlutá, Riot-inspired
-
-== STYLY ==
-- Pavler: virální, energický, Gen Z, emoji, krátké věty, hashtagy
-- 3R Studio: profesionální, herní komunita, nadšený ale seriózní
-- Roman: osobní, autentický, filozofický, thoughtful (NIKDY nenahrazovat bez schválení)
-- Gream: hravý, dobrodružný, přátelský pro děti 7-15
-- CONFLUX: tajemný, napínavý, narativní
-
-== PRAVIDLA ==
-- Nikdy nezveřejňovat osobní rodinné informace
-- Osobní tvorba (hudba, Paleta, fyzická teorie) = Roman rozhoduje, ty jen asistuješ
-- Piš česky pokud není specifikováno jinak
-- Při výstupu vždy navrhni co s ním Roman může dělat dál`;
-
-// ═══════════════════════════════════════════
-// STATE
-// ═══════════════════════════════════════════
-let messages = []; // chat history for API
-let queueData = [];
-let historyData = [];
-let currentMode = 'chat';
-let useOrchestrator = true;
-let isRecording = false;
-let recognition = null;
-let totalInputTokens = 0;
-let totalOutputTokens = 0;
-let generatedImages = [];
-
-// ═══════════════════════════════════════════
-// CLOCK
-// ═══════════════════════════════════════════
-setInterval(() => {
-  document.getElementById('clock').textContent = new Date().toLocaleTimeString('cs-CZ',{hour:'2-digit',minute:'2-digit'});
-}, 1000);
-
-// ═══════════════════════════════════════════
-// NAVIGATION
-// ═══════════════════════════════════════════
-function setMode(mode) {
-  currentMode = mode;
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-icon').forEach(n => n.classList.remove('active'));
-  document.getElementById('panel-' + mode).classList.add('active');
-  document.querySelector(`[data-mode="${mode}"]`)?.classList.add('active');
-  document.getElementById('mode-label').textContent = {
-    chat:'Chat', queue:'Fronta', history:'Historie',
-    images:'Obrázky', projects:'Projekty', calendar:'Kalendář'
-  }[mode] || mode;
-  if (mode === 'queue') loadQueue();
-  if (mode === 'history') renderHistory();
-  if (mode === 'calendar') renderCalendar();
-  if (mode === 'projects') renderProjectsPanel();
-}
-
-function setRpTab(tab, el) {
-  document.querySelectorAll('.rp-tab-content').forEach(t => t.style.display='none');
-  document.querySelectorAll('.rp-tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('rp-' + tab).style.display = 'block';
-  el.classList.add('active');
-}
-
-// ═══════════════════════════════════════════
-// CHAT
-// ═══════════════════════════════════════════
-function autoResize(el) {
-  el.style.height = 'auto';
-  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
-}
-
-function handleKey(e) {
-  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
-}
-
-function toggleOrchestrator() {
-  useOrchestrator = !useOrchestrator;
-  const btn = document.getElementById('orchestrator-toggle');
-  btn.classList.toggle('active', useOrchestrator);
-  btn.textContent = useOrchestrator ? '🤖 Orchestrátor' : '⚡ Přímý chat';
-  document.getElementById('model-label').textContent = useOrchestrator ? 'DeepSeek + Claude' : 'Claude Sonnet 4.6';
-}
-
-async function sendMessage() {
-  const input = document.getElementById('chat-input');
-  const text = input.value.trim();
-  if (!text) return;
-
-  input.value = '';
-  input.style.height = 'auto';
-
-  appendMessage('user', text);
-  messages.push({ role: 'user', content: text });
-  scheduleSave();
-
-  const sendBtn = document.getElementById('send-btn');
-  sendBtn.disabled = true;
-
-  const thinkingEl = appendThinking();
-
-  try {
-    let responseText = '';
-
-    if (useOrchestrator) {
-      // Via n8n Orchestrator
-      // Include last 50 messages as context
-      const recentMsgs = messages.slice(-51, -1);
-      const olderCount = Math.max(0, messages.length - 51);
-      const olderNote = olderCount > 0 ? `[Poznámka: Existuje ještě ${olderCount} starších zpráv v historii session.]\n\n` : '';
-      const ctx = recentMsgs.length > 0
-        ? '\n\n---\nKontext konverzace:\n' + olderNote +
-          recentMsgs.map(m => (m.role === 'user' ? 'Roman' : 'Agent') + ': ' + m.content.substring(0, 800)).join('\n\n')
-        : '';
-
-      const res = await fetch(ORCHESTRATOR_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ brief: text + ctx, session_id: currentSessionId })
-      });
-      const raw = await res.text();
-      try {
-        const data = JSON.parse(raw);
-        responseText = data.output || data[0]?.output || raw;
-      } catch {
-        try { responseText = atob(raw); } catch { responseText = raw; }
-      }
-    } else {
-      // Direct Claude via n8n proxy
-      const res = await fetch(CHAT_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          system: SYSTEM_PROMPT,
-          messages: messages,
-          max_tokens: 2000
-        })
-      });
-      const raw = await res.text();
-      try {
-        const data = JSON.parse(raw);
-        responseText = data.output || data.content?.[0]?.text || raw;
-        // Update token counts
-        if (data.usage) {
-          totalInputTokens += data.usage.input_tokens || 0;
-          totalOutputTokens += data.usage.output_tokens || 0;
-          updateTokenDisplay();
-        }
-      } catch { responseText = raw; }
-    }
-
-    thinkingEl.remove();
-    messages.push({ role: 'assistant', content: responseText });
-    appendMessage('assistant', responseText, true);
-    scheduleSave();
-    updateContextIndicator();
-
-    // Auto-add to queue only if response contains [FRONTA] tag
-    if (useOrchestrator && responseText && responseText.includes('[FRONTA]')) {
-      const cleanContent = responseText.replace('[FRONTA]', '').trim();
-      queueData.push({
-        id: Date.now().toString(),
-        brief: text.substring(0, 80),
-        agent: 'Orchestrátor',
-        content: cleanContent,
-        time: new Date().toLocaleTimeString('cs-CZ', {hour:'2-digit', minute:'2-digit'}),
-        ts: Date.now()
-      });
-      if (queueData.length > 20) {
-        const oldest = queueData.shift();
-        oldest.status = 'auto-rejected';
-        historyData.unshift(oldest);
-      }
-      await saveQueue();
-      updateQueueBadge();
-      addFeed('📥','fi-agent','Výstup přidán do fronty', text.substring(0,50));
-    }
-
-  } catch (err) {
-    thinkingEl.remove();
-    appendMessage('assistant', `⚠ Chyba: ${err.message}`);
-  }
-
-  sendBtn.disabled = false;
-}
-
-function appendMessage(role, content, withActions = false) {
-  const container = document.getElementById('chat-messages');
-  const div = document.createElement('div');
-  div.className = `msg msg-${role}`;
-
-  const meta = role === 'assistant' 
-    ? `<div class="msg-meta"><span>${useOrchestrator ? 'Orchestrátor' : 'Claude Sonnet'}</span></div>`
-    : '';
-
-  const formatted = formatMarkdown(content);
-  const hasHtml = content.includes('<!DOCTYPE') || content.includes('<html') || content.includes('<div') || content.includes('```html') || content.includes('<section');
-
-  let actions = '';
-  if (withActions && role === 'assistant') {
-    actions = `<div class="msg-actions">
-      <button class="msg-btn" onclick="approveMsg(this)" style="color:var(--success);border-color:var(--success)">✓ Schválit</button>
-      <button class="msg-btn" onclick="rejectMsg(this)" style="color:var(--danger);border-color:var(--danger)">✗ Zamítnout</button>
-      <button class="msg-btn" onclick="copyMsg(this)">⎘ Kopírovat</button>
-      <button class="msg-btn" onclick="downloadMsgTxt(this)">↓ TXT</button>
-      <button class="msg-btn" onclick="downloadMsgMd(this)">↓ MD</button>
-      <button class="msg-btn" onclick="downloadMsgPdf(this)">↓ PDF</button>
-      ${hasHtml ? '<button class="msg-btn" onclick="previewMsgHtml(this)" style="color:var(--accent2);border-color:var(--accent2)">🌐 HTML náhled</button>' : ''}
-      <button class="msg-btn" onclick="addToQueueFromMsg(this)">📥 Do fronty</button>
-    </div>`;
-  }
-
-  div.innerHTML = `${meta}<div class="msg-bubble">${formatted}</div>${actions}`;
-  container.appendChild(div);
-  container.scrollTop = container.scrollHeight;
-  return div;
-}
-
-function appendThinking() {
-  const container = document.getElementById('chat-messages');
-  const div = document.createElement('div');
-  div.className = 'msg msg-assistant';
-  div.innerHTML = `<div class="msg-bubble"><div class="thinking-dots"><span></span><span></span><span></span></div></div>`;
-  container.appendChild(div);
-  container.scrollTop = container.scrollHeight;
-  return div;
-}
-
-function formatMarkdown(text) {
-  return text
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
-    .replace(/\*(.+?)\*/g,'<em>$1</em>')
-    .replace(/`([^`]+)`/g,'<code>$1</code>')
-    .replace(/^### (.+)$/gm,'<h3>$1</h3>')
-    .replace(/^## (.+)$/gm,'<h2>$1</h2>')
-    .replace(/^# (.+)$/gm,'<h1>$1</h1>')
-    .replace(/^---$/gm,'<hr style="border-color:var(--border2);margin:0.5rem 0">')
-    .replace(/\n/g,'<br>');
-}
-
-function clearChat() {
-  if (messages.length > 1 && !confirm('Smazat celý chat?')) return;
-  newSession();
-}
-
-// ═══════════════════════════════════════════
-// DOWNLOAD
-// ═══════════════════════════════════════════
-function getLastAssistantMsg() {
-  const reversed = [...messages].reverse();
-  const last = reversed.find(m => m.role === 'assistant');
-  return last ? last.content : '';
-}
-
-function getMsgContent(btn) {
-  return btn.closest('.msg').querySelector('.msg-bubble').innerText;
-}
-
-function copyMsg(btn) {
-  navigator.clipboard.writeText(getMsgContent(btn));
-}
-
-function downloadMsgTxt(btn) {
-  download(getMsgContent(btn), 'vystup.txt', 'text/plain');
-}
-
-function downloadMsgMd(btn) {
-  download(getMsgContent(btn), 'vystup.md', 'text/markdown');
-}
-
-function downloadMsgPdf(btn) {
-  var txt = getMsgContent(btn);
-  var w = window.open('', '_blank');
-  w.document.open();
-  w.document.write('<html><head><title>Vystup</title><style>body{font-family:Georgia,serif;max-width:800px;margin:2rem auto;line-height:1.7;font-size:14px}pre{white-space:pre-wrap;font-family:inherit}</style></head><body><pre>' + txt + '</pre></body></html>');
-  w.document.close();
-  setTimeout(function(){ w.print(); }, 500);
-}
-
-function downloadLast(format) {
-  document.getElementById('dl-menu').classList.remove('open');
-  const content = getLastAssistantMsg() || getAllChatText();
-  if (format === 'txt') download(content, 'vystup.txt', 'text/plain');
-  if (format === 'md') download(content, 'vystup.md', 'text/markdown');
-  if (format === 'pdf') downloadMsgPdf({ closest: () => ({ querySelector: () => ({ innerText: content }) }) });
-}
-
-function downloadAll(format) {
-  document.getElementById('dl-menu').classList.remove('open');
-  const text = messages.map(m => `[${m.role.toUpperCase()}]\n${m.content}`).join('\n\n---\n\n');
-  download(text, 'chat-export.txt', 'text/plain');
-}
-
-function getAllChatText() {
-  return messages.filter(m=>m.role==='assistant').map(m=>m.content).join('\n\n');
-}
-
-function download(content, filename, type) {
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([content], { type }));
-  a.download = filename;
-  a.click();
-}
-
-function toggleDlMenu() {
-  document.getElementById('dl-menu').classList.toggle('open');
-}
-
-document.addEventListener('click', e => {
-  if (!e.target.closest('.dl-wrap')) document.getElementById('dl-menu').classList.remove('open');
-});
-
-// ═══════════════════════════════════════════
-// VOICE INPUT
-// ═══════════════════════════════════════════
-function toggleVoice() {
-  if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
-    alert('Hlasový vstup není podporován v tomto prohlížeči.');
-    return;
-  }
-  if (isRecording) {
-    recognition?.stop();
-    return;
-  }
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  recognition = new SR();
-  recognition.lang = 'cs-CZ';
-  recognition.continuous = false;
-  recognition.interimResults = false;
-  recognition.onstart = () => {
-    isRecording = true;
-    document.getElementById('voice-btn').classList.add('voice-active');
-    document.getElementById('voice-btn').textContent = '🔴 Nahrávám...';
-  };
-  recognition.onresult = e => {
-    const transcript = e.results[0][0].transcript;
-    const input = document.getElementById('chat-input');
-    input.value = (input.value ? input.value + ' ' : '') + transcript;
-    autoResize(input);
-  };
-  recognition.onend = () => {
-    isRecording = false;
-    document.getElementById('voice-btn').classList.remove('voice-active');
-    document.getElementById('voice-btn').textContent = '🎙 Hlas';
-  };
-  recognition.start();
-}
-
-// ═══════════════════════════════════════════
-// TEMPLATES
-// ═══════════════════════════════════════════
-const TEMPLATES = {
-  tiktok: 'Napiš TikTok caption pro Pavler. Téma: [TÉMA]. Energický Gen Z tón, 2-3 věty + 5 hashtagů.',
-  blog: 'Napiš krátký blogpost pro romanpavlorek.eu. Téma: [TÉMA]. Osobní, autentický tón, cca 200 slov.',
-  'gream-task': 'Navrhni novou výzvu pro Gream. Svět: [SVĚT]. Věková skupina: [VĚK]. Výzva musí být vzdělávací, zábavná a realizovatelná venku.',
-  'conflux-card': 'Navrhni kartu nebo dialog pro CONFLUX. Typ: [KARta/NPC]. Jméno: [JMÉNO]. Efekt nebo text musí být tajemný a narativně zajímavý.',
-  appstore: 'Napiš App Store popis pro [HRU]. Jazyk: [CZ/EN]. Max 170 znaků krátký popis + 500 znaků dlouhý popis.',
-  'web-fix': 'Oprav následující část kódu na webu [WEB]. Problém: [POPIS PROBLÉMU]. Kód: [KÓD]',
-  preklad: 'Přelož následující text do angličtiny. Zachovej tón originálu. Text: [TEXT]',
-  presskit: 'Připrav press kit pro [PROJEKT]. Obsah: stručný popis, klíčové features, target audience, quote od vývojáře.',
-  instagram: 'Napiš Instagram post pro [PAVLER/3R STUDIO/GREAM]. Téma: [TÉMA]. 3-5 vět + hashtagy.',
-  youtube: 'Napiš YouTube popis videa. Název videa: [NÁZEV]. Délka: [DÉLKA]. Klíčová slova: [KW].',
+// ===== KONFIGURACE =====
+const API = {
+  orchestrator: '/api/webhook/orchestrator',
+  pavlerPipeline: '/api/webhook/pavler-pipeline',
+  adminApprove: '/api/webhook/admin-approve',
+  saveSessions: '/api/webhook/save-sessions',
+  readSessions: '/api/webhook/read-sessions',
+  saveQueue: '/api/webhook/save-queue',
+  readQueue: '/api/webhook/read-queue',
+  spendData: '/data/spend.json'
 };
 
-function useTemplate(key) {
-  const t = TEMPLATES[key];
-  if (!t) return;
-  const input = document.getElementById('chat-input');
-  input.value = t;
-  autoResize(input);
-  input.focus();
-  setMode('chat');
-}
+// ===== STAV APLIKACE =====
+let currentView = 'queue';
+let sessionId = 'sess_' + Date.now();
+let chatHistory = [];
+let queueItems = [];
 
-function setContext(ctx) {
-  document.querySelectorAll('.sidebar-item').forEach(s => s.classList.remove('active'));
-  event.target.classList.add('active');
-  if (ctx === 'direct') { useOrchestrator = false; }
-  else { useOrchestrator = true; }
-  document.getElementById('orchestrator-toggle').classList.toggle('active', useOrchestrator);
-  document.getElementById('orchestrator-toggle').textContent = useOrchestrator ? '🤖 Orchestrátor' : '⚡ Přímý chat';
-}
-
-function quickAction(action) {
-  const prompts = {
-    digest: 'Připrav denní digest pro 3R Studio. Co je aktuálně potřeba udělat pro Gream, CONFLUX a Pavler? Seřaď podle priority.',
-    'content-plan': 'Navrhni týdenní content plán pro Pavler. TikTok, YouTube, Instagram. Zahrni témata, frekvenci a tipy pro engagement.',
-    'gream-status': 'Zhodnoť aktuální stav projektu Gream. Co chybí před launchem v srpnu 2026? Na co se zaměřit jako první?',
-  };
-  const input = document.getElementById('chat-input');
-  input.value = prompts[action] || '';
-  autoResize(input);
-  setMode('chat');
-}
-
-// ═══════════════════════════════════════════
-// QUEUE
-// ═══════════════════════════════════════════
-async function loadQueue() {
-  // Load localStorage first as fallback
-  try {
-    const saved = localStorage.getItem('admin-queue-backup');
-    if (saved) {
-      const b = JSON.parse(saved);
-      queueData = b.queue || [];
-      historyData = b.history || [];
-    }
-  } catch {}
-
-  try {
-    const res = await fetch(QUEUE_URL + '?t=' + Date.now(), {
-      method: 'GET', cache: 'no-store'
-    });
-    const raw = await res.text();
-    if (!raw || raw.includes('{{')) throw new Error('bad response');
-    let data = {};
-    try { data = JSON.parse(raw); } catch {}
-    // Try base64 if looks encoded
-    if (!data.queue && raw.length > 10 && !/[{}\[\]]/.test(raw.charAt(0))) {
-      try { data = JSON.parse(atob(raw.trim())); } catch {}
-    }
-    if (Array.isArray(data)) data = data[0] || {};
-    if (data.queue !== undefined) queueData = data.queue;
-    if (data.history !== undefined) historyData = data.history;
-    // Save to localStorage
-    localStorage.setItem('admin-queue-backup', JSON.stringify({ queue: queueData, history: historyData }));
-  } catch(e) {
-    console.warn('loadQueue server error:', e.message);
-  }
-
-  renderQueue();
-  renderHistory();
-  updateQueueBadge();
-}
-
-async function saveQueue() {
-  const payload = { queue: queueData, history: historyData };
-  // Always save locally as backup
-  localStorage.setItem('admin-queue-backup', JSON.stringify(payload));
-  try {
-    await fetch(SAVE_QUEUE_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-  } catch(e) { console.warn('Save queue remote failed:', e); }
-}
-
-function updateQueueBadge() {
-  const badge = document.getElementById('queue-badge-icon');
-  const label = document.getElementById('queue-count-label');
-  if (queueData.length > 0) {
-    badge.style.display = 'flex';
-    badge.textContent = queueData.length;
+// ===== NAVIGACE =====
+function setView(view) {
+  currentView = view;
+  document.querySelectorAll('.view').forEach(v => v.style.display = 'none');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const isChat = view === 'chat';
+  const chatPanel = document.getElementById('view-chat');
+  const content = document.getElementById('content-scroll');
+  const inputBar = document.getElementById('chat-input-bar');
+  if (isChat) {
+    chatPanel.style.display = 'flex';
+    content.style.display = 'none';
+    inputBar.style.display = 'block';
   } else {
-    badge.style.display = 'none';
+    chatPanel.style.display = 'none';
+    content.style.display = 'block';
+    inputBar.style.display = 'block';
+    const panel = document.getElementById('view-' + view);
+    if (panel) panel.style.display = 'block';
   }
-  label.textContent = queueData.length + ' položek';
+  document.querySelector('[data-view="' + view + '"]')?.classList.add('active');
+  if (view === 'dashboard') refreshDashboard();
+  if (view === 'queue') loadQueue();
+}
+
+// ===== FRONTA =====
+async function loadQueue() {
+  try {
+    const r = await fetch(API.readQueue + '?t=' + Date.now());
+    if (r.ok) {
+      const data = await r.json();
+      queueItems = (data.queue || []).slice().reverse();
+    }
+  } catch (e) {}
+  renderQueue();
+  updateQueueCount();
+}
+
+function addToQueue(item) {
+  const existing = queueItems.findIndex(i => i.id === item.id);
+  if (existing >= 0) queueItems[existing] = item;
+  else queueItems.unshift(item);
+  renderQueue();
+  updateQueueCount();
 }
 
 function renderQueue() {
-  updateQueueBadge();
   const list = document.getElementById('queue-list');
-  if (!queueData.length) {
-    list.innerHTML = '<div class="empty">Fronta je prázdná</div>';
+  if (!queueItems.length) {
+    list.innerHTML = '<div class="empty-state"><div class="empty-icon">✓</div><p>Fronta je prázdná. Agenti pracují.</p></div>';
+    updateQueueCount();
     return;
   }
-  // Save textarea contents and open panels before re-render
-  const savedComments = {};
-  const openPanels = {};
-  queueData.forEach(item => {
-    const ta = document.getElementById('qicom-' + item.id);
-    if (ta) savedComments[item.id] = ta.value;
-    const panel = document.getElementById('qi-' + item.id);
-    if (panel && panel.classList.contains('open')) openPanels[item.id] = true;
-  });
-  list.innerHTML = queueData.map(item => `
-    <div class="queue-item">
-      <div class="qi-header" onclick="toggleQi('qi-${item.id}')">
-        <div class="qi-meta">
-          <span style="font-size:0.62rem;color:var(--accent2);text-transform:uppercase">${item.agent||'Orchestrátor'}</span>
-          <span class="badge b-pending">čeká</span>
-          <span style="font-size:0.6rem;color:var(--text3);margin-left:auto">${item.time||''}</span>
-        </div>
-        <div class="qi-brief">${item.brief||''}</div>
-      </div>
-      <div class="qi-body" id="qi-${item.id}">
-        <div class="qi-content" id="qic-${item.id}">${item.content||''}</div>
-        <textarea class="qi-edit" id="qie-${item.id}">${item.content||''}</textarea>
-        <textarea class="qi-comment" id="qicom-${item.id}" placeholder="Komentář nebo instrukce k iteraci..."></textarea>
-        <div class="qi-actions">
-          <button class="btn btn-success btn-sm" onclick="approveItem('${item.id}','publish')">✓ Schválit</button>
-          <button class="btn btn-info btn-sm" onclick="approveItem('${item.id}','staging')">⬆ Staging</button>
-          <button class="btn btn-danger btn-sm" onclick="rejectQueueItem('${item.id}')">✗ Odmítnout</button>
-          <button class="btn btn-ghost btn-sm" onclick="editQueueItem('${item.id}')">⌘ Upravit</button>
-          <button class="btn btn-ghost btn-sm" onclick="copyQueueItem('${item.id}')">⎘ Kopírovat</button>
-          <button class="btn btn-ghost btn-sm" onclick="downloadQueueItem('${item.id}','txt')">↓ TXT</button>
-          <button class="btn btn-ghost btn-sm" onclick="downloadQueueItem('${item.id}','md')">↓ MD</button>
-          <button class="btn btn-ghost btn-sm" onclick="sendCommentItem('${item.id}')">↩ Vrátit</button>
-        </div>
-      </div>
-    </div>
-  `).join('');
-  // Restore textarea contents and open panels
-  Object.keys(savedComments).forEach(id => {
-    const ta = document.getElementById('qicom-' + id);
-    if (ta && savedComments[id]) ta.value = savedComments[id];
-  });
-  Object.keys(openPanels).forEach(id => {
-    const panel = document.getElementById('qi-' + id);
-    if (panel) panel.classList.add('open');
-  });
-}
-
-function toggleQi(id) {
-  document.getElementById(id).classList.toggle('open');
-}
-
-function editQueueItem(id) {
-  const content = document.getElementById('qic-' + id);
-  const edit = document.getElementById('qie-' + id);
-  if (edit.style.display === 'block') {
-    const item = queueData.find(i => i.id === id);
-    if (item) item.content = edit.value;
-    content.textContent = edit.value;
-    edit.style.display = 'none'; content.style.display = 'block';
-  } else {
-    edit.style.display = 'block'; content.style.display = 'none';
-  }
-}
-
-function copyQueueItem(id) {
-  const item = queueData.find(i => i.id === id);
-  if (item) navigator.clipboard.writeText(item.content || '');
-}
-
-function downloadQueueItem(id, format) {
-  const item = queueData.find(i => i.id === id);
-  if (!item) return;
-  download(item.content || '', `vystup-${id}.${format}`, format === 'md' ? 'text/markdown' : 'text/plain');
-}
-
-// Notify backend (n8n Admin Approve workflow) about an approve/reject decision.
-// Non-blocking: UI updates immediately, backend handles ntfy + logging.
-async function notifyApproval({ sessionId, action, output, type, comment }) {
-  try {
-    const res = await fetch(ADMIN_APPROVE_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        sessionId: sessionId || currentSessionId || 'admin',
-        action,
-        output: output || '',
-        type: type || 'general',
-        comment: comment || '',
-        timestamp: new Date().toISOString()
-      })
-    });
-    const data = await res.json().catch(() => ({}));
-    return data && data.message ? data.message : null;
-  } catch (e) {
-    console.warn('notifyApproval failed:', e.message);
-    return null;
-  }
-}
-
-function approveItem(id, mode) {
-  const item = queueData.find(i => i.id === id);
-  if (!item) return;
-  // Use edited content if the inline editor was open
-  const edit = document.getElementById('qie-' + id);
-  if (edit && edit.style.display === 'block') item.content = edit.value;
-  queueData = queueData.filter(i => i.id !== id);
-  historyData.unshift({...item, status: mode, actionTime: new Date().toLocaleString('cs-CZ',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})});
-  if (historyData.length > 100) historyData = historyData.slice(0,100);
-  saveQueue(); renderQueue(); renderHistory(); updateQueueBadge();
-  notifyApproval({ sessionId: item.id, action: 'approve', output: item.content, type: mode })
-    .then(msg => addFeed('✅','fi-agent', msg || (mode === 'staging' ? 'Posláno na staging' : 'Schváleno'), item.brief));
-}
-
-function rejectQueueItem(id) {
-  const item = queueData.find(i => i.id === id);
-  if (!item) return;
-  queueData = queueData.filter(i => i.id !== id);
-  historyData.unshift({...item, status:'rejected', actionTime: new Date().toLocaleString('cs-CZ',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})});
-  if (historyData.length > 100) historyData = historyData.slice(0,100);
-  saveQueue(); renderQueue(); renderHistory(); updateQueueBadge();
-  notifyApproval({ sessionId: item.id, action: 'reject', output: item.content, type: 'general' })
-    .then(msg => addFeed('✗','fi-agent', msg || 'Zamítnuto', item.brief));
-}
-
-function sendCommentItem(id) {
-  const item = queueData.find(i => i.id === id);
-  const comment = document.getElementById('qicom-' + id)?.value?.trim();
-  if (!item) return;
-  queueData = queueData.filter(i => i.id !== id);
-  historyData.unshift({...item, status:'returned', comment, actionTime: new Date().toLocaleString('cs-CZ',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})});
-  saveQueue(); renderQueue(); renderHistory(); updateQueueBadge();
-  notifyApproval({ sessionId: item.id, action: 'reject', output: item.content, type: 'returned', comment })
-    .then(msg => addFeed('↩','fi-agent', msg || 'Vráceno k přepracování', comment || item.brief));
-}
-
-// Iterate: send the queue item content + comment back to the Orchestrator as a new brief.
-// Referenced by the Ctrl+Enter handler on queue comments (was previously undefined → crash).
-async function iterateItem(id) {
-  const item = queueData.find(i => i.id === id);
-  if (!item) return;
-  const comment = document.getElementById('qicom-' + id)?.value?.trim() || '';
-  const brief = `Iteruj následující výstup podle instrukce.\n\nINSTRUKCE: ${comment || '(zlepši a uprav)'}\n\nPŮVODNÍ VÝSTUP:\n${item.content || ''}`;
-  // Move original to history as "returned"
-  queueData = queueData.filter(i => i.id !== id);
-  historyData.unshift({...item, status:'returned', comment, actionTime: new Date().toLocaleString('cs-CZ',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})});
-  saveQueue(); renderQueue(); renderHistory(); updateQueueBadge();
-  // Send to chat as a new brief
-  setMode('chat');
-  const input = document.getElementById('chat-input');
-  input.value = brief;
-  autoResize(input);
-  await sendMessage();
-}
-
-// Approve / reject a chat message directly (sends to backend, marks button done).
-async function approveMsg(btn) {
-  const content = getMsgContent(btn);
-  btn.disabled = true; btn.textContent = '… schvaluji';
-  const msg = await notifyApproval({ sessionId: currentSessionId, action: 'approve', output: content, type: 'chat' });
-  btn.textContent = '✓ Schváleno';
-  historyData.unshift({ id: Date.now().toString(), brief: content.substring(0,80), agent: 'Chat', content, status: 'publish', actionTime: new Date().toLocaleString('cs-CZ',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) });
-  saveQueue(); renderHistory();
-  addFeed('✅','fi-agent', msg || 'Schváleno', content.substring(0,50));
-}
-
-async function rejectMsg(btn) {
-  const content = getMsgContent(btn);
-  btn.disabled = true; btn.textContent = '… zamítám';
-  const msg = await notifyApproval({ sessionId: currentSessionId, action: 'reject', output: content, type: 'chat' });
-  btn.textContent = '✗ Zamítnuto';
-  addFeed('✗','fi-agent', msg || 'Zamítnuto', content.substring(0,50));
-}
-
-function addToQueueFromMsg(btn) {
-  const content = getMsgContent(btn);
-  const item = {
-    id: Date.now().toString(), brief: content.substring(0,80),
-    agent: 'Chat', content,
-    time: new Date().toLocaleTimeString('cs-CZ',{hour:'2-digit',minute:'2-digit'}), ts: Date.now()
-  };
-  queueData.push(item);
-  if (queueData.length > 20) {
-    const oldest = queueData.shift();
-    historyData.unshift({...oldest, status:'auto-rejected', actionTime: new Date().toLocaleString('cs-CZ')});
-  }
-  saveQueue(); updateQueueBadge();
-}
-
-function sendToQueue() {
-  const content = getLastAssistantMsg();
-  if (!content) { alert('Žádný výstup k odeslání.'); return; }
-  addToQueueFromMsg({ closest: () => ({ querySelector: () => ({ innerText: content }) }) });
-}
-
-// ═══════════════════════════════════════════
-// HISTORY
-// ═══════════════════════════════════════════
-const STATUS_LABEL = { publish:'schváleno', staging:'staging', rejected:'odmítnuto', returned:'vráceno', 'auto-rejected':'auto-odmítnuto' };
-const STATUS_BADGE = { publish:'b-ok', staging:'b-staging', rejected:'b-err', returned:'b-ret', 'auto-rejected':'b-err' };
-
-function renderHistory() {
-  const list = document.getElementById('history-list');
-  if (!historyData.length) {
-    list.innerHTML = '<div class="empty">Žádná historie</div>';
-    return;
-  }
-  list.innerHTML = historyData.map(h => `
-    <div class="hi-item">
-      <div class="hi-header" onclick="toggleHi('hi-${h.id}')">
-        <div class="hi-meta">
-          <span style="font-size:0.62rem;color:var(--accent2);text-transform:uppercase">${h.agent||'Agent'}</span>
-          <span class="badge ${STATUS_BADGE[h.status]||'b-info'}">${STATUS_LABEL[h.status]||h.status}</span>
-          <span style="font-size:0.6rem;color:var(--text3);margin-left:auto">${h.actionTime||h.time||''}</span>
-        </div>
-        <div class="hi-brief">${h.brief||''}</div>
-        ${h.comment ? `<div style="font-size:0.62rem;color:var(--warning);margin-top:0.2rem">💬 ${h.comment}</div>` : ''}
-      </div>
-      <div class="hi-detail" id="hi-${h.id}">
-        <div class="hi-content">${h.content||''}</div>
-        <div style="display:flex;gap:0.4rem;flex-wrap:wrap">
-          <button class="btn btn-ghost btn-sm" onclick="copyHistItem('${h.id}')">⎘ Kopírovat</button>
-          <button class="btn btn-ghost btn-sm" onclick="dlHistItem('${h.id}','txt')">↓ TXT</button>
-          <button class="btn btn-ghost btn-sm" onclick="dlHistItem('${h.id}','md')">↓ MD</button>
-          <button class="btn btn-ghost btn-sm" onclick="reuseHistItem('${h.id}')">↗ Jako nový brief</button>
-        </div>
-      </div>
-    </div>
-  `).join('');
-}
-
-function toggleHi(id) { document.getElementById(id).classList.toggle('open'); }
-
-function copyHistItem(id) {
-  const h = historyData.find(i => i.id === id);
-  if (h) navigator.clipboard.writeText(h.content || '');
-}
-
-function dlHistItem(id, format) {
-  const h = historyData.find(i => i.id === id);
-  if (!h) return;
-  download(h.content || '', `historie-${id}.${format}`, format === 'md' ? 'text/markdown' : 'text/plain');
-}
-
-function reuseHistItem(id) {
-  const h = historyData.find(i => i.id === id);
-  if (!h) return;
-  const input = document.getElementById('chat-input');
-  input.value = h.brief || '';
-  autoResize(input);
-  setMode('chat');
-}
-
-function clearHistory() {
-  if (confirm('Smazat celou historii?')) {
-    historyData = [];
-    saveQueue();
-    renderHistory();
-  }
-}
-
-// ═══════════════════════════════════════════
-// IMAGE GENERATION
-// ═══════════════════════════════════════════
-async function generateImage() {
-  const prompt = document.getElementById('img-prompt').value.trim();
-  if (!prompt) { alert('Zadej prompt.'); return; }
-
-  const grid = document.getElementById('img-grid');
-  const placeholder = document.createElement('div');
-  placeholder.className = 'img-placeholder';
-  placeholder.style.cssText = 'grid-column:1/-1;aspect-ratio:auto;padding:2rem';
-  placeholder.innerHTML = '<div class="thinking-dots"><span></span><span></span><span></span></div>';
-  grid.innerHTML = '';
-  grid.appendChild(placeholder);
-
-  try {
-    const res = await fetch('/api/webhook/image-gen', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        prompt,
-        size: document.getElementById('img-size').value,
-        style: document.getElementById('img-style').value || 'vivid'
-      })
-    });
-    const data = await res.json();
-    const imageUrl = data.url || data.image_url || data[0]?.url;
-
-    if (imageUrl) {
-      grid.innerHTML = `
-        <div class="img-generated" style="grid-column:1/-1">
-          <img src="${imageUrl}" alt="Generovaný obrázek" onerror="this.parentElement.innerHTML='<div class=img-placeholder style=grid-column:1/-1;padding:2rem>Obrázek se nepodařilo načíst</div>'">
-          <button class="img-dl" onclick="downloadImage('${imageUrl}')">⬇ Stáhnout</button>
-        </div>`;
-      generatedImages.push({ url: imageUrl, prompt });
-    } else {
-      grid.innerHTML = `<div class="img-placeholder" style="grid-column:1/-1;padding:2rem">
-        Image Gen agent zatím není napojen. Přidej /api/webhook/image-gen workflow v n8n.</div>`;
-    }
-  } catch(e) {
-    grid.innerHTML = `<div class="img-placeholder" style="grid-column:1/-1;padding:2rem">
-      Chyba: ${e.message}<br><br>
-      <small style="color:var(--text3)">Pro generování obrázků vytvoř workflow image-gen v n8n s GPT Image 2.</small></div>`;
-  }
-}
-
-function downloadImage(url) {
-  const a = document.createElement('a');
-  a.href = url; a.download = 'image-' + Date.now() + '.png'; a.target = '_blank'; a.click();
-}
-
-// ═══════════════════════════════════════════
-// PROJECTS
-// ═══════════════════════════════════════════
-function renderProjectsPanel() {
-  const content = document.getElementById('projects-content');
-  const projects = [
-    { name: '🎮 Gream', status: 'v-vyvoji', priority: 'vysoká', deadline: 'srpen 2026', needs: ['artworky','bug-fix (Safari, GPS)','EN lokalizace','20 testerů Google Play'], done: ['gameplay','Greamíci','PWA','OSM API'], progress: 60 },
-    { name: '🃏 CONFLUX', status: 'v-vyvoji', priority: 'vysoká', deadline: 'srpen 2026', needs: ['příběh','artworky','backgroundy','bug-fix'], done: ['283 nodů','mechanika'], progress: 40 },
-    { name: '🎵 Pavler', status: 'příprava', priority: 'střední', deadline: 'co nejdříve', needs: ['profily','Buffer','první písně'], done: ['strategie','pipeline'], progress: 15 },
-    { name: '🌐 romanpavlorek.eu', status: 'živý', priority: 'střední', deadline: 'průběžně', needs: ['opravy','blog obsah'], done: ['deploy','HTTPS','auto-deploy'], progress: 80 },
-    { name: '🌐 3rstudio.eu', status: 'živý', priority: 'střední', deadline: 'průběžně', needs: ['game pages','press kit'], done: ['deploy','HTTPS'], progress: 70 },
-    { name: '🎵 Spektrum barev', status: 'pozastaveno', priority: 'nízká', deadline: 'srpen 2026', needs: ['mastering','cover art','DistroKid'], done: ['skladby draft'], progress: 30 },
-  ];
-
-  content.innerHTML = projects.map(p => `
-    <div style="padding:0.875rem 1rem;border-bottom:1px solid var(--border)">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.4rem">
-        <span style="font-size:0.8rem;font-weight:700">${p.name}</span>
-        <span class="badge ${p.status==='živý'?'b-ok':p.status==='pozastaveno'?'b-err':'b-pending'}">${p.status}</span>
-      </div>
-      <div style="font-size:0.6rem;color:var(--text3);margin-bottom:0.5rem">Deadline: ${p.deadline} · Priorita: ${p.priority}</div>
-      <div class="token-bar"><div class="token-fill" style="width:${p.progress}%"></div></div>
-      <div style="font-size:0.6rem;color:var(--text3);margin-top:0.4rem">Potřeba: ${p.needs.join(' · ')}</div>
-      <div style="display:flex;gap:0.4rem;margin-top:0.5rem">
-        <button class="btn btn-ghost btn-sm" onclick="briefForProject('${p.name}')">↗ Brief</button>
-      </div>
-    </div>
-  `).join('');
-}
-
-function briefForProject(name) {
-  const input = document.getElementById('chat-input');
-  input.value = `Potřebuji pomoc s projektem ${name}: `;
-  autoResize(input);
-  setMode('chat');
-  input.focus();
-}
-
-// ═══════════════════════════════════════════
-// CALENDAR
-// ═══════════════════════════════════════════
-const calEvents = {
-  // key: YYYY-MM-DD, value: array of events
-};
-
-let calYear, calMonth;
-
-function renderCalendar() {
-  const now = new Date();
-  if (calYear === undefined) { calYear = now.getFullYear(); calMonth = now.getMonth(); }
-  
-  document.getElementById('cal-month').textContent = new Date(calYear, calMonth).toLocaleString('cs-CZ',{month:'long',year:'numeric'});
-
-  const firstDay = new Date(calYear, calMonth, 1).getDay();
-  const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
-  const offset = firstDay === 0 ? 6 : firstDay - 1;
-  const todayD = now.getDate(), todayM = now.getMonth(), todayY = now.getFullYear();
-
-  const grid = document.getElementById('cal-grid');
-  let html = '';
-  for (let i = 0; i < offset; i++) html += '<div></div>';
-  for (let d = 1; d <= daysInMonth; d++) {
-    const dateStr = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const isToday = d === todayD && calMonth === todayM && calYear === todayY;
-    const hasEvent = calEvents[dateStr]?.length > 0;
-    html += `<div class="cal-day ${isToday?'today':''} ${hasEvent?'has-event':''}" onclick="showCalDay('${dateStr}')">${d}</div>`;
-  }
-  grid.innerHTML = html;
-  document.getElementById('cal-events').innerHTML = `
-    <div style="font-size:0.65rem;color:var(--text3)">Klikni na den pro zobrazení nebo přidání události.</div>
-    <div style="margin-top:0.75rem;display:flex;gap:0.4rem;flex-wrap:wrap">
-      <button class="btn btn-ghost btn-sm" onclick="changeMonth(-1)">← Předchozí</button>
-      <button class="btn btn-ghost btn-sm" onclick="changeMonth(1)">Další →</button>
-      <button class="btn btn-ghost btn-sm" onclick="generateContentPlan()">🤖 Vygenerovat plán</button>
-    </div>`;
-}
-
-function changeMonth(dir) {
-  calMonth += dir;
-  if (calMonth < 0) { calMonth = 11; calYear--; }
-  if (calMonth > 11) { calMonth = 0; calYear++; }
-  renderCalendar();
-}
-
-function showCalDay(date) {
-  const events = calEvents[date] || [];
-  const eventsHtml = events.length ? events.map(e => `<div style="padding:0.3rem;background:var(--surface2);border-radius:2px;margin-bottom:0.3rem;font-size:0.65rem">${e}</div>`).join('') : '<div style="font-size:0.65rem;color:var(--text3)">Žádné události</div>';
-  document.getElementById('cal-events').innerHTML = `
-    <div style="font-size:0.7rem;color:var(--accent);margin-bottom:0.5rem">${date}</div>
-    ${eventsHtml}
-    <div style="margin-top:0.5rem;display:flex;gap:0.4rem">
-      <input id="new-event-input" placeholder="Nová událost..." style="flex:1;background:var(--bg);border:1px solid var(--border2);color:var(--text);font-family:var(--font-mono);font-size:0.65rem;padding:0.3rem 0.5rem;border-radius:2px;outline:none">
-      <button class="btn btn-ghost btn-sm" onclick="saveCalEvent('${date}')">Přidat</button>
-    </div>`;
-}
-
-function saveCalEvent(date) {
-  const val = document.getElementById('new-event-input')?.value?.trim();
-  if (!val) return;
-  if (!calEvents[date]) calEvents[date] = [];
-  calEvents[date].push(val);
-  renderCalendar();
-  showCalDay(date);
-}
-
-function generateContentPlan() {
-  const input = document.getElementById('chat-input');
-  input.value = 'Navrhni týdenní content plán pro Pavler na příští týden. TikTok 3x, YouTube 1x, Instagram 5x. Témata musí být energická a virální.';
-  autoResize(input);
-  setMode('chat');
-}
-
-// ═══════════════════════════════════════════
-// TOKEN TRACKING
-// ═══════════════════════════════════════════
-function updateTokenDisplay() {
-  const total = totalInputTokens + totalOutputTokens;
-  const costUSD = (totalInputTokens * 3 + totalOutputTokens * 15) / 1000000;
-  const costCZK = (costUSD * 23).toFixed(2);
-  document.getElementById('token-display').textContent = `${total.toLocaleString()} tokenů`;
-  document.getElementById('t-input').textContent = totalInputTokens.toLocaleString();
-  document.getElementById('t-output').textContent = totalOutputTokens.toLocaleString();
-  document.getElementById('t-total').textContent = total.toLocaleString();
-  document.getElementById('t-cost').textContent = costCZK + ' Kč';
-  document.getElementById('t-bar').style.width = Math.min(total / 1000, 100) + '%';
-}
-
-// ═══════════════════════════════════════════
-// HTML PREVIEW
-// ═══════════════════════════════════════════
-let currentPreviewHtml = '';
-
-function extractHtml(text) {
-  var marker = String.fromCharCode(96,96,96) + 'html';
-  var endMarker = String.fromCharCode(96,96,96);
-  var idx = text.indexOf(marker);
-  if (idx !== -1) {
-    var start = text.indexOf('\n', idx) + 1;
-    var end = text.indexOf(endMarker, start);
-    if (end !== -1) return text.slice(start, end).trim();
-  }
-  if (text.indexOf('<!DOCTYPE') !== -1 || text.indexOf('<html') !== -1) return text;
-  if (text.indexOf('<div') !== -1 || text.indexOf('<section') !== -1) return text;
-  return null;
-}
-
-function previewLastHtml() {
-  const last = messages.filter(m => m.role === 'assistant').pop();
-  if (!last) { alert('Žádná odpověď k zobrazení.'); return; }
-  const html = extractHtml(last.content) || last.content;
-  openHtmlModal(html);
-}
-
-function previewMsgHtml(btn) {
-  const text = getMsgContent(btn);
-  const html = extractHtml(text) || text;
-  openHtmlModal(html);
-}
-
-function openHtmlModal(html) {
-  currentPreviewHtml = html;
-  document.getElementById('html-modal').classList.add('open');
-  const iframe = document.getElementById('preview-iframe');
-  iframe.srcdoc = html;
-  document.getElementById('preview-code').textContent = html;
-}
-
-function closeHtmlModal() {
-  document.getElementById('html-modal').classList.remove('open');
-}
-
-function setPreviewTab(tab, el) {
-  document.querySelectorAll('.preview-tab').forEach(t => t.classList.remove('active'));
-  el.classList.add('active');
-  document.getElementById('preview-iframe').style.display = tab === 'render' ? 'block' : 'none';
-  document.getElementById('preview-code').style.display = tab === 'code' ? 'block' : 'none';
-}
-
-function downloadPreviewHtml() {
-  download(currentPreviewHtml, 'vystup.html', 'text/html');
-}
-
-function openPreviewInTab() {
-  const blob = new Blob([currentPreviewHtml], { type: 'text/html' });
-  window.open(URL.createObjectURL(blob), '_blank');
-}
-
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') closeHtmlModal();
-});
-
-// ═══════════════════════════════════════════
-// PERSISTENT MEMORY / SESSIONS
-// ═══════════════════════════════════════════
-const CHAT_SAVE_URL = '/api/webhook/save-queue';
-let currentSessionId = null;
-let sessions = {};
-let memorySaveTimer = null;
-
-const SESSIONS_URL = '/api/webhook/read-sessions';
-const SESSIONS_SAVE_URL = '/api/webhook/save-sessions';
-
-async function initSessions() {
-  // Load from server first, fallback to localStorage
-  try {
-    const res = await fetch(SESSIONS_URL, { method: 'GET' });
-    if (res.ok) {
-      const raw = await res.text();
-      let data = {};
-      try {
-        data = JSON.parse(raw);
-        if (data.data) { try { data = JSON.parse(atob(data.data)); } catch { try { data = JSON.parse(data.data); } catch {} } }
-        if (Array.isArray(data)) data = data[0] || {};
-      } catch {}
-      if (data.sessions) sessions = data.sessions;
-    }
-  } catch {}
-
-  // Fallback/merge with localStorage
-  try {
-    const local = JSON.parse(localStorage.getItem('admin-sessions') || '{}');
-    sessions = Object.assign(local, sessions);
-  } catch {}
-
-  const lastId = localStorage.getItem('admin-last-session');
-  if (lastId && sessions[lastId]) {
-    loadSession(lastId);
-  } else {
-    newSession();
-  }
-  renderSessions();
-}
-
-function newSession() {
-  const id = Date.now().toString();
-  currentSessionId = id;
-  messages = [];
-  sessions[id] = {
-    id, 
-    created: new Date().toLocaleString('cs-CZ', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}),
-    title: 'Nová session',
-    messages: []
-  };
-  localStorage.setItem('admin-last-session', id);
-  saveSessions();
-  renderSessions();
-  
-  // Clear chat UI
-  document.getElementById('chat-messages').innerHTML = `
-    <div class="msg msg-assistant">
-      <div class="msg-bubble">Nová session zahájena. Co mohu udělat?</div>
-    </div>`;
-  updateMemoryIndicator('saved');
-}
-
-function loadSession(id) {
-  if (!sessions[id]) return;
-  currentSessionId = id;
-  messages = sessions[id].messages || [];
-  localStorage.setItem('admin-last-session', id);
-  
-  // Rebuild chat UI
-  const container = document.getElementById('chat-messages');
-  container.innerHTML = '';
-  if (messages.length === 0) {
-    container.innerHTML = '<div class="msg msg-assistant"><div class="msg-bubble">Session obnovena. Pokračuj kde jsi skončil.</div></div>';
-  } else {
-    messages.forEach(m => {
-      appendMessage(m.role, m.content, m.role === 'assistant');
-    });
-  }
-  renderSessions();
-  updateMemoryIndicator('saved');
-  updateContextIndicator();
-}
-
-function deleteSession(id, e) {
-  e.stopPropagation();
-  if (!confirm('Smazat tuto session?')) return;
-  delete sessions[id];
-  saveSessions();
-  if (currentSessionId === id) newSession();
-  else renderSessions();
-}
-
-function saveSessions() {
-  // Keep max 20 sessions
-  const keys = Object.keys(sessions);
-  if (keys.length > 20) {
-    keys.sort((a,b) => a-b);
-    keys.slice(0, keys.length - 20).forEach(k => delete sessions[k]);
-  }
-  localStorage.setItem('admin-sessions', JSON.stringify(sessions));
-  // Save to server async (non-blocking)
-  fetch(SESSIONS_SAVE_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ sessions })
-  }).catch(() => {});
-}
-
-function saveCurrentSession() {
-  if (!currentSessionId) return;
-  if (!sessions[currentSessionId]) sessions[currentSessionId] = { id: currentSessionId, created: '', messages: [] };
-  sessions[currentSessionId].messages = messages;
-  // Update title from first user message
-  const firstUser = messages.find(m => m.role === 'user');
-  if (firstUser) sessions[currentSessionId].title = firstUser.content.substring(0, 40);
-  saveSessions();
-  renderSessions();
-  updateMemoryIndicator('saved');
-}
-
-function scheduleSave() {
-  updateMemoryIndicator('saving');
-  clearTimeout(memorySaveTimer);
-  memorySaveTimer = setTimeout(saveCurrentSession, 1500);
-}
-
-function updateMemoryIndicator(state) {
-  const dot = document.getElementById('memory-dot');
-  const label = document.getElementById('memory-label');
-  if (state === 'saving') {
-    dot.classList.add('saving');
-    label.textContent = 'ukládám...';
-  } else {
-    dot.classList.remove('saving');
-    label.textContent = `paměť (${messages.length} zpráv)`;
-  }
-}
-
-function renderSessions() {
-  const list = document.getElementById('session-list');
-  if (!list) return;
-  const keys = Object.keys(sessions).sort((a,b) => b-a);
-  if (!keys.length) {
-    list.innerHTML = '<div style="font-size:0.62rem;color:var(--text3);padding:0.25rem">Žádné sessions</div>';
-    return;
-  }
-  list.innerHTML = keys.map(id => {
-    const s = sessions[id];
-    return `<div class="session-item ${id===currentSessionId?'active':''}" onclick="loadSession('${id}')">
-      <div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">${s.title||'Session'}</div>
-      <div style="display:flex;align-items:center;gap:0.25rem;flex-shrink:0">
-        <span style="font-size:0.55rem;color:var(--text3)">${(s.messages||[]).length}x</span>
-        <button class="session-del" onclick="deleteSession('${id}',event)">✕</button>
-      </div>
-    </div>`;
+  list.innerHTML = queueItems.map(item => {
+    const content = item.content || '';
+    const proj = (item.project || '').toLowerCase();
+    return '' +
+    '<div class="queue-card" data-id="' + escAttr(item.id) + '">' +
+      '<div class="card-header">' +
+        '<span class="project-tag ' + proj + '">' + projectIcon(item.project) + ' ' + escHtml(item.project || 'Obecné') + '</span>' +
+        '<span class="agent-name">' + escHtml(item.agent || 'Agent') + '</span>' +
+        '<span class="time-ago">' + timeAgo(item.timestamp || item.ts) + '</span>' +
+        (item.qa ? '<span class="qa-score ' + (item.qa >= 7 ? 'good' : 'warn') + '">QA ' + item.qa + '/10</span>' : '') +
+      '</div>' +
+      '<div class="card-title">' + escHtml(item.title || '') + '</div>' +
+      '<div class="card-preview">' + escHtml(content.slice(0, 300)) + (content.length > 300 ? '…' : '') + '</div>' +
+      (content.length > 300 ?
+        '<div class="card-full" style="display:none">' + escHtml(content) + '</div>' +
+        '<button class="expand-btn" onclick="toggleCard(this)">Zobrazit vše ▼</button>' : '') +
+      '<div class="card-editor" style="display:none">' +
+        '<textarea class="edit-area">' + escHtml(content) + '</textarea>' +
+        '<div class="editor-actions">' +
+          '<button onclick="saveEdit(\'' + escAttr(item.id) + '\', this)" class="btn-success">✓ Uložit upravenou verzi</button>' +
+          '<button onclick="cancelMode(this)" class="btn-ghost">Zrušit</button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="card-feedback" style="display:none">' +
+        '<textarea class="feedback-area" placeholder="Co změnit? Buď konkrétní..."></textarea>' +
+        '<div class="editor-actions">' +
+          '<button onclick="sendFeedback(\'' + escAttr(item.id) + '\', this)" class="btn-primary">↩ Odeslat k přepracování</button>' +
+          '<button onclick="cancelMode(this)" class="btn-ghost">Zrušit</button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="card-actions">' +
+        '<button onclick="approveCard(\'' + escAttr(item.id) + '\')" class="btn-approve">✓ Schválit</button>' +
+        '<button onclick="editCard(this)" class="btn-edit">✎ Upravit</button>' +
+        '<button onclick="feedbackCard(this)" class="btn-feedback">↩ Přepracovat</button>' +
+        '<button onclick="rejectCard(\'' + escAttr(item.id) + '\')" class="btn-reject">✗</button>' +
+      '</div>' +
+    '</div>';
   }).join('');
 }
 
-// ═══════════════════════════════════════════
-// FEED
-// ═══════════════════════════════════════════
-function addFeed(icon, cls, title, sub) {
-  const feed = document.getElementById('feed-list');
-  if (!feed) return;
-  const d = document.createElement('div');
-  d.className = 'feed-item';
-  d.style.animation = 'flash-in 0.3s ease';
-  d.innerHTML = '<div class="feed-icon ' + cls + '">' + icon + '</div><div><div class="feed-title">' + title + '</div><div class="feed-sub">' + (sub||'').substring(0,60) + ' · ' + new Date().toLocaleTimeString('cs-CZ',{hour:'2-digit',minute:'2-digit'}) + '</div></div>';
-  feed.insertBefore(d, feed.firstChild);
-  while (feed.children.length > 30) feed.removeChild(feed.lastChild);
+function toggleCard(btn) {
+  const card = btn.closest('.queue-card');
+  const full = card.querySelector('.card-full');
+  const preview = card.querySelector('.card-preview');
+  if (full.style.display === 'none') {
+    full.style.display = 'block'; preview.style.display = 'none';
+    btn.textContent = 'Skrýt ▲';
+  } else {
+    full.style.display = 'none'; preview.style.display = 'block';
+    btn.textContent = 'Zobrazit vše ▼';
+  }
 }
 
-// ═══════════════════════════════════════════
-// CONTEXT INDICATOR
-// ═══════════════════════════════════════════
-function updateContextIndicator() {
-  const total = messages.length;
-  const inContext = Math.min(total, 50);
-  const estTokens = messages.slice(-50).reduce((sum, m) => sum + Math.ceil(m.content.length / 4), 0);
-  const pct = Math.min(100, Math.round(estTokens / 640)); // 64K tokens = 100%
-  const color = pct > 80 ? 'var(--danger)' : pct > 60 ? 'var(--warning)' : 'var(--success)';
-
-  // Topbar memory indicator
-  const label = document.getElementById('memory-label');
-  const dot = document.getElementById('memory-dot');
-  if (label) label.textContent = `${inContext}/${total} zpráv · ~${Math.round(estTokens/1000)}K tokenů`;
-  if (dot) { dot.classList.remove('saving'); dot.style.background = color; }
-
-  // Token display
-  const td = document.getElementById('token-display');
-  if (td) { td.style.display = 'inline'; td.textContent = `~${Math.round(estTokens/1000)}K / 64K tokenů`; }
-
-  // Input area bar
-  const ctxLabel = document.getElementById('ctx-label');
-  const ctxBar = document.getElementById('ctx-bar');
-  const ctxTokens = document.getElementById('ctx-tokens');
-  if (ctxLabel) ctxLabel.textContent = `${inContext}/50 zpráv v kontextu${total > 50 ? ' (starší v historii)' : ''}`;
-  if (ctxBar) { ctxBar.style.width = pct + '%'; ctxBar.style.background = color; }
-  if (ctxTokens) ctxTokens.textContent = `~${Math.round(estTokens/1000)}K / 64K tokenů`;
+function editCard(btn) {
+  const card = btn.closest('.queue-card');
+  card.querySelector('.card-editor').style.display = 'block';
+  card.querySelector('.card-feedback').style.display = 'none';
 }
 
-// ═══════════════════════════════════════════
-// THEME
-// ═══════════════════════════════════════════
-let isDark = true;
-function toggleTheme() {
-  isDark = !isDark;
-  document.body.classList.toggle('light-mode', !isDark);
-  document.getElementById('theme-btn').textContent = isDark ? '☀ Světlý' : '🌙 Tmavý';
-  localStorage.setItem('admin-theme', isDark ? 'dark' : 'light');
+function feedbackCard(btn) {
+  const card = btn.closest('.queue-card');
+  card.querySelector('.card-feedback').style.display = 'block';
+  card.querySelector('.card-editor').style.display = 'none';
 }
-// Load saved theme
-if (localStorage.getItem('admin-theme') === 'light') toggleTheme();
 
-// ═══════════════════════════════════════════
-// INIT
-// ═══════════════════════════════════════════
-document.addEventListener('keydown', e => {
-  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-    // If focused on queue comment → iterate
-    const active = document.activeElement;
-    if (active && active.classList.contains('qi-comment')) {
-      const id = active.id.replace('qicom-', '');
-      iterateItem(id);
-      return;
+function cancelMode(btn) {
+  const card = btn.closest('.queue-card');
+  card.querySelector('.card-editor').style.display = 'none';
+  card.querySelector('.card-feedback').style.display = 'none';
+}
+
+async function persistQueue() {
+  // Server stores newest-first; we hold newest-first in UI top → reverse to chrono before save
+  try {
+    await fetch(API.saveQueue, {method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({queue: queueItems.slice().reverse()})});
+  } catch (e) {}
+}
+
+async function approveCard(id) {
+  const item = queueItems.find(i => i.id === id);
+  await fetch(API.adminApprove, {method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({action:'approve', sessionId: id, type: item?.type || 'general', output: item?.content || '', source:'admin'})});
+  queueItems = queueItems.filter(i => i.id !== id);
+  renderQueue(); updateQueueCount(); persistQueue();
+  showToast('✓ Schváleno');
+}
+
+async function saveEdit(id, btn) {
+  const card = btn.closest('.queue-card');
+  const newContent = card.querySelector('.edit-area').value;
+  const item = queueItems.find(i => i.id === id);
+  if (item) item.content = newContent;
+  await fetch(API.adminApprove, {method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({action:'approve', sessionId: id, type: item?.type || 'general', output: newContent, edited: true, source:'admin'})});
+  queueItems = queueItems.filter(i => i.id !== id);
+  renderQueue(); updateQueueCount(); persistQueue();
+  showToast('✓ Upravená verze schválena');
+}
+
+async function sendFeedback(id, btn) {
+  const card = btn.closest('.queue-card');
+  const feedback = card.querySelector('.feedback-area').value.trim();
+  if (!feedback) { showToast('Napiš feedback'); return; }
+  const item = queueItems.find(i => i.id === id);
+  btn.disabled = true; btn.textContent = 'Odesílám...';
+  try {
+    await fetch(API.orchestrator, {method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        message: 'Přepracuj tento výstup podle feedbacku.\n\nPůvodní výstup:\n' + (item?.content || '') + '\n\nFeedback od Romana:\n' + feedback,
+        sessionId: id + '_revision', source: 'admin', history: []
+      })});
+  } catch (e) {}
+  queueItems = queueItems.filter(i => i.id !== id);
+  renderQueue(); updateQueueCount(); persistQueue();
+  showToast('↩ Odesláno k přepracování');
+}
+
+async function rejectCard(id) {
+  await fetch(API.adminApprove, {method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({action:'reject', sessionId: id, source:'admin'})});
+  queueItems = queueItems.filter(i => i.id !== id);
+  renderQueue(); updateQueueCount(); persistQueue();
+  showToast('✗ Zamítnuto');
+}
+
+function updateQueueCount() {
+  const count = queueItems.length;
+  const cEl = document.getElementById('queue-count');
+  if (cEl) cEl.textContent = count ? count + ' čekají' : 'Prázdná';
+  const badge = document.getElementById('queue-badge');
+  if (badge) { badge.textContent = count || ''; badge.style.display = count ? 'flex' : 'none'; }
+  const stat = document.getElementById('queue-stat');
+  if (stat) stat.textContent = count;
+}
+
+// ===== CHAT =====
+async function sendChat() {
+  const input = document.getElementById('chat-input');
+  const msg = input.value.trim();
+  if (!msg) return;
+  if (currentView !== 'chat') setView('chat');
+  input.value = ''; autoResize(input);
+
+  appendMsg('user', msg);
+  chatHistory.push({role: 'user', content: msg});
+
+  const typingId = showTyping();
+  document.getElementById('send-btn').disabled = true;
+
+  try {
+    const r = await fetch(API.orchestrator, {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({message: msg, sessionId, history: chatHistory, source: 'admin'})
+    });
+    removeTyping(typingId);
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    let data;
+    const txt = await r.text();
+    try { data = JSON.parse(txt); } catch { data = {output: txt}; }
+    const reply = data.output || data.text || data.response || data.message || (typeof data === 'string' ? data : JSON.stringify(data));
+    appendMsg('agent', reply);
+    chatHistory.push({role: 'assistant', content: reply});
+    saveSession();
+    if (data.queue_item) addToQueue(data.queue_item);
+  } catch (e) {
+    removeTyping(typingId);
+    appendMsg('agent', '❌ Chyba: ' + e.message);
+  } finally {
+    document.getElementById('send-btn').disabled = false;
+  }
+}
+
+function appendMsg(role, content) {
+  const msgs = document.getElementById('chat-messages');
+  const div = document.createElement('div');
+  div.className = 'msg ' + role;
+  div.innerHTML = escHtml(content).replace(/\n/g, '<br>') +
+    '<div class="msg-meta">' + (role === 'user' ? 'Ty' : 'Orchestrátor') + ' · ' +
+    new Date().toLocaleTimeString('cs-CZ', {hour:'2-digit', minute:'2-digit'}) + '</div>';
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function showTyping() {
+  const msgs = document.getElementById('chat-messages');
+  const id = 'typing_' + Date.now();
+  const div = document.createElement('div');
+  div.id = id; div.className = 'msg agent';
+  div.innerHTML = '<div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>';
+  msgs.appendChild(div); msgs.scrollTop = msgs.scrollHeight;
+  return id;
+}
+
+function removeTyping(id) { document.getElementById(id)?.remove(); }
+
+function newSession() {
+  sessionId = 'sess_' + Date.now();
+  chatHistory = [];
+  document.getElementById('chat-messages').innerHTML = '<div class="welcome-msg"><strong>Orchestrátor 3R Studia</strong><br>Nová konverzace zahájena.</div>';
+  document.getElementById('session-info').textContent = 'Nová konverzace';
+}
+
+async function saveSession() {
+  try {
+    await fetch(API.saveSessions, {method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({sessionId, messages: chatHistory})});
+  } catch (e) {}
+}
+
+// ===== PAVLER PIPELINE =====
+let _pavlerPkg = null;
+async function runPavler() {
+  const topic = document.getElementById('pav-topic').value.trim();
+  if (!topic) { showToast('Zadej téma videa'); return; }
+  const mood = chipValue('pav-mood') || 'inspirativní';
+  const platform = chipValue('pav-plat') || 'both';
+
+  const statusEl = document.getElementById('pav-status');
+  const resultEl = document.getElementById('pav-result');
+  statusEl.innerHTML = '<div class="pipeline-loading">⟳ Generuji script, thumbnail a QA...</div>';
+  statusEl.style.display = 'block'; resultEl.style.display = 'none';
+
+  try {
+    const r = await fetch(API.pavlerPipeline, {method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({topic, mood, platform, sessionId, source:'admin'})});
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const pkg = await r.json();
+    _pavlerPkg = pkg;
+    statusEl.style.display = 'none';
+    renderPavlerResult(pkg, resultEl);
+    resultEl.style.display = 'block';
+  } catch (e) {
+    statusEl.innerHTML = '<div class="pipeline-error">❌ Chyba: ' + escHtml(e.message) + '</div>';
+  }
+}
+
+function renderPavlerResult(pkg, el) {
+  const score = pkg.qa?.score || 0;
+  el.innerHTML =
+    '<div class="result-header">' +
+      '<span class="qa-pill ' + (score >= 7 ? 'qa-good' : 'qa-warn') + '">QA ' + score + '/10</span>' +
+      '<span class="result-note">' + escHtml(pkg.qa?.doporuceni || '') + '</span>' +
+    '</div>' +
+    '<div class="result-block"><div class="result-label">Hook</div><div class="result-hook">' + escHtml(pkg.content?.hook || '') + '</div></div>' +
+    '<div class="result-block"><div class="result-label">Script</div><div class="result-scrollable">' + escHtml(pkg.content?.script || '') + '</div></div>' +
+    '<div class="result-block"><div class="result-label">Caption + hashtagy</div><div class="result-text">' + escHtml(pkg.content?.caption || '') + '</div></div>' +
+    (pkg.thumbnail?.url ? '<div class="result-block"><div class="result-label">Thumbnail</div><img src="' + escAttr(pkg.thumbnail.url) + '" class="thumb-preview"></div>' : '') +
+    '<div class="result-block"><div class="result-label">Doporučený čas</div><div class="result-time">' + escHtml(pkg.content?.posting_time || '') + '</div></div>' +
+    '<div class="result-actions">' +
+      '<button onclick="approvePavler()" class="btn-approve">✓ Schválit</button>' +
+      '<button onclick="rejectPavler()" class="btn-reject">✗ Zamítnout</button>' +
+      '<button onclick="runPavler()" class="btn-edit">↺ Generovat znovu</button>' +
+    '</div>';
+}
+
+async function approvePavler() {
+  if (!_pavlerPkg) return;
+  await fetch(API.adminApprove, {method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({action:'approve', sessionId: _pavlerPkg.id, type:'pavler', output: JSON.stringify(_pavlerPkg), source:'admin'})});
+  showToast('✓ Pavler post schválen');
+  document.getElementById('pav-result').style.display = 'none';
+  document.getElementById('pav-topic').value = '';
+}
+
+async function rejectPavler() {
+  if (!_pavlerPkg) return;
+  await fetch(API.adminApprove, {method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({action:'reject', sessionId: _pavlerPkg.id, type:'pavler', source:'admin'})});
+  showToast('✗ Zamítnuto');
+  document.getElementById('pav-result').style.display = 'none';
+}
+
+// ===== PROJEKT RUNNERS =====
+function runSpektrum() {
+  const type = chipValue('spek-type');
+  const title = document.getElementById('spek-title').value.trim();
+  const mood = document.getElementById('spek-mood').value.trim();
+  const notes = document.getElementById('spek-notes').value.trim();
+  sendToOrchestrator('Spektrum barev — ' + type + ': "' + title + '". Nálada: ' + mood + '. ' + notes, 'spektrum');
+}
+
+function runConflux() {
+  const area = chipValue('cf-area');
+  const brief = document.getElementById('cf-brief').value.trim();
+  if (!brief) { showToast('Zadej popis úkolu'); return; }
+  sendToOrchestrator('CONFLUX — ' + area + ': ' + brief, 'conflux');
+}
+
+function runGream() {
+  const area = chipValue('gr-area');
+  const brief = document.getElementById('gr-brief').value.trim();
+  if (!brief) { showToast('Zadej popis úkolu'); return; }
+  sendToOrchestrator('Gream — ' + area + ': ' + brief, 'gream');
+}
+
+function runRecho() {
+  const area = chipValue('re-area');
+  const brief = document.getElementById('re-brief').value.trim();
+  if (!brief) { showToast('Zadej popis úkolu'); return; }
+  sendToOrchestrator('RECHO — ' + area + ': ' + brief, 'recho');
+}
+
+function runWeby() {
+  const site = chipValue('web-site');
+  const brief = document.getElementById('web-brief').value.trim();
+  if (!brief) { showToast('Zadej co změnit'); return; }
+  sendToOrchestrator((site === 'romanpavlorek' ? 'romanpavlorek.eu' : '3rstudio.eu') + ': ' + brief, 'weby');
+}
+
+async function sendToOrchestrator(message, project) {
+  setView('chat');
+  const input = document.getElementById('chat-input');
+  input.value = message;
+  await sendChat();
+}
+
+// ===== DASHBOARD =====
+async function refreshDashboard() {
+  try {
+    const r = await fetch(API.spendData + '?t=' + Date.now());
+    if (r.ok) {
+      const s = await r.json();
+      const bal = s.deepseek?.balance_usd;
+      document.getElementById('ds-bal').textContent = (bal !== undefined && bal !== null) ? '$' + (+bal).toFixed(2) : '–';
+      document.getElementById('ds-sub').textContent = (bal !== undefined && bal < 1) ? '⚠️ Doplnit!' : '';
+      document.getElementById('n8n-ex').textContent = s.n8n?.executions_today ?? '–';
+      const breakdown = s.n8n?.by_workflow || {};
+      const rows = Object.entries(breakdown).sort((a, b) => b[1] - a[1])
+        .map(([n, c]) => '<div class="exec-row"><span>' + escHtml(n) + '</span><span>' + c + '×</span></div>').join('');
+      document.getElementById('exec-list').innerHTML = rows || '<div class="exec-row muted">Žádná data</div>';
     }
-    // Otherwise send message
-    sendMessage();
+  } catch (e) {}
+  const days = Math.ceil((new Date('2026-08-31') - new Date()) / 86400000);
+  document.getElementById('countdown-days').textContent = days;
+}
+
+// ===== UTILITY =====
+function escHtml(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+function escAttr(s) { return escHtml(s).replace(/'/g, '&#39;'); }
+function chipValue(name) {
+  const grp = document.querySelector('.chip-group[data-name="' + name + '"]');
+  return grp?.querySelector('.chip.active')?.getAttribute('data-value') || '';
+}
+function timeAgo(ts) {
+  if (!ts) return '';
+  const t = typeof ts === 'number' ? ts : new Date(ts).getTime();
+  const diff = (Date.now() - t) / 60000;
+  if (diff < 1) return 'právě teď';
+  if (diff < 60) return Math.round(diff) + ' min';
+  if (diff < 1440) return Math.round(diff / 60) + ' h';
+  return Math.round(diff / 1440) + ' dní';
+}
+function projectIcon(p) {
+  const icons = {pavler:'🎬', spektrum:'🎵', conflux:'⚔️', gream:'📱', recho:'🗡️', weby:'🌐'};
+  return icons[(p || '').toLowerCase()] || '📋';
+}
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.className = 'toast'; t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.classList.add('show'), 10);
+  setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, 2500);
+}
+function autoResize(el) { el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 150) + 'px'; }
+
+// Chip group interaktivita
+document.addEventListener('click', function (e) {
+  const chip = e.target.closest('.chip');
+  if (chip) {
+    const group = chip.closest('.chip-group');
+    group?.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
   }
 });
 
-// Auto-refresh queue every 30s - skip if user is typing
-setInterval(() => {
-  if (currentMode === 'queue') {
-    const active = document.activeElement;
-    const isTypingInQueue = active && active.classList.contains('qi-comment');
-    if (!isTypingInQueue) loadQueue();
-  }
-}, 30000);
-
-loadQueue();
-renderCalendar();
+// Init
+document.addEventListener('DOMContentLoaded', function () {
+  setView('queue');
+  refreshDashboard();
+  document.getElementById('session-info').textContent = 'Session aktivní';
+});
 </script>
 </body>
 </html>
