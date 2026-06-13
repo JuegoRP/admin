@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Axon · RV Systems</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230f1722'/%3E%3Cpath d='M5 17H12l3 0 2-8 3 16 2-8h7' fill='none' stroke='%23ffb627' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='5' cy='17' r='2' fill='%23ffb627'/%3E%3Ccircle cx='27' cy='17' r='2' fill='%23ffb627'/%3E%3C/svg%3E">
+<style>
+:root{--ink:#0f1722;--ink2:#16202e;--amber:#ffb627;--amberd:#e09600;--line:#26344a;--paper:#fbfaf6;--pt:#1b2330;--mute:#7c8699}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#dfe6f0;background:var(--ink);background-image:linear-gradient(transparent 31px,rgba(255,182,39,.05) 32px),linear-gradient(90deg,transparent 31px,rgba(255,182,39,.05) 32px);background-size:32px 32px;background-attachment:fixed}
+.mono{font-family:ui-monospace,Menlo,Consolas,monospace}
+.top{display:flex;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid var(--line);background:rgba(15,23,34,.7);backdrop-filter:blur(8px);position:sticky;top:0;z-index:20}
+.mark{width:34px;height:34px;flex:0 0 auto}
+.wm{font-weight:800;font-size:19px;letter-spacing:.5px}.wm .sys{font-weight:500;color:var(--mute);font-size:12px;letter-spacing:1.5px;margin-left:8px;text-transform:uppercase}
+.right{margin-left:auto;display:flex;gap:8px;align-items:center}
+.lang{display:flex;border:1px solid var(--line);border-radius:9px;overflow:hidden}.lang button{border:none;background:var(--ink2);color:var(--mute);font-weight:800;font-size:12px;padding:8px 11px;cursor:pointer}.lang button.on{background:var(--amber);color:#1a1205}
+.help-btn{width:34px;height:34px;border-radius:9px;border:1px solid var(--line);background:var(--ink2);color:var(--amber);font-weight:800;font-size:16px;cursor:pointer}
+.wrap{max-width:1000px;margin:0 auto;padding:22px 16px 60px}
+.h1{font-size:22px;font-weight:800;margin:2px 0 18px;line-height:1.25;color:var(--pt)}
+.card{background:var(--paper);color:var(--pt);border-radius:14px;padding:22px;box-shadow:0 18px 44px rgba(0,0,0,.5);margin-bottom:16px;border:1px solid #0a0f17}
+.drop{border:2px dashed #cdbf9a;border-radius:12px;padding:34px 18px;text-align:center;cursor:pointer;transition:.16s;background:repeating-linear-gradient(45deg,#fbfaf6,#fbfaf6 10px,#f6f3ea 10px,#f6f3ea 20px)}
+.drop.drag{border-color:var(--amberd);background:#fdf4dd}.drop .ico{font-size:36px}.drop b{display:block;margin:10px 0 2px;font-size:15px}.drop span{font-size:13px;color:#9a8f76}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:14px}
+.btn{border:none;border-radius:10px;padding:12px 18px;font-size:14px;font-weight:800;cursor:pointer;letter-spacing:.3px}.btn-p{background:var(--amber);color:#1a1205;box-shadow:0 6px 16px rgba(255,182,39,.3)}.btn-g{background:#ece6d6;color:#3a4252}.dirhint{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 16px}.dirhint .d{flex:1;min-width:200px;background:#f4f1e8;border:1px solid #ece6d6;border-radius:10px;padding:11px 13px;font-size:12.5px;color:#5b6472}.dirhint .d b{display:block;color:#1b2330;font-size:13px;margin-bottom:2px}.dirhint .d b .ar{color:var(--amberd)}.fillnote{background:#fef0d8;border:1px solid #f3d690;border-radius:10px;padding:9px 13px;font-size:12.5px;color:#8a5300;margin:0 0 14px;font-weight:600;display:none}
+.fname{font-size:13px;color:var(--mute)}.badge{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;padding:3px 9px;border-radius:5px;background:#e7eefc;color:#27457f;margin-left:8px}
+.stats{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}.stat{background:#f2efe6;border:1px solid #ece6d6;border-radius:10px;padding:8px 13px;font-size:11px;color:#6b7280;font-weight:700;text-transform:uppercase;letter-spacing:.5px}.stat b{display:block;font-size:20px;color:var(--pt)}.stat b.bad{color:#c0341d}.stat b.ok{color:#1a8a4a}
+.tabs{display:flex;gap:6px;margin-bottom:16px;overflow-x:auto;scrollbar-width:none}.tabs::-webkit-scrollbar{display:none}
+.tab{flex:0 0 auto;border:1px solid #e2dccd;background:#f4f1e8;border-radius:8px;padding:9px 15px;font-size:13px;font-weight:700;color:#79715c;cursor:pointer;white-space:nowrap}.tab.on{background:var(--ink);color:var(--amber);border-color:var(--ink)}
+.panel{display:none;animation:fd .22s ease}.panel.on{display:block}@keyframes fd{from{opacity:0;transform:translateY(5px)}to{opacity:1}}
+h2{font-size:14px;margin:20px 0 8px;display:flex;align-items:center;gap:9px;text-transform:uppercase;letter-spacing:.5px;color:#3a4252}h2 .ln{flex:1;height:1px;background:linear-gradient(90deg,var(--amber),transparent)}
+h3{font-size:12px;margin:16px 0 6px;color:#79715c;text-transform:uppercase;letter-spacing:.5px}
+.tw{overflow-x:auto;border:1px solid #ece6d6;border-radius:9px}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:520px}th,td{text-align:left;padding:9px 11px;border-bottom:1px solid #efe9da;vertical-align:top}th{background:#f2efe6;font-weight:700;color:#3a4252;text-transform:uppercase;font-size:11px;letter-spacing:.5px}tr:last-child td{border-bottom:none}
+code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;background:#eee6d2;color:#5a4a1e;padding:2px 7px;border-radius:5px;white-space:nowrap}
+.pill{display:inline-block;font-size:10px;font-weight:800;padding:3px 9px;border-radius:4px;text-transform:uppercase;letter-spacing:.5px}
+.c-bezp{background:#fbe1de;color:#a3251a}.c-alarm{background:#fce6c8;color:#8a5300}.c-hand{background:#dde7f7;color:#27457f}.c-proc{background:#dcf0e2;color:#1a6e3d}.c-hmi{background:#e8e0f5;color:#5b34a0}.c-ost{background:#ece9e0;color:#6b7280}
+.sev{font-size:10px;font-weight:800;padding:3px 8px;border-radius:4px;text-transform:uppercase}.Information{background:#dde7f7;color:#27457f}.Warning{background:#fce6c8;color:#8a5300}.Error{background:#fbe1de;color:#a3251a}
+.tcard{border:1px solid #ece6d6;border-left:3px solid var(--amber);border-radius:10px;padding:13px 15px;margin-bottom:10px;background:#fdfcf8}.tcard h3{margin:0 0 3px;font-size:14px;color:#1b2330;text-transform:none;letter-spacing:0}.tcard .sig{font-size:12px;color:#9a8f76;margin-bottom:8px}.tcard .lbl{font-size:10px;text-transform:uppercase;letter-spacing:.7px;color:#a89c80;font-weight:800;margin-top:8px}.tcard ul{margin:4px 0 0 17px;font-size:13px;padding:0}
+.dl{display:flex;align-items:center;gap:11px;border:1px solid #e2dccd;border-radius:10px;padding:14px 16px;text-decoration:none;color:var(--pt);font-weight:700;font-size:14px;background:#f8f5ec}.dl small{display:block;color:#9a8f76;font-weight:500;font-size:12px}.dl .a{color:var(--amberd)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.ok{color:#1a8a4a;font-weight:700}.note{background:#f2efe6;border-radius:9px;padding:11px 14px;font-size:12.5px;color:#5b6472;margin:0 0 14px}
+.overlay{position:fixed;inset:0;background:rgba(8,12,18,.72);backdrop-filter:blur(4px);z-index:50;display:none;align-items:flex-start;justify-content:center;padding:60px 16px;overflow-y:auto}.overlay.on{display:flex}
+.help{background:var(--paper);color:var(--pt);max-width:560px;width:100%;border-radius:14px;padding:24px}.help h3{margin:0 0 4px;font-size:18px;color:#1b2330;text-transform:none;letter-spacing:0}.help .x{float:right;border:none;background:#ece6d6;border-radius:8px;width:30px;height:30px;font-size:16px;cursor:pointer}.help ul{padding-left:18px;line-height:1.6;font-size:14px;color:#3a4252}.help li{margin:7px 0}.help .fmt{background:#f2efe6;border-radius:9px;padding:11px 13px;font-size:12px;margin:12px 0;overflow-x:auto}
+.foot{text-align:center;color:#46546b;font-size:11px;letter-spacing:1px;text-transform:uppercase;margin-top:24px}
+@media(max-width:560px){.wrap{padding:16px 12px 48px}.card{padding:16px}.grid2{grid-template-columns:1fr}.btn,.fname{width:100%}.wm .sys{display:none}.h1{font-size:19px}}
+.dlbar{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px}.dlb{border:1px solid #e2dccd;background:#f8f5ec;border-radius:9px;padding:9px 15px;font-size:13px;font-weight:800;color:#1b2330;cursor:pointer}.dlb:active{transform:scale(.97)}.dlb .a{color:var(--amberd);margin-right:5px}
+.phead{display:none}
+@media print{.phead{display:block;margin-bottom:14px}.phead h1{font-size:20px;margin:0}.phead .m{font-size:11px;color:#5b6472}.dlbar{display:none}.stats{margin-bottom:10px}}
+@media print{body{background:#fff}.top,.tabs,#upcard,.overlay,.foot{display:none}.card{box-shadow:none;border:none}.panel{display:block!important}}
+</style></head>
+<body>
+<div class="top">
+  <svg class="mark" viewBox="0 0 48 48"><rect width="48" height="48" rx="11" fill="#16202e" stroke="#26344a"/><path d="M9 25h9l3 0 3-12 4 23 3-11h9" fill="none" stroke="#ffb627" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9" cy="25" r="3.2" fill="#ffb627"/><circle cx="39" cy="25" r="3.2" fill="#ffb627"/></svg>
+  <span class="wm">Axon<span class="sys">RV Systems</span></span>
+  <div class="right"><div class="lang"><button data-l="en" class="on">EN</button><button data-l="cs">CZ</button></div><button class="help-btn" id="help-open">?</button></div>
+</div>
+<div class="wrap">
+  <div class="card" id="upcard">
+    <div class="h1" data-t="hero"></div>
+    <div class="dirhint"><div class="d"><b data-t="d1h"></b><span data-t="d1s"></span></div><div class="d"><b data-t="d2h"></b><span data-t="d2s"></span></div></div>
+    <div class="drop" id="drop"><div class="ico">⎘</div><b data-t="dropb"></b><span data-t="drops"></span><input type="file" id="file" accept=".csv,.xlsx" hidden></div>
+    <div class="row"><button class="btn btn-p" id="sample" data-t="sample"></button><button class="btn btn-g" id="sample2" data-t="sample2"></button><button class="btn btn-g" id="buildbtn">✎ Builder</button><span class="fname" id="fname"></span></div>
+  </div>
+  <div class="card" id="buildcard" style="display:none"></div>
+  <div class="card" id="result" style="display:none">
+    <div class="phead" id="phead"></div>
+    <div class="fillnote" id="fillnote"></div>
+    <div class="stats" id="stats"></div>
+    <div class="dlbar"><button class="dlb" id="dl-pdf"><span class="a">⬇</span>PDF</button><button class="dlb" id="dl-docx"><span class="a">⬇</span>DOCX</button><button class="dlb" id="dl-xlsx"><span class="a">⬇</span><span data-t="dlXlsx"></span></button></div>
+    <div class="tabs" id="tabs"></div>
+    <div id="panels"></div>
+  </div>
+  <div class="foot" data-t="foot"></div>
+</div>
+<div class="overlay" id="overlay"><div class="help"><button class="x" id="help-close">✕</button><h3 data-t="h_title"></h3><ul id="help-list"></ul><div class="fmt mono" data-t="h_fmt"></div></div></div>
+<script>
+const T={
+ en:{hero:"Upload the interface — table or AW-standard workbook.",dropb:"Drop a CSV or XLSX",drops:"or click to choose a file",sample:"Sample: table",sample2:"Sample: bare list",d1h:"① Table → documentation",d1s:"Upload a filled interface table (or AW workbook) and get documentation, troubleshooting and imports.",d2h:"② Bare list → table",d2s:"Upload just signal names + types and Axon fills the interface table (auto-assigns addresses), downloadable as XLSX.",fillN:" addresses auto-assigned — download the filled table with the “Table (XLSX)” button.",dlXlsx:"Table (XLSX)",foot:"Axon · RV Systems",
+  s_sig:"signals",s_diag:"diagnostics",s_find:"findings",s_status:"statuses",s_prog:"programs",
+  th:["Type","Robot addr.","PLC addr.","Signal","Description"],cat:{"Bezpečnost":"Safety","Handshake":"Handshake","Proces":"Process","Alarm":"Alarm","HMI":"HMI","Ostatní":"Other"},
+  lblCause:"Likely cause",lblCheck:"What to check",dlR:"Robot import",dlP:"PLC import",noFind:"✓ No findings — no missing descriptions or duplicates.",vMiss:"Missing description",vDup:"Duplicate",
+  tDoc:"Documentation",tTs:"Troubleshooting",tImp:"Imports",tChk:"Validation",tAlarm:"Status & alarms",tProg:"Programs",tSig:"Signals",docTitle:"Interface documentation",awTitle:"AW interface — documentation",
+  awNote:"Detected an AW-standard workbook — parsed statuses, programs and signals from the real file.",thAlarm:["Code","Severity","Name","Meaning"],thProg:["No.","Program","Description"],thSig:["Address","Signal","Description"],
+  h_title:"Help",h_fmt:"Type;Robot_addr;PLC_addr;Signal_name;Description;Category",
+  help:["Upload an interface (CSV or XLSX) — drag or click. No file? Click Use sample.","Two formats work: a flat signal table (columns Type, Robot/PLC address, Signal name, Description, Category) or a multi-sheet AW-standard workbook (Status List + Programs + Interface).","For a flat table you get documentation, troubleshooting, imports and validation. For an AW workbook you get the status/alarm catalog, program reference and signal list.","You can also go the other way: upload a bare signal list (names + types, no addresses) and Axon fills the interface table (auto-assigns addresses) — download it as XLSX with the Table button.","Download the document as PDF or DOCX.","Everything runs locally in this browser."]},
+ cs:{hero:"Nahraj interface — tabulku nebo AW-standard sešit.",dropb:"Přetáhni CSV nebo XLSX",drops:"nebo klikni a vyber soubor",sample:"Ukázka: tabulka",sample2:"Ukázka: holý seznam",d1h:"① Tabulka → dokumentace",d1s:"Nahraj hotovou interface tabulku (nebo AW sešit) a dostaneš dokumentaci, troubleshooting a importy.",d2h:"② Holý seznam → tabulka",d2s:"Nahraj jen jména signálů + typy a Axon vyplní interface tabulku (sám přiřadí adresy), ke stažení jako XLSX.",fillN:" adres doplněno automaticky — vyplněnou tabulku stáhneš tlačítkem „Tabulka (XLSX)“.",dlXlsx:"Tabulka (XLSX)",foot:"Axon · RV Systems",
+  s_sig:"signálů",s_diag:"diagnostik",s_find:"nálezů",s_status:"statusů",s_prog:"programů",
+  th:["Typ","Adr. robota","Adr. PLC","Signál","Popis"],cat:{"Bezpečnost":"Bezpečnost","Handshake":"Handshake","Proces":"Proces","Alarm":"Alarm","HMI":"HMI","Ostatní":"Ostatní"},
+  lblCause:"Pravděpodobná příčina",lblCheck:"Co zkontrolovat",dlR:"Import pro robota",dlP:"Import pro PLC",noFind:"✓ Bez nálezů — žádné chybějící popisy ani duplicity.",vMiss:"Chybí popis",vDup:"Duplicita",
+  tDoc:"Dokumentace",tTs:"Troubleshooting",tImp:"Importy",tChk:"Kontrola",tAlarm:"Statusy & alarmy",tProg:"Programy",tSig:"Signály",docTitle:"Dokumentace interface",awTitle:"AW interface — dokumentace",
+  awNote:"Rozpoznán AW-standard sešit — z reálného souboru vytaženy statusy, programy a signály.",thAlarm:["Kód","Závažnost","Jméno","Význam"],thProg:["Č.","Program","Popis"],thSig:["Adresa","Signál","Popis"],
+  h_title:"Nápověda",h_fmt:"Typ;Adresa_robota;Adresa_PLC;Jmeno_signalu;Popis;Kategorie",
+  help:["Nahraj interface (CSV nebo XLSX) — přetažením nebo klikem. Nemáš? Klikni Použít ukázku.","Fungují dva formáty: plochá tabulka signálů (sloupce Typ, Adresa robota/PLC, Jméno signálu, Popis, Kategorie) nebo vícelistový AW-standard sešit (Status List + Programs + Interface).","Z ploché tabulky dostaneš dokumentaci, troubleshooting, importy a kontrolu. Z AW sešitu katalog statusů/alarmů, přehled programů a seznam signálů.","Jde to i naopak: nahraj holý seznam signálů (jména + typy, bez adres) a Axon vyplní interface tabulku (sám přiřadí adresy) — stáhneš ji jako XLSX tlačítkem Tabulka.","Celý dokument stáhneš jako PDF nebo DOCX.","Vše běží lokálně v tomto prohlížeči."]}
+};
+let LANG="en",MODE=null,DATA=null;
+const ALIASES={typ:["typ","type","io","i/o","druh"],adr_robot:["adresa_robota","adresa robota","robot","robot_addr","signal_robot"],adr_plc:["adresa_plc","adresa plc","plc","plc_addr","signal_plc"],jmeno:["jmeno_signalu","jmeno","nazev","název","name","signal","signal_name","tag"],popis:["popis","description","desc","komentar","komentář","label"],kategorie:["kategorie","category","skupina","group","funkce"]};
+const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const norm=s=>(s||"").trim().toLowerCase().replace(/﻿/g,"");
+function parseCSV(t){t=t.replace(/\r/g,"");const l=t.split("\n").filter(x=>x.trim());if(!l.length)return[];const d=(l[0].split(";").length>=l[0].split(",").length)?";":",";return l.map(x=>x.split(d))}
+function mapCols(h){const idx={},hl=h.map(norm);for(const k in ALIASES)for(let i=0;i<hl.length;i++)if(ALIASES[k].includes(hl[i])){idx[k]=i;break}return idx}
+// ---- XLSX: cti VSECHNY listy ----
+function unesc(s){return String(s).replace(/&amp;/g,"&").replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&#(\d+);/g,(m,n)=>String.fromCharCode(+n))}
+function colIdx(L){let n=0;for(let i=0;i<L.length;i++)n=n*26+(L.charCodeAt(i)-64);return n-1}
+async function inflateRaw(b){if(typeof DecompressionStream==="undefined")throw"old browser";return new Uint8Array(await new Response(new Blob([b]).stream().pipeThrough(new DecompressionStream("deflate-raw"))).arrayBuffer())}
+async function readXLSXall(ab){const dv=new DataView(ab),u8=new Uint8Array(ab),td=new TextDecoder();let e=-1;for(let i=u8.length-22;i>=0;i--)if(dv.getUint32(i,true)===0x06054b50){e=i;break}if(e<0)throw"not xlsx";const cnt=dv.getUint16(e+10,true),cdo=dv.getUint32(e+16,true),ent={};let p=cdo;for(let i=0;i<cnt;i++){if(dv.getUint32(p,true)!==0x02014b50)break;const mt=dv.getUint16(p+10,true),cs=dv.getUint32(p+20,true),nl=dv.getUint16(p+28,true),el=dv.getUint16(p+30,true),cl=dv.getUint16(p+32,true),lo=dv.getUint32(p+42,true),nm=td.decode(u8.subarray(p+46,p+46+nl));ent[nm]={mt,cs,lo};p+=46+nl+el+cl}
+ async function rd(nm){const x=ent[nm];if(!x)return null;const lp=x.lo;if(dv.getUint32(lp,true)!==0x04034b50)throw"bad";const nl=dv.getUint16(lp+26,true),el=dv.getUint16(lp+28,true),ds=lp+30+nl+el,c=u8.subarray(ds,ds+x.cs);return td.decode(x.mt===0?c:await inflateRaw(c))}
+ const ssx=await rd("xl/sharedStrings.xml"),shared=[];if(ssx){let m,si=/<si>([\s\S]*?)<\/si>/g;while(m=si.exec(ssx)){let t,tr=/<t[^>]*>([\s\S]*?)<\/t>/g,a="";while(t=tr.exec(m[1]))a+=t[1];shared.push(unesc(a))}}
+ function parseSheet(shx){const rows=[];let rm,rr=/<row[^>]*>([\s\S]*?)<\/row>/g;while(rm=rr.exec(shx)){const cells=[];let cm,cr=/<c\b([^>]*?)(?:\/>|>([\s\S]*?)<\/c>)/g;while(cm=cr.exec(rm[1])){const at=cm[1]||"",inner=cm[2]||"",rmx=/r="([A-Z]+)\d+"/.exec(at),ci=rmx?colIdx(rmx[1]):cells.length,tm=/t="([^"]+)"/.exec(at),vm=/<v[^>]*>([\s\S]*?)<\/v>/.exec(inner);let val="";if(tm&&tm[1]==="s"){if(vm)val=shared[+vm[1]]||""}else if(tm&&(tm[1]==="inlineStr"||tm[1]==="str")){const im=/<t[^>]*>([\s\S]*?)<\/t>/.exec(inner);val=im?unesc(im[1]):(vm?unesc(vm[1]):"")}else val=vm?unesc(vm[1]):"";cells[ci]=(val||"").replace(/\n/g," ").trim()}for(let i=0;i<cells.length;i++)if(cells[i]==null)cells[i]="";rows.push(cells)}return rows}
+ const sheetFiles=Object.keys(ent).filter(n=>/^xl\/worksheets\/sheet\d+\.xml$/.test(n)).sort((a,b)=>(+a.match(/\d+/)[0])-(+b.match(/\d+/)[0]));
+ const sheets=[];for(const sf of sheetFiles){sheets.push(parseSheet(await rd(sf)))}
+ return sheets;
+}
+// ---- detekce formatu ----
+function findFlatSheet(sheets){for(const rows of sheets){for(let h=0;h<Math.min(6,rows.length);h++){const idx=mapCols(rows[h]);if(idx.typ!=null&&idx.jmeno!=null)return{rows,header:h}}}return null}
+function looksAW(sheets){return sheets.some(rows=>rows.some(r=>r.some(c=>/^\d{3,4}\.\d$/.test(c))&&r.some(c=>/Information|Warning|Error/.test(c))))||sheets.some(rows=>rows.some(r=>r.some(c=>/Program Name/.test(c))))}
+// ---- ploche signaly ----
+function buildSignals(rows,header){const idx=mapCols(rows[header]);const out=[];for(let r=header+1;r<rows.length;r++){const row=rows[r],g=k=>idx[k]!=null&&idx[k]<row.length?String(row[idx[k]]).trim():"";if(!g("typ")&&!g("jmeno"))continue;out.push({typ:g("typ").toUpperCase(),adr_robot:g("adr_robot"),adr_plc:g("adr_plc"),jmeno:g("jmeno"),popis:g("popis"),kategorie:g("kategorie")||"Ostatní"})}return out}
+// ---- AW parsery ----
+function awStatuses(sheets){let best=null;for(const rows of sheets){if(rows.some(r=>r.some(c=>/^\d{3,4}\.\d$/.test(c)))){best=rows;break}}if(!best)return[];
+ // najdi sloupce z hlavickoveho radku
+ let cCode=4,cName=7,cDesc=13,cCat=1,cLvl=2;
+ for(const r of best){const j=r.findIndex(c=>/Status\s*Num/i.test(c));if(j>=0){cCode=j;const jn=r.findIndex(c=>/Status\s*Header/i.test(c)&&/EN/i.test(c));if(jn>=0)cName=jn;const jd=r.findIndex(c=>/Status\s*Label/i.test(c)&&/EN/i.test(c));if(jd>=0)cDesc=jd;const jl=r.findIndex(c=>/^Level$/i.test(c));if(jl>=0)cLvl=jl;break}}
+ const out=[];let cat="",lvl="";
+ for(const r of best){if(r[cCat]&&/Status$/.test(r[cCat]))cat=r[cCat];if(/^(Information|Warning|Error)$/.test(r[cLvl]||""))lvl=r[cLvl];const code=r[cCode]||"",name=r[cName]||"",desc=r[cDesc]||"";if(/^\d{3,4}\.\d$/.test(code)&&name&&name!=="//")out.push({cat,lvl,code,name,desc})}
+ return out}
+function awPrograms(sheets){const out=[];for(const rows of sheets){if(!rows.some(r=>r.some(c=>/Program Name/.test(c))))continue;let cNum=2,cName=5;for(const r of rows){const j=r.findIndex(c=>/Program Name/.test(c));if(j>=0){cName=j;const jn=r.findIndex((c,i)=>i<j&&/Number/.test(c));if(jn>=0)cNum=jn;break}}let pend=null;for(const r of rows){const num=r[cNum]||"",nm=r[cName]||"";if(/^\d+\.\d$/.test(num)&&nm&&!nm.startsWith("(")){pend={num,name:nm,desc:""};out.push(pend)}else if(nm.startsWith("(")&&pend&&!pend.desc)pend.desc=nm.replace(/^\(|\)$/g,"")}break}return out}
+function awSignals(sheets){const out=[],seen={};const re=/^[A-Za-z]{1,4}_(Di|Do|Gi|Go|Ai|Ao)_/i;for(const rows of sheets){for(const r of rows){for(let k=0;k<r.length;k++){const v=r[k];if(re.test(v)&&!seen[v]){seen[v]=1;let label="",addr="";for(let k2=k+1;k2<r.length;k2++){const v2=r[k2];if(v2&&v2.length>label.length&&!/^[\d. ]+$/.test(v2)&&!re.test(v2))label=v2;if(/^\d+\.\d$/.test(v2))addr=v2}out.push({name:v,label,addr});break}}}}return out}
+// ---- troubleshooting (ploche) ----
+function tsig(s){const desc=s.popis,name=s.jmeno,cat=(s.kategorie||"").toLowerCase(),low=name.toLowerCase(),addr=s.adr_plc||s.adr_robot,has=(...t)=>t.some(x=>low.includes(x)),dl=desc.toLowerCase();const E=(syC,syE,prC,prE,koC,koE)=>({signal:name,addr,cs:{symptom:syC,priciny:prC,kontrola:koC},en:{symptom:syE,priciny:prE,kontrola:koE}});const sC="Signál "+addr+" ("+name+")",sE="Signal "+addr+" ("+name+")";
+ if(cat=="bezpečnost"||cat=="safety"||has("estop","lightcurtain","door","safety","fs_"))return E((desc||name)+" — signál v klidu / okruh rozpojen",(desc||name)+" — signal inactive / circuit open",["Aktivované nouzové zastavení nebo přerušená smyčka","Rozpojený NC kontakt","Vadná kabeláž / relé"],["Active E-stop or broken safety loop","Open NC contact","Broken wiring / relay"],[sC,"Fyzický stav prvku","Bezpečnostní relé — LED","Propojení NC smyčky"],[sE,"Physical device state","Safety relay — LED","NC loop wiring"]);
+ if(has("fault","error")||cat=="alarm"||dl.includes("porucha")||dl.includes("error")||dl.includes("failed"))return E("Aktivní porucha: "+(desc||name),"Active fault: "+(desc||name),["Porucha pohonu (přetížení, ochrana)","Překročený limit","Vadné čidlo"],["Drive fault (overload, protection)","Exceeded limit","Faulty sensor"],[sC+" a diagnostiku pohonu","Chybový kód měniče","Napájení a jištění","Reset po odstranění příčiny"],[sE+" and drive diagnostics","Drive error code","Power and protection","Reset after fixing cause"]);
+ if(has("present","pick","drop")||dl.includes("přítomen")||dl.includes("part"))return E((desc||name)+" — díl nedetekován",(desc||name)+" — part not detected",["Chybějící/špatně polohovaný díl","Rozladěné čidlo"],["Missing/mispositioned part","Misaligned sensor"],[sC,"Seřízení snímače","Polohu dílu"],[sE,"Sensor alignment","Part position"]);
+ if(has("clamp","gripper","fixture"))return E((desc||name)+" — koncová poloha nedosažena",(desc||name)+" — end position not reached",["Mechanické zaseknutí","Nízký tlak vzduchu"],["Mechanical jam","Low air pressure"],[sC+" a koncové snímače","Tlak vzduchu","Volný chod"],[sE+" and end sensors","Air pressure","Free movement"]);
+ if(has("ready","inpos","home","autohoming")||cat=="handshake")return E("Čekání na signál: "+(desc||name),"Waiting for signal: "+(desc||name),["Protistrana není v očekávaném stavu","Nesynchronizovaný handshake"],["Counterpart not in expected state","Handshake out of sync"],[sC+" na obou stranách","Stav protistrany na HMI"],[sE+" on both sides","Counterpart state on HMI"]);
+ return null}
+const CATC={"bezpečnost":"c-bezp","alarm":"c-alarm","handshake":"c-hand","proces":"c-proc","hmi":"c-hmi"};
+const catName=c=>(T[LANG].cat[c])||c;
+const pill=c=>'<span class="pill '+(CATC[c.toLowerCase()]||"c-ost")+'">'+esc(catName(c))+'</span>';
+function tableTW(head,rowsHtml){return '<div class="tw"><table><tr><th>'+head.join('</th><th>')+'</th></tr>'+rowsHtml+'</table></div>'}
+// ---- render ----
+function dlBtn(t,fn,c){const u=URL.createObjectURL(new Blob([c],{type:"text/csv;charset=utf-8"}));return '<a class="dl" download="'+fn+'" href="'+u+'"><span class="a">⬇</span> '+t+'<small>'+fn+'</small></a>'}
+function setTabs(defs){const tb=document.getElementById("tabs"),pn=document.getElementById("panels");tb.innerHTML=defs.map((d,i)=>'<button class="tab'+(i?'':' on')+'" data-i="'+i+'">'+esc(d.label)+'</button>').join("");pn.innerHTML=defs.map((d,i)=>'<div class="panel'+(i?'':' on')+'" id="pn'+i+'">'+d.html+'</div>').join("");tb.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{tb.querySelectorAll(".tab").forEach(x=>x.classList.remove("on"));t.classList.add("on");pn.querySelectorAll(".panel").forEach(p=>p.classList.remove("on"));document.getElementById("pn"+t.dataset.i).classList.add("on")})}
+function renderFlat(){const L=T[LANG],sig=DATA.signals,c={};sig.forEach(s=>c[s.typ]=(c[s.typ]||0)+1);const tscount=sig.map(tsig).filter(Boolean).length,pb=[];const sr={},sp={};sig.forEach(s=>{if(!s.popis)pb.push([L.vMiss,s.jmeno]);[["adr_robot",sr,"robot"],["adr_plc",sp,"PLC"]].forEach(([k,st,l])=>{const v=s[k];if(v){if(st[v])pb.push([L.vDup+"/"+l,v+": "+st[v]+" × "+s.jmeno]);else st[v]=s.jmeno}})});
+ document.getElementById("stats").innerHTML='<div class="stat"><b>'+sig.length+'</b>'+L.s_sig+'</div>'+Object.entries(c).map(([k,v])=>'<div class="stat"><b>'+v+'</b>'+esc(k)+'</div>').join("")+'<div class="stat"><b>'+tscount+'</b>'+L.s_diag+'</div><div class="stat"><b class="'+(pb.length?"bad":"ok")+'">'+pb.length+'</b>'+L.s_find+'</div>';
+ const order=["Bezpečnost","Handshake","Proces","Alarm","HMI","Ostatní"],g={};sig.forEach(s=>{(g[s.kategorie]=g[s.kategorie]||[]).push(s)});let doc="";order.filter(k=>g[k]).concat(Object.keys(g).filter(k=>!order.includes(k))).forEach(cat=>{doc+='<h2>'+pill(cat)+' <span style="color:#a89c80">'+g[cat].length+'×</span><span class="ln"></span></h2>'+tableTW(L.th,g[cat].map(s=>'<tr><td>'+esc(s.typ)+'</td><td><code>'+esc(s.adr_robot)+'</code></td><td><code>'+esc(s.adr_plc)+'</code></td><td><b>'+esc(s.jmeno)+'</b></td><td>'+esc(s.popis)+'</td></tr>').join(""))});
+ const ts=sig.map(tsig).filter(Boolean).map(x=>{const t=x[LANG];return '<div class="tcard"><h3>'+esc(t.symptom)+'</h3><div class="sig"><code>'+esc(x.addr)+'</code> · '+esc(x.signal)+'</div><div class="lbl">'+L.lblCause+'</div><ul>'+t.priciny.map(p=>'<li>'+esc(p)+'</li>').join("")+'</ul><div class="lbl">'+L.lblCheck+'</div><ul>'+t.kontrola.map(k=>'<li>'+esc(k)+'</li>').join("")+'</ul></div>'}).join("");
+ let rImp="Name;SignalType;Device;DeviceMap;Comment\n";sig.forEach(s=>rImp+=[s.jmeno,s.typ,"d651",s.adr_robot,s.popis].join(";")+"\n");let pImp="Symbol;Address;DataType;Comment\n";sig.forEach(s=>pImp+=[s.jmeno,s.adr_plc,(s.typ=="DI"||s.typ=="DO")?"Bool":"Int",s.popis].join(";")+"\n");
+ const imp='<div class="grid2">'+dlBtn(L.dlR,"import_robot.csv",rImp)+dlBtn(L.dlP,"import_plc.csv",pImp)+'</div>';
+ const chk=pb.length?tableTW(["#","Detail"],pb.map(p=>'<tr><td>'+esc(p[0])+'</td><td>'+esc(p[1])+'</td></tr>').join("")):'<p class="ok">'+L.noFind+'</p>';
+ setTabs([{label:L.tDoc,html:doc},{label:L.tTs,html:ts},{label:L.tImp,html:imp},{label:L.tChk,html:chk}])}
+function renderAW(){const L=T[LANG],st=DATA.statuses,pr=DATA.programs,sg=DATA.signals;
+ document.getElementById("stats").innerHTML='<div class="stat"><b>'+st.length+'</b>'+L.s_status+'</div><div class="stat"><b>'+pr.length+'</b>'+L.s_prog+'</div><div class="stat"><b>'+sg.length+'</b>'+L.s_sig+'</div>';
+ const by={};st.forEach(s=>{(by[s.cat]=by[s.cat]||{});(by[s.cat][s.lvl]=by[s.cat][s.lvl]||[]).push(s)});
+ let al='<div class="note">'+L.awNote+'</div>';Object.keys(by).forEach(cat=>{let rows="";["Information","Warning","Error"].forEach(lv=>{(by[cat][lv]||[]).forEach(s=>{rows+='<tr><td><code>'+esc(s.code)+'</code></td><td><span class="sev '+esc(s.lvl)+'">'+esc(s.lvl)+'</span></td><td><b>'+esc(s.name)+'</b></td><td>'+esc(s.desc)+'</td></tr>'})});al+='<h3>'+esc(cat)+'</h3>'+tableTW(L.thAlarm,rows)});
+ const pg=pr.length?tableTW(L.thProg,pr.map(p=>'<tr><td><code>'+esc(p.num)+'</code></td><td><b>'+esc(p.name)+'</b></td><td>'+esc(p.desc)+'</td></tr>').join("")):'<p>—</p>';
+ const si=sg.length?tableTW(L.thSig,sg.map(s=>'<tr><td><code>'+esc(s.addr)+'</code></td><td><b>'+esc(s.name)+'</b></td><td>'+esc(s.label)+'</td></tr>').join("")):'<p>—</p>';
+ setTabs([{label:L.tAlarm,html:al},{label:L.tProg,html:pg},{label:L.tSig,html:si}])}
+function render(){if(!DATA)return;if(MODE=="aw")renderAW();else renderFlat();var xb=document.getElementById("dl-xlsx");if(xb)xb.style.display=(MODE=="flat")?"":"none";var fn=document.getElementById("fillnote");if(fn){if(MODE=="flat"&&window.__filled){fn.style.display="block";fn.textContent=window.__filled+T[LANG].fillN}else fn.style.display="none"}}
+function showResult(){document.getElementById("result").style.display="block";document.getElementById("result").scrollIntoView({behavior:"smooth"})}
+// ---- vstup ----
+function runFlat(rows,header){const sig=buildSignals(rows,header);if(!sig.length){alert(LANG=="en"?"No signals found.":"Žádné signály.");return}const fl=autoAddress(sig);MODE="flat";DATA={signals:sig};window.__filled=fl;render();showResult()}
+function runAW(sheets){MODE="aw";DATA={statuses:awStatuses(sheets),programs:awPrograms(sheets),signals:awSignals(sheets)};render();showResult()}
+async function handle(f){document.getElementById("fname").textContent=f.name;try{
+ if(f.name.toLowerCase().endsWith(".xlsx")){const sheets=await readXLSXall(await f.arrayBuffer());const flat=findFlatSheet(sheets);if(flat)runFlat(flat.rows,flat.header);else if(looksAW(sheets))runAW(sheets);else alert(LANG=="en"?"Couldn't recognize the format (no flat signal table, no AW workbook).":"Nerozpoznal jsem formát.");}
+ else{const rows=parseCSV(await f.text());const idx=mapCols(rows[0]);if(idx.typ!=null&&idx.jmeno!=null)runFlat(rows,0);else alert(LANG=="en"?"Couldn't find Type and Signal name columns — check the header.":"Nenašel jsem sloupce Typ a Jméno signálu — zkontroluj záhlaví.")}
+}catch(e){alert((LANG=="en"?"Could not load: ":"Nepodařilo se načíst: ")+e)}}
+const SAMPLE=`Type;Robot_addr;PLC_addr;Signal_name;Description;Category
+DI;di_05;I0.4;diEStopOK;Emergency stop OK (NC);Safety
+DI;di_06;I0.5;diLightCurtainOK;Light curtain clear (NC);Safety
+DI;di_08;I0.7;diAirPressureOK;Air pressure OK;Alarm
+DI;di_09;I1.0;diPartPresentPick;Part present at pick position;Process
+DI;di_11;I1.2;diGripperClosed;Gripper closed;Process
+DI;di_13;I1.4;diVacuumOK;Vacuum reached at suction cup;Alarm
+DI;di_15;I1.6;diMachineReady;Machine ready for loading;Handshake
+DI;di_18;I2.1;diMotorFault;Conveyor drive fault;Alarm
+DO;do_01;Q0.0;doCycleRunning;Robot cycle running;Handshake
+DO;do_05;Q0.4;doRobotFault;Robot general fault;Alarm
+DO;do_09;Q1.0;doVacuumOn;Turn vacuum on;Process
+DO;do_10;Q1.1;doClampFixture;Clamp the fixture;Process
+DO;do_15;Q1.6;doStackLightRed;Stack light red – fault;HMI`;
+function applyLang(){document.documentElement.lang=LANG;const L=T[LANG];document.querySelectorAll("[data-t]").forEach(el=>{const k=el.dataset.t;if(L[k]!=null)el.textContent=L[k]});document.getElementById("help-list").innerHTML=L.help.map(h=>'<li>'+esc(h)+'</li>').join("");document.querySelectorAll(".lang button").forEach(b=>b.classList.toggle("on",b.dataset.l===LANG));render()}
+
+
+function autoAddress(sig){let diB=0,diI=0,doB=0,doI=0,aiW=64,aoW=80;let filled=0;sig.forEach(s=>{if(s.adr_robot||s.adr_plc)return;const t=s.typ;if(t=="DI"){const a=diB+"."+diI;s.adr_robot=a;s.adr_plc="I"+a;diI++;if(diI>7){diI=0;diB++}}else if(t=="DO"){const a=doB+"."+doI;s.adr_robot=a;s.adr_plc="Q"+a;doI++;if(doI>7){doI=0;doB++}}else if(t=="AI"){s.adr_robot="IW"+aiW;s.adr_plc="IW"+aiW;aiW+=2}else if(t=="AO"){s.adr_robot="QW"+aoW;s.adr_plc="QW"+aoW;aoW+=2}else{const a=diB+"."+diI;s.adr_robot=a;s.adr_plc=a;diI++;if(diI>7){diI=0;diB++}}filled++});return filled}
+function colL(i){let s="";i++;while(i>0){const m=(i-1)%26;s=String.fromCharCode(65+m)+s;i=Math.floor((i-1)/26)}return s}
+function xlsxSheet(headers,rows){let x='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>';const all=[headers].concat(rows);all.forEach((row,r)=>{x+='<row r="'+(r+1)+'">';row.forEach((c,ci)=>{x+='<c r="'+colL(ci)+(r+1)+'" t="inlineStr"><is><t xml:space="preserve">'+xe(c)+'</t></is></c>'});x+='</row>'});return x+'</sheetData></worksheet>'}
+function makeXLSX(headers,rows){const CT='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/></Types>';const RELS='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>';const WB='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Interface" sheetId="1" r:id="rId1"/></sheets></workbook>';const WBR='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/></Relationships>';return zipStore([{name:"[Content_Types].xml",data:CT},{name:"_rels/.rels",data:RELS},{name:"xl/workbook.xml",data:WB},{name:"xl/_rels/workbook.xml.rels",data:WBR},{name:"xl/worksheets/sheet1.xml",data:xlsxSheet(headers,rows)}])}
+function downloadXLSX(){if(MODE!="flat"||!DATA)return;const sig=DATA.signals,headers=["Type","Robot_addr","PLC_addr","Signal_name","Description","Category"],rows=sig.map(s=>[s.typ,s.adr_robot,s.adr_plc,s.jmeno,s.popis,s.kategorie]);const u8=makeXLSX(headers,rows);const blob=new Blob([u8],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="interface_table.xlsx";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000)}
+
+// ===== EXPORT: bloky z dat =====
+function exportTitle(){return MODE=="aw"?T[LANG].awTitle:T[LANG].docTitle}
+function buildBlocks(){const L=T[LANG],bl=[];if(!DATA)return bl;
+ if(MODE=="aw"){const st=DATA.statuses,pr=DATA.programs,sg=DATA.signals;
+  bl.push({h2:L.tAlarm});const by={};st.forEach(x=>{(by[x.cat]=by[x.cat]||{});(by[x.cat][x.lvl]=by[x.cat][x.lvl]||[]).push(x)});
+  Object.keys(by).forEach(cat=>{bl.push({h3:cat});const rows=[];["Information","Warning","Error"].forEach(lv=>{(by[cat][lv]||[]).forEach(x=>rows.push([x.code,x.lvl,x.name,x.desc]))});bl.push({table:{head:L.thAlarm,rows}})});
+  if(pr.length){bl.push({h2:L.tProg,table2:1});bl.push({table:{head:L.thProg,rows:pr.map(x=>[x.num,x.name,x.desc])}})}
+  if(sg.length){bl.push({h2:L.tSig});bl.push({table:{head:L.thSig,rows:sg.map(x=>[x.addr,x.name,x.label])}})}
+ }else{const sig=DATA.signals,order=["Bezpečnost","Handshake","Proces","Alarm","HMI","Ostatní"],g={};sig.forEach(x=>{(g[x.kategorie]=g[x.kategorie]||[]).push(x)});
+  bl.push({h2:L.tDoc});order.filter(k=>g[k]).concat(Object.keys(g).filter(k=>!order.includes(k))).forEach(cat=>{bl.push({h3:catName(cat)});bl.push({table:{head:L.th,rows:g[cat].map(x=>[x.typ,x.adr_robot,x.adr_plc,x.jmeno,x.popis])}})});
+  const ts=sig.map(tsig).filter(Boolean);if(ts.length){bl.push({h2:L.tTs});ts.forEach(x=>{const t=x[LANG];bl.push({h3:t.symptom});bl.push({p:x.addr+" · "+x.signal});bl.push({p:L.lblCause+": "+t.priciny.join("; ")});bl.push({p:L.lblCheck+": "+t.kontrola.join("; ")})})}
+ }return bl}
+// ===== PDF (tisk prohlizece) =====
+function downloadPDF(){const L=T[LANG];document.getElementById("phead").innerHTML='<h1>'+esc(exportTitle())+'</h1><div class="m">Axon · RV Systems · '+new Date().toISOString().slice(0,10)+'</div>';
+ document.querySelectorAll(".panel").forEach(p=>p.classList.add("on"));window.print();}
+// ===== DOCX (cisty JS, offline) =====
+function xe(s){return String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])).replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g,"")}
+function dPara(text,opt){opt=opt||{};const rpr=(opt.b?"<w:b/>":"")+(opt.sz?'<w:sz w:val="'+opt.sz+'"/>':"")+(opt.color?'<w:color w:val="'+opt.color+'"/>':"");const ppr=opt.sp?'<w:pPr><w:spacing w:before="'+opt.sp+'" w:after="60"/></w:pPr>':"";return '<w:p>'+ppr+'<w:r>'+(rpr?"<w:rPr>"+rpr+"</w:rPr>":"")+'<w:t xml:space="preserve">'+xe(text)+'</w:t></w:r></w:p>'}
+function dCell(text,head){const shd=head?'<w:shd w:val="clear" w:color="auto" w:fill="F2EFE6"/>':"";const rpr=head?"<w:rPr><w:b/></w:rPr>":"";return '<w:tc><w:tcPr><w:tcW w:w="0" w:type="auto"/>'+shd+'</w:tcPr><w:p><w:r>'+rpr+'<w:t xml:space="preserve">'+xe(text)+'</w:t></w:r></w:p></w:tc>'}
+function dTable(head,rows){const bd='<w:tblBorders><w:top w:val="single" w:sz="4" w:color="DDDDDD"/><w:left w:val="single" w:sz="4" w:color="DDDDDD"/><w:bottom w:val="single" w:sz="4" w:color="DDDDDD"/><w:right w:val="single" w:sz="4" w:color="DDDDDD"/><w:insideH w:val="single" w:sz="4" w:color="EEEEEE"/><w:insideV w:val="single" w:sz="4" w:color="EEEEEE"/></w:tblBorders>';
+ let x='<w:tbl><w:tblPr><w:tblW w:w="5000" w:type="pct"/>'+bd+'</w:tblPr>';
+ x+='<w:tr>'+head.map(h=>dCell(h,1)).join("")+'</w:tr>';
+ rows.forEach(r=>{x+='<w:tr>'+r.map(c=>dCell(c,0)).join("")+'</w:tr>'});
+ return x+'</w:tbl><w:p/>'}
+function documentXml(){const bl=buildBlocks();let body=dPara(exportTitle(),{b:1,sz:36});body+=dPara("Axon · RV Systems · "+new Date().toISOString().slice(0,10),{color:"888888",sz:18});
+ bl.forEach(b=>{if(b.h2)body+=dPara(b.h2,{b:1,sz:28,sp:200});else if(b.h3)body+=dPara(b.h3,{b:1,sz:22,sp:120});else if(b.p)body+=dPara(b.p,{sz:20});else if(b.table)body+=dTable(b.table.head,b.table.rows)});
+ return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>'+body+'<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134"/></w:sectPr></w:body></w:document>'}
+// CRC32
+const CRC=(()=>{const t=[];for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0}return t})();
+function crc32(u8){let c=0xFFFFFFFF;for(let i=0;i<u8.length;i++)c=CRC[(c^u8[i])&0xFF]^(c>>>8);return (c^0xFFFFFFFF)>>>0}
+function zipStore(files){const enc=new TextEncoder();const parts=[],cd=[];let off=0;
+ function u16(n){return [n&255,(n>>8)&255]}function u32(n){return [n&255,(n>>8)&255,(n>>16)&255,(n>>24)&255]}
+ files.forEach(f=>{const name=enc.encode(f.name),data=typeof f.data=="string"?enc.encode(f.data):f.data,crc=crc32(data),len=data.length;
+  const lh=[].concat(u32(0x04034b50),u16(20),u16(0),u16(0),u16(0),u16(0),u32(crc),u32(len),u32(len),u16(name.length),u16(0));
+  parts.push(new Uint8Array(lh),name,data);
+  const ch=[].concat(u32(0x02014b50),u16(20),u16(20),u16(0),u16(0),u16(0),u16(0),u32(crc),u32(len),u32(len),u16(name.length),u16(0),u16(0),u16(0),u16(0),u32(0),u32(off));
+  cd.push(new Uint8Array(ch),name);off+=lh.length+name.length+len});
+ let cdoff=off,cdlen=0;cd.forEach(p=>cdlen+=p.length);
+ const eo=[].concat(u32(0x06054b50),u16(0),u16(0),u16(files.length),u16(files.length),u32(cdlen),u32(cdoff),u16(0));
+ const all=parts.concat(cd,[new Uint8Array(eo)]);let total=0;all.forEach(p=>total+=p.length);
+ const out=new Uint8Array(total);let q=0;all.forEach(p=>{out.set(p,q);q+=p.length});return out}
+function downloadDOCX(){const CT='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>';
+ const RELS='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>';
+ const u8=zipStore([{name:"[Content_Types].xml",data:CT},{name:"_rels/.rels",data:RELS},{name:"word/document.xml",data:documentXml()}]);
+ const blob=new Blob([u8],{type:"application/vnd.openxmlformats-officedocument.wordprocessingml.document"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=(MODE=="aw"?"AW_dokumentace":"dokumentace")+".docx";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000)}
+
+const drop=document.getElementById("drop"),file=document.getElementById("file");
+drop.onclick=()=>file.click();
+["dragover","dragenter"].forEach(e=>drop.addEventListener(e,v=>{v.preventDefault();drop.classList.add("drag")}));
+["dragleave","drop"].forEach(e=>drop.addEventListener(e,v=>{v.preventDefault();drop.classList.remove("drag")}));
+drop.addEventListener("drop",v=>{const f=v.dataTransfer.files[0];if(f)handle(f)});
+file.onchange=()=>{if(file.files[0])handle(file.files[0])};
+document.getElementById("sample").onclick=()=>{document.getElementById("fname").textContent="—";runFlat(parseCSV(SAMPLE),0)};
+const SAMPLE2=`Type;Signal_name;Description;Category
+DI;diEStopOK;Emergency stop OK;Safety
+DI;diLightCurtainOK;Light curtain clear;Safety
+DI;diPartPresentPick;Part present at pick;Process
+DI;diGripperClosed;Gripper closed;Process
+DI;diVacuumOK;Vacuum reached;Alarm
+DI;diMachineReady;Machine ready;Handshake
+DO;doGripperClose;Close gripper;Process
+DO;doVacuumOn;Vacuum on;Process
+DO;doRobotFault;Robot fault;Alarm
+DO;doStackLightRed;Stack light red;HMI`;
+document.getElementById("sample2").onclick=()=>{document.getElementById("fname").textContent=(LANG=="en"?"bare list":"holý seznam");runFlat(parseCSV(SAMPLE2),0)};
+document.querySelectorAll(".lang button").forEach(b=>b.onclick=()=>{LANG=b.dataset.l;applyLang()});
+const ov=document.getElementById("overlay");document.getElementById("help-open").onclick=()=>ov.classList.add("on");document.getElementById("help-close").onclick=()=>ov.classList.remove("on");ov.onclick=e=>{if(e.target===ov)ov.classList.remove("on")};
+document.getElementById("dl-pdf").onclick=downloadPDF;document.getElementById("dl-docx").onclick=downloadDOCX;document.getElementById("dl-xlsx").onclick=downloadXLSX;
+
+/* ===== INTERFACE BUILDER (Vojta: stavět v prohlížeči, ne CSV import) ===== */
+let BUILDROWS=[];
+const bl=(cs,en)=>LANG=="en"?en:cs;
+const BCOLS=[["typ","Typ","Type"],["adr_robot","Adr robot","Robot addr"],["adr_plc","Adr PLC","PLC addr"],["jmeno","Jméno","Name"],["popis","Popis","Description"],["kategorie","Kategorie","Category"]];
+const IST='width:100%;box-sizing:border-box;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.15);color:inherit;padding:5px 7px;border-radius:5px;font:inherit;font-size:12px';
+function bSync(){const b=document.getElementById("b-body");if(!b)return;BUILDROWS=[...b.querySelectorAll("tr")].map(tr=>{const v=k=>{const el=tr.querySelector("[data-k='"+k+"']");return el?el.value.trim():""};return{typ:v("typ"),adr_robot:v("adr_robot"),adr_plc:v("adr_plc"),jmeno:v("jmeno"),popis:v("popis"),kategorie:v("kategorie")}});}
+function renderBuilder(){
+  const c=document.getElementById("buildcard");
+  const th=BCOLS.map(x=>`<th style="text-align:left;padding:6px;opacity:.6;font-size:11px;text-transform:uppercase">${bl(x[1],x[2])}</th>`).join("")+"<th></th>";
+  const rowH=(r,i)=>`<tr>${BCOLS.map(x=>`<td style="padding:3px"><input data-k="${x[0]}" style="${IST}" value="${esc(r[x[0]]||"")}"></td>`).join("")}<td style="padding:3px"><button data-del="${i}" style="background:none;border:none;color:#e77;cursor:pointer;font-size:15px">✕</button></td></tr>`;
+  c.innerHTML=`<div class="h1">${bl("Builder rozhraní","Interface builder")}</div>
+   <p style="opacity:.7;font-size:13px;margin:6px 0 12px">${bl("Vyplň nebo nakopíruj z Excelu (Ctrl+V do tabulky). Adresy lze nechat prázdné — doplní se samy.","Fill in or paste from Excel (Ctrl+V into the table). Addresses can stay empty — auto-assigned.")}</p>
+   <div class="row" style="flex-wrap:wrap;gap:8px;margin-bottom:12px">
+    <button class="btn btn-g" id="b-add">+ ${bl("Řádek","Row")}</button>
+    <button class="btn btn-g" id="b-save">⬇ ${bl("Uložit projekt","Save project")}</button>
+    <button class="btn btn-g" id="b-load">⬆ ${bl("Načíst projekt","Load project")}</button>
+    <input type="file" id="b-loadf" accept=".json" hidden>
+    <button class="btn btn-p" id="b-gen">${bl("Generovat dokumentaci","Generate docs")} →</button>
+   </div>
+   <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr>${th}</tr></thead><tbody id="b-body">${(BUILDROWS.length?BUILDROWS:[{}]).map(rowH).join("")}</tbody></table></div>`;
+  c.querySelector("#b-add").onclick=()=>{bSync();BUILDROWS.push({});renderBuilder();};
+  c.querySelector("#b-gen").onclick=bGenerate;
+  c.querySelector("#b-save").onclick=bSave;
+  c.querySelector("#b-load").onclick=()=>c.querySelector("#b-loadf").click();
+  c.querySelector("#b-loadf").onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const j=JSON.parse(rd.result);BUILDROWS=Array.isArray(j)?j:(j.signals||[]);renderBuilder();}catch(x){alert(bl("Neplatný JSON projekt.","Invalid JSON project."));}};rd.readAsText(f);};
+  c.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{bSync();BUILDROWS.splice(+b.dataset.del,1);if(!BUILDROWS.length)BUILDROWS=[{}];renderBuilder();});
+  c.querySelector("#b-body").addEventListener("paste",ev=>{const t=(ev.clipboardData||window.clipboardData).getData("text");if(t&&/[\t\n]/.test(t)){ev.preventDefault();bSync();t.split(/\r?\n/).filter(l=>l.trim()).forEach(line=>{const a=line.split("\t");BUILDROWS.push({typ:a[0]||"",adr_robot:a[1]||"",adr_plc:a[2]||"",jmeno:a[3]||"",popis:a[4]||"",kategorie:a[5]||""});});renderBuilder();}});
+}
+function bSave(){bSync();const blob=new Blob([JSON.stringify(BUILDROWS,null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="axon-projekt.json";a.click();}
+function bGenerate(){bSync();const sig=BUILDROWS.filter(r=>r.jmeno||r.typ).map(r=>({typ:(r.typ||"").toUpperCase(),adr_robot:r.adr_robot||"",adr_plc:r.adr_plc||"",jmeno:r.jmeno||"",popis:r.popis||"",kategorie:r.kategorie||"Ostatní"}));if(!sig.length){alert(bl("Prázdná tabulka.","Empty table."));return;}const fl=autoAddress(sig);MODE="flat";DATA={signals:sig};window.__filled=fl;render();showResult();}
+document.getElementById("buildbtn").onclick=()=>{const c=document.getElementById("buildcard");if(c.style.display=="none"){if(!BUILDROWS.length)BUILDROWS=[{}];c.style.display="block";renderBuilder();c.scrollIntoView({behavior:"smooth"});}else{c.style.display="none";}};
+applyLang();
+</script>
+</body></html>

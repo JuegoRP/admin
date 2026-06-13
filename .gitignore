@@ -1,3 +1,6 @@
 index.html.bak*
 data/
 .DS_Store
+config.js
+data/sessions.json
+data/queue.json
