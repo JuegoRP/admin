@@ -2,8 +2,8 @@
 // Vše mutovatelné žije v objektu S (žádné reassigny importovaných bindingů).
 
 export const S = {
-  lang: "cs",
-  tab: "interface",
+  lang: "en",
+  tab: "dashboard",
   safetySub: "interface",
   toolIdx: 0,
   AXP: null,        // aktuální projekt

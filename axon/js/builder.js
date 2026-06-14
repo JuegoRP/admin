@@ -4,11 +4,12 @@ import { addr, genEmptyIO, splitIO, stationCodes, validate } from "./model.js";
 import { makeXLSX, download } from "./io.js";
 import { buildDoc, toHTML, downloadDOCX } from "./docgen.js";
 
-const IST='width:100%;box-sizing:border-box;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.15);color:inherit;padding:5px 7px;border-radius:5px;font:inherit;font-size:12px';
+const IST='width:100%;box-sizing:border-box;background:var(--soft);border:1px solid var(--line2);color:inherit;padding:5px 7px;border-radius:5px;font:inherit;font-size:12px';
 const TBLS = {};      // registr editovatelných polí: id -> array
 let TID = 0;
 
 const TABS = [
+  ["dashboard","Přehled","Dashboard"],
   ["interface","Interface","Interface"],["tool","Tool","Tool"],["workflow","Layout","Layout"],
   ["programs","Programy","Programs"],["products","Produkty","Products"],["alarms","Alarmy","Alarms"],
   ["safety","Safety","Safety"],["doc","Dokumentace","Documentation"],["revision","Revize","Revision"],
@@ -85,10 +86,11 @@ export function render(){
   const app = document.getElementById("ax-app"); if(!app) return;
   TID=0; for(const k in TBLS) delete TBLS[k];
   const A = S.AXP;
-  const bar = TABS.map(tb=>'<button data-act="tab" data-tab="'+tb[0]+'" style="background:'+(S.tab===tb[0]?'var(--teal)':'transparent')+';color:'+(S.tab===tb[0]?'#06231b':'inherit')+';border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:6px 12px;font:inherit;font-size:12px;font-weight:700;cursor:pointer">'+(S.lang==="en"?tb[2]:tb[1])+'</button>').join("");
+  const bar = TABS.map(tb=>'<button data-act="tab" data-tab="'+tb[0]+'" style="background:'+(S.tab===tb[0]?'var(--teal)':'transparent')+';color:'+(S.tab===tb[0]?'var(--on-accent)':'inherit')+';border:1px solid var(--line2);border-radius:8px;padding:6px 12px;font:inherit;font-size:12px;font-weight:700;cursor:pointer">'+(S.lang==="en"?tb[2]:tb[1])+'</button>').join("");
   const tools='<div style="display:flex;gap:6px;flex-wrap:wrap;margin-left:auto"><button class="btn btn-g" data-act="save">⬇ '+t("Uložit","Save")+'</button><button class="btn btn-g" data-act="loadbtn">⬆ '+t("Načíst","Load")+'</button><input type="file" id="ax-loadf" accept=".json" hidden></div>';
   let body="";
-  if(S.tab==="interface") body=renderInterface();
+  if(S.tab==="dashboard") body=renderDashboard();
+  else if(S.tab==="interface") body=renderInterface();
   else if(S.tab==="tool") body=renderTool();
   else if(S.tab==="workflow") body=renderLayout();
   else if(S.tab==="programs") body=editTable(A.programs, progCols(), {addLabel:t("Program","Program")}).html;
@@ -122,6 +124,36 @@ function alarmCols(){ return [
   {k:"reseni",cs:"Řešení",en:"Solution",type:"area",opts:{rows:2,max:80,hint:"2×40 (ABB)"}},
 ];}
 
+function renderDashboard(){
+  const A=S.AXP;
+  const n=(arr,...keys)=>(arr||[]).filter(r=>keys.some(k=>r[k]&&String(r[k]).trim())).length;
+  const sig=n(A.interface,"jmeno","typ"), stations=n(A.workflow,"cislo","nazev"),
+        progs=n(A.programs,"cislo","nazev"), prods=n(A.products,"id","nazev"),
+        alarms=n(A.alarms,"cislo","header"), zones=n(A.safety&&A.safety.zones,"name"),
+        tools=(A.tools||[]).length;
+  const warn=validate(A);
+  const card=(num,l,tab,color)=>'<div class="dash-card click" data-act="tab" data-tab="'+tab+'"><div class="n"'+(color?' style="color:'+color+'"':'')+'>'+num+'</div><div class="l">'+esc(l)+'</div></div>';
+  const cards=[
+    card(sig,t("Signály","Signals"),"interface"),
+    card(tools,t("Nástroje","Tools"),"tool"),
+    card(stations,t("Stanice","Stations"),"workflow"),
+    card(progs,t("Programy","Programs"),"programs"),
+    card(prods,t("Produkty","Products"),"products"),
+    card(alarms,t("Alarmy","Alarms"),"alarms"),
+    card(zones,t("Safety zóny","Safety zones"),"safety"),
+    card(warn.length,t("Problémy","Issues"),"interface",warn.length?"#e77":"var(--teal)"),
+  ].join("");
+  const actions='<div class="dash-actions">'+
+    '<button class="btn btn-p" data-act="opendoc">📄 '+t("Vytvořit dokument","Create document")+'</button>'+
+    '<button class="btn btn-g" data-act="tab" data-tab="interface">✎ '+t("Editovat interface","Edit interface")+'</button>'+
+    '<button class="btn btn-g" data-act="save">⬇ '+t("Uložit projekt","Save project")+'</button>'+
+    '<button class="btn btn-g" data-act="loadbtn">⬆ '+t("Načíst","Load")+'</button></div>';
+  const lastRev=(A.revisions&&A.revisions.length)?A.revisions[A.revisions.length-1]:null;
+  const revInfo=lastRev?'<p class="ax-hint">'+t("Poslední revize","Last revision")+': v'+esc(lastRev.ver)+' · '+esc(lastRev.when||"")+(lastRev.who?" · "+esc(lastRev.who):"")+'</p>':"";
+  return '<h2 style="font-weight:700;font-size:22px;margin:0 0 4px">'+t("Přehled projektu","Project overview")+'</h2>'+
+    '<p class="ax-hint">'+t("Klikni na dlaždici pro skok do sekce. Můžeš sem i přetáhnout .json projekt nebo .csv tabulku.","Click a tile to jump to a section. You can also drag a .json project or .csv table here.")+'</p>'+
+    '<div class="dash-grid">'+cards+'</div>'+actions+revInfo;
+}
 function renderInterface(){
   const A=S.AXP;
   const vendor='<div style="min-width:130px"><label style="font-size:11px;opacity:.6;display:block;margin-bottom:3px">Vendor</label><select data-head="vendor" style="'+IST+'">'+selOpts(["","ABB","Fanuc","KUKA","Siemens"],A.head.vendor)+'</select></div>';
@@ -142,7 +174,7 @@ function ioSide(items, side){
 
 function renderTool(){
   const A=S.AXP;
-  const sub=A.tools.map((tl,i)=>'<button data-act="tool" data-i="'+i+'" style="background:'+(S.toolIdx===i?'var(--cyan)':'transparent')+';color:'+(S.toolIdx===i?'#06231b':'inherit')+';border:1px solid rgba(255,255,255,.15);border-radius:7px;padding:5px 11px;font:inherit;font-size:12px;cursor:pointer">'+esc(tl.name||("Tool "+(i+1)))+'</button>').join("");
+  const sub=A.tools.map((tl,i)=>'<button data-act="tool" data-i="'+i+'" style="background:'+(S.toolIdx===i?'var(--cyan)':'transparent')+';color:'+(S.toolIdx===i?'var(--on-accent)':'inherit')+';border:1px solid var(--line2);border-radius:7px;padding:5px 11px;font:inherit;font-size:12px;cursor:pointer">'+esc(tl.name||("Tool "+(i+1)))+'</button>').join("");
   const idx=Math.min(S.toolIdx, A.tools.length-1); const tl=A.tools[idx]; if(!tl) return "<p>—</p>";
   const nameField='<input data-toolname="'+idx+'" value="'+esc(tl.name||"")+'" placeholder="'+t("Název nástroje","Tool name")+'" style="'+IST+';max-width:240px;margin-bottom:10px">';
   const head=collapsible("⚙ "+t("Připojení nástroje","Tool connection"), nameField+headFields(tl.head, [["ip","IP","IP"],["dev","Device","Device"],["mask","Maska","Mask"],["gw","Gateway","Gateway"]]), false);
@@ -154,7 +186,7 @@ function renderTool(){
 
 function renderLayout(){
   const A=S.AXP;
-  const img='<div style="margin-bottom:14px"><label style="font-size:12px;opacity:.7">'+t("Obrázek layoutu","Layout image")+'</label><br><input type="file" data-act="layoutimg" accept="image/*" style="font-size:12px;margin-top:4px">'+(A.layout_img?'<div style="margin-top:8px"><img src="'+A.layout_img+'" style="max-width:100%;max-height:240px;border-radius:8px;border:1px solid rgba(255,255,255,.15)"></div>':'')+'</div>';
+  const img='<div style="margin-bottom:14px"><div style="font-size:12px;opacity:.7;margin-bottom:6px">'+t("Obrázek layoutu","Layout image")+'</div><label class="btn btn-g filebtn">📷 '+t("Vybrat obrázek","Choose image")+'<input type="file" data-act="layoutimg" accept="image/*"></label>'+(A.layout_img?'<div style="margin-top:8px"><img src="'+A.layout_img+'" style="max-width:100%;max-height:240px;border-radius:8px;border:1px solid var(--line2)"></div>':'')+'</div>';
   const cols=[
     {k:"cislo",cs:"Stanice",en:"Station",type:"text",opts:{w:"110px",hint:t("krátký kód, bez mezer","short code, no spaces")}},
     {k:"nazev",cs:"Název",en:"Name",type:"text",opts:{w:"200px"}},
@@ -166,7 +198,7 @@ function renderLayout(){
 function renderSafety(){
   const A=S.AXP, sf=A.safety;
   const subs=[["interface","Interface"],["stops","Stops"],["zones","Zones"]];
-  const bar=subs.map(s=>'<button data-act="ssub" data-s="'+s[0]+'" style="background:'+(S.safetySub===s[0]?'var(--teal)':'transparent')+';color:'+(S.safetySub===s[0]?'#06231b':'inherit')+';border:1px solid rgba(255,255,255,.15);border-radius:7px;padding:5px 11px;font:inherit;font-size:12px;font-weight:700;cursor:pointer">'+s[1]+'</button>').join("");
+  const bar=subs.map(s=>'<button data-act="ssub" data-s="'+s[0]+'" style="background:'+(S.safetySub===s[0]?'var(--teal)':'transparent')+';color:'+(S.safetySub===s[0]?'var(--on-accent)':'inherit')+';border:1px solid var(--line2);border-radius:7px;padding:5px 11px;font:inherit;font-size:12px;font-weight:700;cursor:pointer">'+s[1]+'</button>').join("");
   let inner="";
   if(S.safetySub==="interface"){
     const head=collapsible("⚙ "+t("Safety adresy","Safety addresses"), headFields(sf.head,[["src_addr","Source adresa","Source address"],["dst_addr","Destination adresa","Destination address"]]), false);
@@ -197,7 +229,7 @@ function sdiNames(filter){ return (S.AXP.safety.io||[]).filter(r=>!filter||(r.ty
 
 function renderDoc(){
   const A=S.AXP;
-  const tpl='<div style="margin-bottom:14px"><label style="font-size:12px;opacity:.7">'+t("Hlavičkový papír (template, obrázek)","Header paper (template image)")+'</label><br><input type="file" data-act="docimg" accept="image/*" style="font-size:12px;margin-top:4px">'+(A.doc.template_img?'<div style="margin-top:8px"><img src="'+A.doc.template_img+'" style="max-width:100%;max-height:200px;border-radius:8px;border:1px solid rgba(255,255,255,.15)"></div>':'')+'</div>';
+  const tpl='<div style="margin-bottom:14px"><div style="font-size:12px;opacity:.7;margin-bottom:6px">'+t("Hlavičkový papír (template, obrázek)","Header paper (template image)")+'</div><label class="btn btn-g filebtn">📷 '+t("Vybrat soubor","Choose file")+'<input type="file" data-act="docimg" accept="image/*"></label>'+(A.doc.template_img?'<div style="margin-top:8px"><img src="'+A.doc.template_img+'" style="max-width:100%;max-height:200px;border-radius:8px;border:1px solid var(--line2)"></div>':'')+'</div>';
   const cols=[
     {k:"placement",cs:"Umístění",en:"Placement",type:"sel",opts:{w:"120px",options:[{v:"top",l:t("Nahoře","Top")},{v:"layout",l:"Layout"},{v:"alarms",l:"Alarmy"},{v:"safety",l:"Safety"},{v:"bottom",l:t("Dole","Bottom")}]}},
     {k:"header",cs:"Header",en:"Header",type:"text",opts:{w:"180px"}},
@@ -219,7 +251,7 @@ function renderRevision(){
 export function wireOnce(app){
   app.addEventListener("input", e=>updateFromEl(e.target,false), false);
   app.addEventListener("change", e=>{ if(handleFile(e.target)) return; if(e.target.dataset && e.target.dataset.act){ onAct(e.target); return; } updateFromEl(e.target,true); }, false);
-  app.addEventListener("click", e=>{ const b=e.target.closest("[data-act]"); if(b && (b.tagName==="BUTTON"||b.tagName==="B")) onAct(b); }, false);
+  app.addEventListener("click", e=>{ const b=e.target.closest("[data-act]"); if(b && b.tagName!=="SELECT" && b.tagName!=="INPUT") onAct(b); }, false);
   app.addEventListener("paste", onPaste, true);
 }
 function updateFromEl(el, isChange){
