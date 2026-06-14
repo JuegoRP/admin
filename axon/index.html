@@ -55,8 +55,12 @@ code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;background
   <div class="card" id="upcard">
     <div class="h1" data-t="hero"></div>
     <div class="dirhint"><div class="d"><b data-t="d1h"></b><span data-t="d1s"></span></div><div class="d"><b data-t="d2h"></b><span data-t="d2s"></span></div></div>
-    <div class="drop" id="drop"><div class="ico">⎘</div><b data-t="dropb"></b><span data-t="drops"></span><input type="file" id="file" accept=".csv,.xlsx" hidden></div>
-    <div class="row"><button class="btn btn-p" id="sample" data-t="sample"></button><button class="btn btn-g" id="sample2" data-t="sample2"></button><button class="btn btn-g" id="buildbtn">✎ Builder</button><span class="fname" id="fname"></span></div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin:18px 0 10px">
+      <button class="btn btn-p" id="buildbtn" style="flex:1;min-width:200px;padding:18px 16px;text-align:left;display:block"><div style="font-size:15px;font-weight:700">✎ <span data-t="m_build"></span></div><div style="font-size:12px;opacity:.75;margin-top:3px" data-t="m_build_s"></div></button>
+      <button class="btn btn-g" id="upbtn" onclick="document.getElementById('file').click()" style="flex:1;min-width:200px;padding:18px 16px;text-align:left;display:block"><div style="font-size:15px;font-weight:700">⬆ <span data-t="m_up"></span></div><div style="font-size:12px;opacity:.75;margin-top:3px" data-t="m_up_s"></div></button>
+    </div>
+    <div class="drop" id="drop" style="padding:14px;font-size:13px"><span data-t="dropb"></span> · <span data-t="drops"></span><input type="file" id="file" accept=".csv,.xlsx" hidden></div>
+    <div style="margin-top:12px;font-size:12px;opacity:.65"><span data-t="or_sample"></span> <a id="sample" style="cursor:pointer;color:var(--teal,#0affcb);text-decoration:underline" data-t="sample"></a> · <a id="sample2" style="cursor:pointer;color:var(--teal,#0affcb);text-decoration:underline" data-t="sample2"></a><span class="fname" id="fname" style="margin-left:8px"></span></div>
   </div>
   <div class="card" id="buildcard" style="display:none"></div>
   <div class="card" id="result" style="display:none">
@@ -72,7 +76,7 @@ code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;background
 <div class="overlay" id="overlay"><div class="help"><button class="x" id="help-close">✕</button><h3 data-t="h_title"></h3><ul id="help-list"></ul><div class="fmt mono" data-t="h_fmt"></div></div></div>
 <script>
 const T={
- en:{hero:"Upload the interface — table or AW-standard workbook.",dropb:"Drop a CSV or XLSX",drops:"or click to choose a file",sample:"Sample: table",sample2:"Sample: bare list",d1h:"① Table → documentation",d1s:"Upload a filled interface table (or AW workbook) and get documentation, troubleshooting and imports.",d2h:"② Bare list → table",d2s:"Upload just signal names + types and Axon fills the interface table (auto-assigns addresses), downloadable as XLSX.",fillN:" addresses auto-assigned — download the filled table with the “Table (XLSX)” button.",dlXlsx:"Table (XLSX)",foot:"Axon · RV Systems",
+ en:{hero:"Build, edit or upload your robot↔PLC interface — get documentation and exports.",dropb:"Drop a CSV or XLSX",drops:"or click to choose a file",sample:"Sample: table",sample2:"Sample: bare list",d1h:"① Table → documentation",d1s:"Upload a filled interface table (or AW workbook) and get documentation, troubleshooting and imports.",d2h:"② Bare list → table",d2s:"Upload just signal names + types and Axon fills the interface table (auto-assigns addresses), downloadable as XLSX.",fillN:" addresses auto-assigned — download the filled table with the “Table (XLSX)” button.",dlXlsx:"Table (XLSX)",foot:"Axon · RV Systems",m_build:"Build / edit in browser",m_build_s:"Create or edit your interface table — the editor",m_up:"Upload your table",m_up_s:"Import an existing CSV / XLSX",or_sample:"or try a sample:",
   s_sig:"signals",s_diag:"diagnostics",s_find:"findings",s_status:"statuses",s_prog:"programs",
   th:["Type","Robot addr.","PLC addr.","Signal","Description"],cat:{"Bezpečnost":"Safety","Handshake":"Handshake","Proces":"Process","Alarm":"Alarm","HMI":"HMI","Ostatní":"Other"},
   lblCause:"Likely cause",lblCheck:"What to check",dlR:"Robot import",dlP:"PLC import",noFind:"✓ No findings — no missing descriptions or duplicates.",vMiss:"Missing description",vDup:"Duplicate",
@@ -80,7 +84,7 @@ const T={
   awNote:"Detected an AW-standard workbook — parsed statuses, programs and signals from the real file.",thAlarm:["Code","Severity","Name","Meaning"],thProg:["No.","Program","Description"],thSig:["Address","Signal","Description"],
   h_title:"Help",h_fmt:"Type;Robot_addr;PLC_addr;Signal_name;Description;Category",
   help:["Upload an interface (CSV or XLSX) — drag or click. No file? Click Use sample.","Two formats work: a flat signal table (columns Type, Robot/PLC address, Signal name, Description, Category) or a multi-sheet AW-standard workbook (Status List + Programs + Interface).","For a flat table you get documentation, troubleshooting, imports and validation. For an AW workbook you get the status/alarm catalog, program reference and signal list.","You can also go the other way: upload a bare signal list (names + types, no addresses) and Axon fills the interface table (auto-assigns addresses) — download it as XLSX with the Table button.","Download the document as PDF or DOCX.","Everything runs locally in this browser."]},
- cs:{hero:"Nahraj interface — tabulku nebo AW-standard sešit.",dropb:"Přetáhni CSV nebo XLSX",drops:"nebo klikni a vyber soubor",sample:"Ukázka: tabulka",sample2:"Ukázka: holý seznam",d1h:"① Tabulka → dokumentace",d1s:"Nahraj hotovou interface tabulku (nebo AW sešit) a dostaneš dokumentaci, troubleshooting a importy.",d2h:"② Holý seznam → tabulka",d2s:"Nahraj jen jména signálů + typy a Axon vyplní interface tabulku (sám přiřadí adresy), ke stažení jako XLSX.",fillN:" adres doplněno automaticky — vyplněnou tabulku stáhneš tlačítkem „Tabulka (XLSX)“.",dlXlsx:"Tabulka (XLSX)",foot:"Axon · RV Systems",
+ cs:{hero:"Postav, uprav nebo nahraj rozhraní robot↔PLC — dokumentace a exporty.",dropb:"Přetáhni CSV nebo XLSX",drops:"nebo klikni a vyber soubor",sample:"Ukázka: tabulka",sample2:"Ukázka: holý seznam",d1h:"① Tabulka → dokumentace",d1s:"Nahraj hotovou interface tabulku (nebo AW sešit) a dostaneš dokumentaci, troubleshooting a importy.",d2h:"② Holý seznam → tabulka",d2s:"Nahraj jen jména signálů + typy a Axon vyplní interface tabulku (sám přiřadí adresy), ke stažení jako XLSX.",fillN:" adres doplněno automaticky — vyplněnou tabulku stáhneš tlačítkem „Tabulka (XLSX)“.",dlXlsx:"Tabulka (XLSX)",foot:"Axon · RV Systems",m_build:"Stavět / upravovat v prohlížeči",m_build_s:"Vytvoř nebo uprav svou interface tabulku — editor",m_up:"Nahrát svou tabulku",m_up_s:"Import existující CSV / XLSX",or_sample:"nebo vyzkoušej ukázku:",
   s_sig:"signálů",s_diag:"diagnostik",s_find:"nálezů",s_status:"statusů",s_prog:"programů",
   th:["Typ","Adr. robota","Adr. PLC","Signál","Popis"],cat:{"Bezpečnost":"Bezpečnost","Handshake":"Handshake","Proces":"Proces","Alarm":"Alarm","HMI":"HMI","Ostatní":"Ostatní"},
   lblCause:"Pravděpodobná příčina",lblCheck:"Co zkontrolovat",dlR:"Import pro robota",dlP:"Import pro PLC",noFind:"✓ Bez nálezů — žádné chybějící popisy ani duplicity.",vMiss:"Chybí popis",vDup:"Duplicita",
@@ -145,6 +149,25 @@ function renderFlat(){const L=T[LANG],sig=DATA.signals,c={};sig.forEach(s=>c[s.t
  const imp='<div class="grid2">'+dlBtn(L.dlR,"import_robot.csv",rImp)+dlBtn(L.dlP,"import_plc.csv",pImp)+'</div>';
  const chk=pb.length?tableTW(["#","Detail"],pb.map(p=>'<tr><td>'+esc(p[0])+'</td><td>'+esc(p[1])+'</td></tr>').join("")):'<p class="ok">'+L.noFind+'</p>';
  setTabs([{label:L.tDoc,html:doc},{label:L.tTs,html:ts},{label:L.tImp,html:imp},{label:L.tChk,html:chk}])}
+function renderOperator(){const A=AXP,tr=(cs,en)=>LANG=="en"?en:cs;
+ const F=(arr,keys)=>(arr||[]).filter(r=>keys.some(k=>r[k]&&String(r[k]).trim()));
+ const station=F(A.workflow,["cislo","nazev","popis"]),prog=F(A.programs,["cislo","nazev"]),prod=F(A.products,["id","nazev"]),alarm=F(A.alarms,["cislo","header","popis"]),safety=F(A.safety,["typ","adr","zona"]),tool=F(A.tool,["nazev","ip"]);
+ const sig=(typeof aSignals=="function"?aSignals():[]);autoAddress(sig);
+ const sb=(n,l)=>'<div class="stat"><b>'+n+'</b>'+l+'</div>';
+ document.getElementById("stats").innerHTML=sb(station.length,tr("stanic","stations"))+sb(alarm.length,tr("alarmů","alarms"))+sb(safety.length,"safety")+sb(sig.length,tr("signálů","signals"));
+ const tw=(h,rows)=>rows?tableTW(h,rows):'<p>—</p>';
+ const img=A.layout_img?'<img src="'+A.layout_img+'" style="max-width:100%;border-radius:10px;border:1px solid rgba(0,0,0,.12);margin-bottom:14px">':'';
+ const pLay=img+(station.length?tableTW([tr("Stanice","Station"),tr("Název","Name"),tr("Funkce","Function")],station.map(x=>'<tr><td><code>'+esc(x.cislo)+'</code></td><td><b>'+esc(x.nazev)+'</b></td><td>'+esc(x.popis)+'</td></tr>').join("")):(A.layout_img?'':'<p>—</p>'));
+ const pAlarm=tw([tr("Chyba","Error"),"Header",tr("Popis","Description"),tr("Řešení — co udělat","Solution — what to do")],alarm.length?alarm.map(x=>'<tr><td><code>'+esc(x.cislo)+'</code></td><td><b>'+esc(x.header)+'</b></td><td>'+esc(x.popis)+'</td><td>'+esc(x.reseni)+'</td></tr>').join(""):"");
+ const pSafety=tw([tr("Typ","Type"),tr("Adresa","Address"),tr("Zóna","Zone"),tr("Popis","Description")],safety.length?safety.map(x=>'<tr><td>'+esc(x.typ)+'</td><td><code>'+esc(x.adr)+'</code></td><td>'+esc(x.zona)+'</td><td>'+esc(x.popis)+'</td></tr>').join(""):"");
+ let pPP="";
+ if(prog.length)pPP+='<h2>'+tr("Programy","Programs")+'</h2>'+tableTW([tr("Č.","No."),tr("Program","Program"),tr("Popis","Description"),tr("Stanice","Station")],prog.map(x=>'<tr><td><code>'+esc(x.cislo)+'</code></td><td><b>'+esc(x.nazev)+'</b></td><td>'+esc(x.popis)+'</td><td>'+esc(x.stanice)+'</td></tr>').join(""));
+ if(prod.length)pPP+='<h2>'+tr("Produkty","Products")+'</h2>'+tableTW([tr("ID typu","Type ID"),tr("Název","Name"),tr("Stanice","Stations"),tr("Popis","Description")],prod.map(x=>'<tr><td><code>'+esc(x.id)+'</code></td><td><b>'+esc(x.nazev)+'</b></td><td>'+esc(x.stanice)+'</td><td>'+esc(x.popis)+'</td></tr>').join(""));
+ if(tool.length)pPP+='<h2>'+tr("Nástroje","Tools")+'</h2>'+tableTW([tr("Nástroj","Tool"),"IP","Device","Byte",tr("Popis","Description")],tool.map(x=>'<tr><td><b>'+esc(x.nazev)+'</b></td><td><code>'+esc(x.ip)+'</code></td><td>'+esc(x.device)+'</td><td>'+esc(x.byte)+'</td><td>'+esc(x.popis)+'</td></tr>').join(""));
+ if(!pPP)pPP='<p>—</p>';
+ const pSig=tw([tr("Typ","Type"),tr("Adr robot","Robot addr"),tr("Adr PLC","PLC addr"),tr("Jméno","Name"),tr("Popis","Description")],sig.length?sig.map(x=>'<tr><td>'+esc(x.typ)+'</td><td><code>'+esc(x.adr_robot)+'</code></td><td><code>'+esc(x.adr_plc)+'</code></td><td><b>'+esc(x.jmeno)+'</b></td><td>'+esc(x.popis)+'</td></tr>').join(""):"");
+ setTabs([{label:tr("Layout","Layout"),html:pLay},{label:tr("Alarmy","Alarms"),html:pAlarm},{label:"Safety",html:pSafety},{label:tr("Programy/Produkty","Programs/Products"),html:pPP},{label:tr("Signály","Signals"),html:pSig}]);
+}
 function renderAW(){const L=T[LANG],st=DATA.statuses,pr=DATA.programs,sg=DATA.signals;
  document.getElementById("stats").innerHTML='<div class="stat"><b>'+st.length+'</b>'+L.s_status+'</div><div class="stat"><b>'+pr.length+'</b>'+L.s_prog+'</div><div class="stat"><b>'+sg.length+'</b>'+L.s_sig+'</div>';
  const by={};st.forEach(s=>{(by[s.cat]=by[s.cat]||{});(by[s.cat][s.lvl]=by[s.cat][s.lvl]||[]).push(s)});
@@ -152,7 +175,7 @@ function renderAW(){const L=T[LANG],st=DATA.statuses,pr=DATA.programs,sg=DATA.si
  const pg=pr.length?tableTW(L.thProg,pr.map(p=>'<tr><td><code>'+esc(p.num)+'</code></td><td><b>'+esc(p.name)+'</b></td><td>'+esc(p.desc)+'</td></tr>').join("")):'<p>—</p>';
  const si=sg.length?tableTW(L.thSig,sg.map(s=>'<tr><td><code>'+esc(s.addr)+'</code></td><td><b>'+esc(s.name)+'</b></td><td>'+esc(s.label)+'</td></tr>').join("")):'<p>—</p>';
  setTabs([{label:L.tAlarm,html:al},{label:L.tProg,html:pg},{label:L.tSig,html:si}])}
-function render(){if(!DATA)return;if(MODE=="aw")renderAW();else renderFlat();var xb=document.getElementById("dl-xlsx");if(xb)xb.style.display=(MODE=="flat")?"":"none";var fn=document.getElementById("fillnote");if(fn){if(MODE=="flat"&&window.__filled){fn.style.display="block";fn.textContent=window.__filled+T[LANG].fillN}else fn.style.display="none"}}
+function render(){if(!DATA)return;if(MODE=="aw")renderAW();else if(MODE=="operator")renderOperator();else renderFlat();var xb=document.getElementById("dl-xlsx");if(xb)xb.style.display=(MODE=="flat")?"":"none";var fn=document.getElementById("fillnote");if(fn){if(MODE=="flat"&&window.__filled){fn.style.display="block";fn.textContent=window.__filled+T[LANG].fillN}else fn.style.display="none"}}
 function showResult(){document.getElementById("result").style.display="block";document.getElementById("result").scrollIntoView({behavior:"smooth"})}
 // ---- vstup ----
 function runFlat(rows,header){const sig=buildSignals(rows,header);if(!sig.length){alert(LANG=="en"?"No signals found.":"Žádné signály.");return}const fl=autoAddress(sig);MODE="flat";DATA={signals:sig};window.__filled=fl;render();showResult()}
@@ -175,7 +198,7 @@ DO;do_05;Q0.4;doRobotFault;Robot general fault;Alarm
 DO;do_09;Q1.0;doVacuumOn;Turn vacuum on;Process
 DO;do_10;Q1.1;doClampFixture;Clamp the fixture;Process
 DO;do_15;Q1.6;doStackLightRed;Stack light red – fault;HMI`;
-function applyLang(){document.documentElement.lang=LANG;const L=T[LANG];document.querySelectorAll("[data-t]").forEach(el=>{const k=el.dataset.t;if(L[k]!=null)el.textContent=L[k]});document.getElementById("help-list").innerHTML=L.help.map(h=>'<li>'+esc(h)+'</li>').join("");document.querySelectorAll(".lang button").forEach(b=>b.classList.toggle("on",b.dataset.l===LANG));render()}
+function applyLang(){document.documentElement.lang=LANG;const L=T[LANG];document.querySelectorAll("[data-t]").forEach(el=>{const k=el.dataset.t;if(L[k]!=null)el.textContent=L[k]});document.getElementById("help-list").innerHTML=L.help.map(h=>'<li>'+esc(h)+'</li>').join("");document.querySelectorAll(".lang button").forEach(b=>b.classList.toggle("on",b.dataset.l===LANG));render();var _bc=document.getElementById("buildcard");if(_bc&&_bc.style.display!=="none"&&typeof renderBuilder==="function")renderBuilder();}
 
 
 function autoAddress(sig){let diB=0,diI=0,doB=0,doI=0,aiW=64,aoW=80;let filled=0;sig.forEach(s=>{if(s.adr_robot||s.adr_plc)return;const t=s.typ;if(t=="DI"){const a=diB+"."+diI;s.adr_robot=a;s.adr_plc="I"+a;diI++;if(diI>7){diI=0;diB++}}else if(t=="DO"){const a=doB+"."+doI;s.adr_robot=a;s.adr_plc="Q"+a;doI++;if(doI>7){doI=0;doB++}}else if(t=="AI"){s.adr_robot="IW"+aiW;s.adr_plc="IW"+aiW;aiW+=2}else if(t=="AO"){s.adr_robot="QW"+aoW;s.adr_plc="QW"+aoW;aoW+=2}else{const a=diB+"."+diI;s.adr_robot=a;s.adr_plc=a;diI++;if(diI>7){diI=0;diB++}}filled++});return filled}
@@ -192,6 +215,20 @@ function buildBlocks(){const L=T[LANG],bl=[];if(!DATA)return bl;
   Object.keys(by).forEach(cat=>{bl.push({h3:cat});const rows=[];["Information","Warning","Error"].forEach(lv=>{(by[cat][lv]||[]).forEach(x=>rows.push([x.code,x.lvl,x.name,x.desc]))});bl.push({table:{head:L.thAlarm,rows}})});
   if(pr.length){bl.push({h2:L.tProg,table2:1});bl.push({table:{head:L.thProg,rows:pr.map(x=>[x.num,x.name,x.desc])}})}
   if(sg.length){bl.push({h2:L.tSig});bl.push({table:{head:L.thSig,rows:sg.map(x=>[x.addr,x.name,x.label])}})}
+ }else if(MODE=="operator"){const A=AXP,tr=(cs,en)=>LANG=="en"?en:cs;
+  const F=(arr,keys)=>(arr||[]).filter(r=>keys.some(k=>r[k]&&String(r[k]).trim()));
+  const station=F(A.workflow,["cislo","nazev","popis"]),prog=F(A.programs,["cislo","nazev"]),prod=F(A.products,["id","nazev"]),alarm=F(A.alarms,["cislo","header","popis"]),safety=F(A.safety,["typ","adr","zona"]),tool=F(A.tool,["nazev","ip"]);
+  const sig=(typeof aSignals=="function"?aSignals():[]);autoAddress(sig);
+  bl.push({h2:tr("Layout / stanice","Layout / stations")});
+  if(A.layout_img)bl.push({p:tr("(Layout obrázek — viz náhled / PDF)","(Layout image — see preview / PDF)")});
+  if(station.length)bl.push({table:{head:[tr("Stanice","Station"),tr("Název","Name"),tr("Funkce","Function")],rows:station.map(x=>[x.cislo,x.nazev,x.popis])}});
+  bl.push({h2:tr("Alarmy — řešení pro operátora","Alarms — operator solutions")});
+  if(alarm.length)bl.push({table:{head:[tr("Chyba","Error"),"Header",tr("Popis","Description"),tr("Řešení","Solution")],rows:alarm.map(x=>[x.cislo,x.header,x.popis,x.reseni])}});
+  if(safety.length){bl.push({h2:"Safety"});bl.push({table:{head:[tr("Typ","Type"),tr("Adresa","Address"),tr("Zóna","Zone"),tr("Popis","Description")],rows:safety.map(x=>[x.typ,x.adr,x.zona,x.popis])}});}
+  if(prog.length){bl.push({h2:tr("Programy","Programs")});bl.push({table:{head:[tr("Č.","No."),tr("Program","Program"),tr("Popis","Description"),tr("Stanice","Station")],rows:prog.map(x=>[x.cislo,x.nazev,x.popis,x.stanice])}});}
+  if(prod.length){bl.push({h2:tr("Produkty","Products")});bl.push({table:{head:[tr("ID typu","Type ID"),tr("Název","Name"),tr("Stanice","Stations"),tr("Popis","Description")],rows:prod.map(x=>[x.id,x.nazev,x.stanice,x.popis])}});}
+  if(tool.length){bl.push({h2:tr("Nástroje","Tools")});bl.push({table:{head:[tr("Nástroj","Tool"),"IP","Device","Byte",tr("Popis","Description")],rows:tool.map(x=>[x.nazev,x.ip,x.device,x.byte,x.popis])}});}
+  if(sig.length){bl.push({h2:tr("Signály","Signals")});bl.push({table:{head:[tr("Typ","Type"),tr("Adr robot","Robot addr"),tr("Adr PLC","PLC addr"),tr("Jméno","Name"),tr("Popis","Description")],rows:sig.map(x=>[x.typ,x.adr_robot,x.adr_plc,x.jmeno,x.popis])}});}
  }else{const sig=DATA.signals,order=["Bezpečnost","Handshake","Proces","Alarm","HMI","Ostatní"],g={};sig.forEach(x=>{(g[x.kategorie]=g[x.kategorie]||[]).push(x)});
   bl.push({h2:L.tDoc});order.filter(k=>g[k]).concat(Object.keys(g).filter(k=>!order.includes(k))).forEach(cat=>{bl.push({h3:catName(cat)});bl.push({table:{head:L.th,rows:g[cat].map(x=>[x.typ,x.adr_robot,x.adr_plc,x.jmeno,x.popis])}})});
   const ts=sig.map(tsig).filter(Boolean);if(ts.length){bl.push({h2:L.tTs});ts.forEach(x=>{const t=x[LANG];bl.push({h3:t.symptom});bl.push({p:x.addr+" · "+x.signal});bl.push({p:L.lblCause+": "+t.priciny.join("; ")});bl.push({p:L.lblCheck+": "+t.kontrola.join("; ")})})}
@@ -253,37 +290,64 @@ document.querySelectorAll(".lang button").forEach(b=>b.onclick=()=>{LANG=b.datas
 const ov=document.getElementById("overlay");document.getElementById("help-open").onclick=()=>ov.classList.add("on");document.getElementById("help-close").onclick=()=>ov.classList.remove("on");ov.onclick=e=>{if(e.target===ov)ov.classList.remove("on")};
 document.getElementById("dl-pdf").onclick=downloadPDF;document.getElementById("dl-docx").onclick=downloadDOCX;document.getElementById("dl-xlsx").onclick=downloadXLSX;
 
-/* ===== INTERFACE BUILDER (Vojta: stavět v prohlížeči, ne CSV import) ===== */
-let BUILDROWS=[];
+/* ===== AXON EDITOR — multi-tab (Vojta full) ===== */
+let AXP={head:{},interface:[],tool:[],workflow:[],programs:[],products:[],alarms:[],safety:[],layout_img:""};
+let BTAB="interface";
 const bl=(cs,en)=>LANG=="en"?en:cs;
-const BCOLS=[["typ","Typ","Type"],["adr_robot","Adr robot","Robot addr"],["adr_plc","Adr PLC","PLC addr"],["jmeno","Jméno","Name"],["popis","Popis","Description"],["kategorie","Kategorie","Category"]];
+const AHEAD=[["ip_plc","IP PLC","PLC IP"],["ip_robot","IP robot","Robot IP"],["dev_plc","Device PLC","PLC device"],["dev_robot","Device robot","Robot device"]];
+const ATABS=[
+ {id:"interface",cs:"Interface",en:"Interface",cols:[["typ","Typ","Type","DI / DO / AI / AO"],["adr_robot","Adr robot","Robot addr","adresa na straně robota"],["adr_plc","Adr PLC","PLC addr","adresa na straně PLC (I/Q)"],["jmeno","Jméno","Name","název signálu"],["popis","Popis","Description","co signál dělá"],["kategorie","Kategorie","Category","Input / Output / Safety / HMI"]]},
+ {id:"tool",cs:"Tool",en:"Tool",cols:[["nazev","Nástroj","Tool","gripper, terminál…"],["ip","IP","IP",""],["device","Device","Device",""],["byte","Byte","Byte","rozsah, např. 2"],["popis","Popis","Description",""]]},
+ {id:"workflow",cs:"Layout",en:"Layout",img:true,cols:[["cislo","Stanice","Station","např. OP830"],["nazev","Název","Name",""],["popis","Popis funkce","Function","co stanice dělá"]]},
+ {id:"programs",cs:"Programy",en:"Programs",cols:[["cislo","Č.","No.",""],["nazev","Program","Program",""],["popis","Popis","Description",""],["stanice","Stanice","Station","z Layoutu"]]},
+ {id:"products",cs:"Produkty",en:"Products",cols:[["id","ID typu","Type ID",""],["nazev","Název","Name",""],["stanice","Stanice","Stations","kam jde"],["popis","Popis","Description",""]]},
+ {id:"alarms",cs:"Alarmy",en:"Alarms",cols:[["cislo","Číslo chyby","Error #",""],["header","Header","Header",""],["popis","Popis","Description","pro operátora"],["reseni","Řešení","Solution","co má operátor udělat"]]},
+ {id:"safety",cs:"Safety",en:"Safety",cols:[["typ","Typ","Type","DI / DO"],["adr","Adresa","Address",""],["zona","Zóna","Zone","safety zóna"],["popis","Popis","Description",""]]},
+];
 const IST='width:100%;box-sizing:border-box;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.15);color:inherit;padding:5px 7px;border-radius:5px;font:inherit;font-size:12px';
-function bSync(){const b=document.getElementById("b-body");if(!b)return;BUILDROWS=[...b.querySelectorAll("tr")].map(tr=>{const v=k=>{const el=tr.querySelector("[data-k='"+k+"']");return el?el.value.trim():""};return{typ:v("typ"),adr_robot:v("adr_robot"),adr_plc:v("adr_plc"),jmeno:v("jmeno"),popis:v("popis"),kategorie:v("kategorie")}});}
+const aTabDef=id=>ATABS.find(t=>t.id==id);
+function aSave(){try{localStorage.setItem("axon_project",JSON.stringify(AXP));}catch(e){}}
+function aSync(){const c=document.getElementById("buildcard");if(!c)return;const tb=c.querySelector("#ax-body");if(tb){const cols=aTabDef(BTAB).cols;AXP[BTAB]=[...tb.querySelectorAll("tr")].map(tr=>{const o={};cols.forEach(col=>{const el=tr.querySelector("[data-k='"+col[0]+"']");o[col[0]]=el?el.value.trim():"";});return o;});}AHEAD.forEach(h=>{const el=c.querySelector("[data-h='"+h[0]+"']");if(el)AXP.head[h[0]]=el.value.trim();});const rg=c.querySelector("#ax-range");if(rg)AXP.head.byte_range=rg.value;const vn=c.querySelector("#ax-vendor");if(vn)AXP.head.vendor=vn.value;aSave();}
+function aValidate(){const sig=AXP.interface||[],seen={},warn=[];sig.forEach(s=>{if((s.typ||s.jmeno)&&!s.jmeno)warn.push(bl("Chybí jméno @ ","No name @ ")+(s.adr_robot||s.adr_plc||"?"));["adr_robot","adr_plc"].forEach(k=>{const v=s[k];if(v){const key=k+":"+v;if(seen[key])warn.push(bl("Duplicita ","Dup ")+v);else seen[key]=1;}});});return warn;}
 function renderBuilder(){
-  const c=document.getElementById("buildcard");
-  const th=BCOLS.map(x=>`<th style="text-align:left;padding:6px;opacity:.6;font-size:11px;text-transform:uppercase">${bl(x[1],x[2])}</th>`).join("")+"<th></th>";
-  const rowH=(r,i)=>`<tr>${BCOLS.map(x=>`<td style="padding:3px"><input data-k="${x[0]}" style="${IST}" value="${esc(r[x[0]]||"")}"></td>`).join("")}<td style="padding:3px"><button data-del="${i}" style="background:none;border:none;color:#e77;cursor:pointer;font-size:15px">✕</button></td></tr>`;
-  c.innerHTML=`<div class="h1">${bl("Builder rozhraní","Interface builder")}</div>
-   <p style="opacity:.7;font-size:13px;margin:6px 0 12px">${bl("Vyplň nebo nakopíruj z Excelu (Ctrl+V do tabulky). Adresy lze nechat prázdné — doplní se samy.","Fill in or paste from Excel (Ctrl+V into the table). Addresses can stay empty — auto-assigned.")}</p>
-   <div class="row" style="flex-wrap:wrap;gap:8px;margin-bottom:12px">
-    <button class="btn btn-g" id="b-add">+ ${bl("Řádek","Row")}</button>
-    <button class="btn btn-g" id="b-save">⬇ ${bl("Uložit projekt","Save project")}</button>
-    <button class="btn btn-g" id="b-load">⬆ ${bl("Načíst projekt","Load project")}</button>
-    <input type="file" id="b-loadf" accept=".json" hidden>
-    <button class="btn btn-p" id="b-gen">${bl("Generovat dokumentaci","Generate docs")} →</button>
-   </div>
-   <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr>${th}</tr></thead><tbody id="b-body">${(BUILDROWS.length?BUILDROWS:[{}]).map(rowH).join("")}</tbody></table></div>`;
-  c.querySelector("#b-add").onclick=()=>{bSync();BUILDROWS.push({});renderBuilder();};
-  c.querySelector("#b-gen").onclick=bGenerate;
-  c.querySelector("#b-save").onclick=bSave;
-  c.querySelector("#b-load").onclick=()=>c.querySelector("#b-loadf").click();
-  c.querySelector("#b-loadf").onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const j=JSON.parse(rd.result);BUILDROWS=Array.isArray(j)?j:(j.signals||[]);renderBuilder();}catch(x){alert(bl("Neplatný JSON projekt.","Invalid JSON project."));}};rd.readAsText(f);};
-  c.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{bSync();BUILDROWS.splice(+b.dataset.del,1);if(!BUILDROWS.length)BUILDROWS=[{}];renderBuilder();});
-  c.querySelector("#b-body").addEventListener("paste",ev=>{const t=(ev.clipboardData||window.clipboardData).getData("text");if(t&&/[\t\n]/.test(t)){ev.preventDefault();bSync();t.split(/\r?\n/).filter(l=>l.trim()).forEach(line=>{const a=line.split("\t");BUILDROWS.push({typ:a[0]||"",adr_robot:a[1]||"",adr_plc:a[2]||"",jmeno:a[3]||"",popis:a[4]||"",kategorie:a[5]||""});});renderBuilder();}});
+ const c=document.getElementById("buildcard");const def=aTabDef(BTAB);
+ const tabBtn=t=>'<button onclick="aTab(\''+t.id+'\')" style="background:'+(BTAB==t.id?'var(--teal,#0affcb)':'transparent')+';color:'+(BTAB==t.id?'#06231b':'inherit')+';border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:6px 12px;font:inherit;font-size:12px;font-weight:700;cursor:pointer">'+bl(t.cs,t.en)+'</button>';
+ const tabs='<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:14px;align-items:center">'+ATABS.map(tabBtn).join("")+'<span style="flex:1;min-width:10px"></span><button class="btn btn-g" id="ax-savef">⬇ '+bl("Uložit","Save")+'</button><button class="btn btn-g" id="ax-load">⬆ '+bl("Načíst","Load")+'</button><button class="btn btn-p" id="ax-oper">→ '+bl("Operátorský dokument","Operator document")+'</button><input type="file" id="ax-loadf" accept=".json" hidden></div>';
+ const cols=def.cols;
+ const th=cols.map(x=>'<th title="'+esc(x[3]||"")+'" style="text-align:left;padding:6px;opacity:.6;font-size:11px;text-transform:uppercase;cursor:'+(x[3]?'help':'default')+'">'+bl(x[1],x[2])+(x[3]?' <span style="opacity:.5">ⓘ</span>':'')+'</th>').join("")+"<th></th>";
+ const rowH=(r,i)=>'<tr>'+cols.map(x=>'<td style="padding:3px"><input data-k="'+x[0]+'" style="'+IST+'" value="'+esc(r[x[0]]||"")+'"></td>').join("")+'<td style="padding:3px"><button data-del="'+i+'" style="background:none;border:none;color:#e77;cursor:pointer;font-size:15px">✕</button></td></tr>';
+ const rows=(AXP[BTAB]&&AXP[BTAB].length?AXP[BTAB]:[{}]);
+ let pre="",post="";
+ if(BTAB=="interface"){
+   const head=AHEAD.map(h=>'<div style="flex:1;min-width:150px"><label style="font-size:11px;opacity:.6;display:block;margin-bottom:3px">'+bl(h[1],h[2])+'</label><input data-h="'+h[0]+'" style="'+IST+'" value="'+esc(AXP.head[h[0]]||"")+'"></div>').join("");
+   pre='<div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px">'+head+'<div style="min-width:130px"><label style="font-size:11px;opacity:.6;display:block;margin-bottom:3px">Vendor</label><select id="ax-vendor" style="'+IST+'"><option value="">—</option><option>ABB</option><option>Fanuc</option><option>KUKA</option><option>Siemens</option></select></div></div>';
+   const warn=aValidate();
+   if(warn.length)post='<div style="margin-top:10px;padding:10px;border:1px solid #e77;border-radius:8px;background:rgba(230,119,119,.08);font-size:12px"><b>'+bl("⚠ Kontrola","⚠ Check")+' ('+warn.length+'):</b> '+warn.slice(0,6).map(esc).join(" · ")+(warn.length>6?" …":"")+'</div>';
+ }
+ if(def.img)pre='<div style="margin-bottom:12px"><label style="font-size:12px;opacity:.7">'+bl("Obrázek layoutu","Layout image")+'</label><br><input type="file" id="ax-img" accept="image/*" style="font-size:12px;margin-top:4px">'+(AXP.layout_img?'<div style="margin-top:8px"><img src="'+AXP.layout_img+'" style="max-width:100%;max-height:240px;border-radius:8px;border:1px solid rgba(255,255,255,.15)"></div>':'')+'</div>';
+ const itools=BTAB=="interface"?'<select id="ax-range" style="'+IST+';width:auto"><option value="8">8 B</option><option value="16">16 B</option><option value="32">32 B</option><option value="64">64 B</option><option value="128">128 B</option><option value="256">256 B</option></select><button class="btn btn-g" id="ax-empty">'+bl("Prázdné I/O","Empty I/O")+'</button><button class="btn btn-g" id="ax-xlsx">⬇ XLSX</button><button class="btn btn-p" id="ax-gen">'+bl("Generovat docs","Generate docs")+' →</button>':"";
+ c.innerHTML='<div class="h1">'+bl("Axon editor","Axon editor")+'</div>'+tabs+'<p style="opacity:.6;font-size:12px;margin:0 0 12px">'+bl("Edituj v prohlížeči, nakopíruj z Excelu (Ctrl+V), ukládá se automaticky. Každý stroj je jiný — uprav si sloupce/hodnoty podle sebe.","Edit in browser, paste from Excel (Ctrl+V), auto-saved. Every machine differs — adjust values yourself.")+'</p>'+pre+'<div class="row" style="flex-wrap:wrap;gap:8px;margin-bottom:12px"><button class="btn btn-g" id="ax-add">+ '+bl("Řádek","Row")+'</button>'+itools+'</div><div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr>'+th+'</tr></thead><tbody id="ax-body">'+rows.map(rowH).join("")+'</tbody></table></div>'+post;
+ c.querySelector("#ax-savef").onclick=aSaveFile;
+ var _op=c.querySelector("#ax-oper");if(_op)_op.onclick=aOperator;
+ c.querySelector("#ax-load").onclick=()=>c.querySelector("#ax-loadf").click();
+ c.querySelector("#ax-loadf").onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const j=JSON.parse(rd.result);const base={head:{},interface:[],tool:[],workflow:[],programs:[],products:[],alarms:[],safety:[],layout_img:""};AXP=Array.isArray(j)?Object.assign(base,{interface:j}):Object.assign(base,j,{interface:j.interface||j.rows||[]});aSave();renderBuilder();}catch(x){alert(bl("Neplatný JSON.","Invalid JSON."));}};rd.readAsText(f);};
+ c.querySelector("#ax-add").onclick=()=>{aSync();(AXP[BTAB]=AXP[BTAB]||[]).push({});renderBuilder();};
+ c.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{aSync();AXP[BTAB].splice(+b.dataset.del,1);if(!AXP[BTAB].length)AXP[BTAB]=[{}];renderBuilder();});
+ const body=c.querySelector("#ax-body");
+ body.addEventListener("input",aSync);
+ body.addEventListener("paste",ev=>{const t=(ev.clipboardData||window.clipboardData).getData("text");if(t&&/[\t\n]/.test(t)){ev.preventDefault();aSync();const cs2=def.cols;t.split(/\r?\n/).filter(l=>l.trim()).forEach(line=>{const a=line.split("\t");const o={};cs2.forEach((col,ci)=>o[col[0]]=a[ci]||"");AXP[BTAB].push(o);});renderBuilder();}});
+ if(BTAB=="interface"){const rg=c.querySelector("#ax-range");if(rg)rg.value=AXP.head.byte_range||"16";const vn=c.querySelector("#ax-vendor");if(vn)vn.value=AXP.head.vendor||"";c.querySelector("#ax-empty").onclick=aEmptyGrid;c.querySelector("#ax-xlsx").onclick=aXlsx;c.querySelector("#ax-gen").onclick=aGen;}
+ if(def.img){const im=c.querySelector("#ax-img");if(im)im.onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{aSync();AXP.layout_img=rd.result;renderBuilder();};rd.readAsDataURL(f);};}
+ aSave();
 }
-function bSave(){bSync();const blob=new Blob([JSON.stringify(BUILDROWS,null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="axon-projekt.json";a.click();}
-function bGenerate(){bSync();const sig=BUILDROWS.filter(r=>r.jmeno||r.typ).map(r=>({typ:(r.typ||"").toUpperCase(),adr_robot:r.adr_robot||"",adr_plc:r.adr_plc||"",jmeno:r.jmeno||"",popis:r.popis||"",kategorie:r.kategorie||"Ostatní"}));if(!sig.length){alert(bl("Prázdná tabulka.","Empty table."));return;}const fl=autoAddress(sig);MODE="flat";DATA={signals:sig};window.__filled=fl;render();showResult();}
-document.getElementById("buildbtn").onclick=()=>{const c=document.getElementById("buildcard");if(c.style.display=="none"){if(!BUILDROWS.length)BUILDROWS=[{}];c.style.display="block";renderBuilder();c.scrollIntoView({behavior:"smooth"});}else{c.style.display="none";}};
+function aTab(t){aSync();BTAB=t;renderBuilder();}
+function aEmptyGrid(){aSync();const N=parseInt((document.getElementById("ax-range")||{}).value)||16;const total=N*16;if(total>300&&!confirm(bl("Vygeneruje "+total+" řádků. Pokračovat?","Generate "+total+" rows?")))return;const rows=[];for(let b=0;b<N;b++)for(let bit=0;bit<8;bit++)rows.push({typ:"DI",adr_robot:b+"."+bit,adr_plc:"I"+b+"."+bit,jmeno:"",popis:"",kategorie:"Input"});for(let b=0;b<N;b++)for(let bit=0;bit<8;bit++)rows.push({typ:"DO",adr_robot:b+"."+bit,adr_plc:"Q"+b+"."+bit,jmeno:"",popis:"",kategorie:"Output"});AXP.interface=rows;renderBuilder();}
+function aSignals(){aSync();return (AXP.interface||[]).filter(r=>r.jmeno||r.typ).map(r=>({typ:(r.typ||"").toUpperCase(),adr_robot:r.adr_robot||"",adr_plc:r.adr_plc||"",jmeno:r.jmeno||"",popis:r.popis||"",kategorie:r.kategorie||"Ostatní"}));}
+function aXlsx(){const sig=aSignals();if(!sig.length){alert(bl("Prázdná tabulka.","Empty."));return;}autoAddress(sig);const headers=["Type","Robot_addr","PLC_addr","Signal_name","Description","Category"];const rows=sig.map(s=>[s.typ,s.adr_robot,s.adr_plc,s.jmeno,s.popis,s.kategorie]);const blob=new Blob([makeXLSX(headers,rows)],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="interface_table.xlsx";a.click();}
+function aGen(){const sig=aSignals();if(!sig.length){alert(bl("Prázdná tabulka.","Empty."));return;}const fl=autoAddress(sig);MODE="flat";DATA={signals:sig};window.__filled=fl;render();showResult();}
+function aOperator(){aSync();MODE="operator";DATA={op:1};window.__filled=0;render();showResult();}
+function aSaveFile(){aSync();const blob=new Blob([JSON.stringify(AXP,null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="axon-projekt.json";a.click();}
+document.getElementById("buildbtn").onclick=()=>{const c=document.getElementById("buildcard");if(c.style.display=="none"){try{const sv=localStorage.getItem("axon_project");if(sv)AXP=Object.assign(AXP,JSON.parse(sv));}catch(e){}if(!(AXP.interface&&AXP.interface.length))AXP.interface=[{}];c.style.display="block";renderBuilder();c.scrollIntoView({behavior:"smooth"});}else{c.style.display="none";}};
 applyLang();
 </script>
 </body></html>
