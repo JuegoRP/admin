@@ -75,6 +75,10 @@ function headFields(obj, defs, extra){
 function byteRangeSel(cur, act){
   return '<select data-act="'+act+'" style="'+IST+';width:auto">'+selOpts([8,16,32,64,128,256].map(n=>({v:String(n),l:n+" B"})), cur||"16")+'</select>';
 }
+function collapsible(summary, inner, open){
+  return '<details'+(open?" open":"")+' class="ax-acc"><summary>'+esc(summary)+'</summary><div style="padding-top:12px">'+inner+'</div></details>';
+}
+const help = txt => '<p class="ax-hint">'+txt+'</p>';
 
 // ---------- hlavní render ----------
 export function render(){
@@ -121,10 +125,11 @@ function alarmCols(){ return [
 function renderInterface(){
   const A=S.AXP;
   const vendor='<div style="min-width:130px"><label style="font-size:11px;opacity:.6;display:block;margin-bottom:3px">Vendor</label><select data-head="vendor" style="'+IST+'">'+selOpts(["","ABB","Fanuc","KUKA","Siemens"],A.head.vendor)+'</select></div>';
-  const head = headFields(A.head, [["ip_plc","IP PLC","PLC IP"],["mask_plc","Maska PLC","PLC mask"],["gw_plc","GW PLC","PLC gateway"],["dev_plc","Device PLC","PLC device"],["ip_robot","IP robot","Robot IP"],["mask_robot","Maska robota","Robot mask"],["gw_robot","GW robota","Robot gateway"],["dev_robot","Device robot","Robot device"]], vendor);
+  const head = collapsible("⚙ "+t("Připojení — IP, device, gateway","Connection — IP, device, gateway"),
+    headFields(A.head, [["ip_plc","IP PLC","PLC IP"],["mask_plc","Maska PLC","PLC mask"],["gw_plc","GW PLC","PLC gateway"],["dev_plc","Device PLC","PLC device"],["ip_robot","IP robot","Robot IP"],["mask_robot","Maska robota","Robot mask"],["gw_robot","GW robota","Robot gateway"],["dev_robot","Device robot","Robot device"]], vendor), false);
   const {inp,out}=splitIO(A.interface);
-  const toolsbar='<div style="display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 14px;align-items:center">'+byteRangeSel(A.head.byte_range,"setrange")+'<button class="btn btn-g" data-act="emptyio">'+t("Prázdné I/O","Empty I/O")+'</button><button class="btn btn-g" data-act="xlsx">⬇ XLSX</button></div>';
-  return head+'<p style="opacity:.55;font-size:12px;margin:0 0 4px">'+t("Vstupy a výstupy vedle sebe, adresy se počítají samy (nejdou editovat). Prázdné jméno = rezerva.","Inputs/outputs side by side, addresses auto-computed (read-only). Empty name = reserve.")+'</p>'+toolsbar+
+  const toolsbar='<div style="display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px;align-items:center">'+byteRangeSel(A.head.byte_range,"setrange")+'<button class="btn btn-g" data-act="emptyio">'+t("Prázdné I/O","Empty I/O")+'</button><button class="btn btn-g" data-act="xlsx">⬇ XLSX</button></div>';
+  return head+help(t("Vstupy a výstupy vedle sebe · adresy se počítají samy · prázdné jméno = rezerva","Inputs/outputs side by side · addresses auto-computed · empty name = reserve"))+toolsbar+
     '<div class="io-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:16px"><div><div style="font-weight:700;font-size:13px;margin-bottom:6px;color:var(--teal)">Inputs</div>'+ioSide(inp,"in")+'</div><div><div style="font-weight:700;font-size:13px;margin-bottom:6px;color:var(--cyan)">Outputs</div>'+ioSide(out,"out")+'</div></div>';
 }
 function ioSide(items, side){
@@ -139,12 +144,12 @@ function renderTool(){
   const A=S.AXP;
   const sub=A.tools.map((tl,i)=>'<button data-act="tool" data-i="'+i+'" style="background:'+(S.toolIdx===i?'var(--cyan)':'transparent')+';color:'+(S.toolIdx===i?'#06231b':'inherit')+';border:1px solid rgba(255,255,255,.15);border-radius:7px;padding:5px 11px;font:inherit;font-size:12px;cursor:pointer">'+esc(tl.name||("Tool "+(i+1)))+'</button>').join("");
   const idx=Math.min(S.toolIdx, A.tools.length-1); const tl=A.tools[idx]; if(!tl) return "<p>—</p>";
-  const head=headFields(tl.head, [["ip","IP","IP"],["dev","Device","Device"],["mask","Maska","Mask"],["gw","Gateway","Gateway"]]);
-  const nameField='<div style="margin-bottom:8px"><label style="font-size:11px;opacity:.6;display:block;margin-bottom:3px">'+t("Název nástroje","Tool name")+'</label><input data-toolname="'+idx+'" value="'+esc(tl.name||"")+'" style="'+IST+';max-width:240px"></div>';
-  const toolsbar='<div style="display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 12px">'+byteRangeSel(tl.byte_range,"settoolrange")+'<button class="btn btn-g" data-act="toolempty">'+t("Prázdné I/O","Empty I/O")+'</button></div>';
+  const nameField='<input data-toolname="'+idx+'" value="'+esc(tl.name||"")+'" placeholder="'+t("Název nástroje","Tool name")+'" style="'+IST+';max-width:240px;margin-bottom:10px">';
+  const head=collapsible("⚙ "+t("Připojení nástroje","Tool connection"), nameField+headFields(tl.head, [["ip","IP","IP"],["dev","Device","Device"],["mask","Maska","Mask"],["gw","Gateway","Gateway"]]), false);
+  const toolsbar='<div style="display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px">'+byteRangeSel(tl.byte_range,"settoolrange")+'<button class="btn btn-g" data-act="toolempty">'+t("Prázdné I/O","Empty I/O")+'</button></div>';
   const tbl=editTable(tl.rows, ioCols(), {addLabel:t("Signál","Signal")});
   return '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;align-items:center">'+sub+'<button class="btn btn-g" data-act="addtool">+ Tool</button>'+(A.tools.length>1?'<button class="btn btn-g" data-act="deltool" style="color:#e77">✕</button>':'')+'</div>'+
-    '<p style="opacity:.55;font-size:12px;margin:0 0 8px">'+t("Nástroj komunikuje jako PLC — device, adresa, rozsah byte. Více nástrojů = sub-záložky.","Tool communicates like PLC — device, address, byte range. Multiple tools = sub-tabs.")+'</p>'+nameField+head+toolsbar+tbl.html;
+    help(t("Nástroj komunikuje jako PLC — device, adresa, rozsah byte.","Tool communicates like PLC — device, address, byte range."))+head+toolsbar+tbl.html;
 }
 
 function renderLayout(){
@@ -164,8 +169,8 @@ function renderSafety(){
   const bar=subs.map(s=>'<button data-act="ssub" data-s="'+s[0]+'" style="background:'+(S.safetySub===s[0]?'var(--teal)':'transparent')+';color:'+(S.safetySub===s[0]?'#06231b':'inherit')+';border:1px solid rgba(255,255,255,.15);border-radius:7px;padding:5px 11px;font:inherit;font-size:12px;font-weight:700;cursor:pointer">'+s[1]+'</button>').join("");
   let inner="";
   if(S.safetySub==="interface"){
-    const head=headFields(sf.head,[["src_addr","Source adresa","Source address"],["dst_addr","Destination adresa","Destination address"]]);
-    const toolsbar='<div style="display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 12px">'+byteRangeSel(sf.head.byte_range,"setsafrange")+'<button class="btn btn-g" data-act="safempty">'+t("Prázdné SDI/O","Empty SDI/O")+'</button></div>';
+    const head=collapsible("⚙ "+t("Safety adresy","Safety addresses"), headFields(sf.head,[["src_addr","Source adresa","Source address"],["dst_addr","Destination adresa","Destination address"]]), false);
+    const toolsbar='<div style="display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px">'+byteRangeSel(sf.head.byte_range,"setsafrange")+'<button class="btn btn-g" data-act="safempty">'+t("Prázdné SDI/O","Empty SDI/O")+'</button></div>';
     inner=head+toolsbar+editTable(sf.io, ioCols(["SDI","SDO"]), {addLabel:t("Signál","Signal")}).html;
   } else if(S.safetySub==="stops"){
     const cols=[
