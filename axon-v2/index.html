@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Axon — editor a generátor dokumentace rozhraní robot–PLC. RVbot.">
+<title>Axon · RVbot</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='2' y='2' width='60' height='60' rx='16' fill='%230c1116'/%3E%3Ccircle cx='23' cy='32' r='8' fill='none' stroke='%230affcb' stroke-width='3.5'/%3E%3Crect x='38' y='24' width='16' height='16' rx='4' fill='none' stroke='%2322d3ee' stroke-width='3.5'/%3E%3Cline x1='31' y1='32' x2='38' y2='32' stroke='%230affcb' stroke-width='3.5'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<header class="app">
+  <div class="bar">
+    <span class="brand">
+      <svg width="30" height="30" viewBox="0 0 64 64" aria-hidden="true">
+        <rect x="2" y="2" width="60" height="60" rx="16" fill="#0c1116" stroke="rgba(255,255,255,.10)"/>
+        <circle cx="23" cy="32" r="8" fill="none" stroke="#0affcb" stroke-width="3.5"/>
+        <rect x="38" y="24" width="16" height="16" rx="4" fill="none" stroke="#22d3ee" stroke-width="3.5"/>
+        <line x1="31" y1="32" x2="38" y2="32" stroke="#0affcb" stroke-width="3.5"/>
+      </svg>
+      Axon <span class="sub">by RVbot</span>
+    </span>
+    <div class="lang">
+      <button data-l="cs">CZ</button>
+      <button data-l="en">EN</button>
+    </div>
+  </div>
+</header>
+<main>
+  <div id="ax-app"><!-- editor se renderuje sem --></div>
+</main>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
