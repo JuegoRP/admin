@@ -321,7 +321,26 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
 .input-hint { text-align: center; font-size: 11px; color: var(--text-muted); margin-top: 8px; }
 
 .toast-container { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; gap: 8px; z-index: 1000; pointer-events: none; }
-.toast { background: var(--surface); backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur); border: 1px solid var(--border-strong); color: var(--text); padding: 11px 22px; border-radius: 14px; font-size: 14px; opacity: 0; transform: translateY(12px); transition: all 0.3s cubic-bezier(.34,1.56,.64,1); white-space: nowrap; box-shadow: var(--shadow); }
+.toast { background: var(--surface); backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur); border: 1px solid var(--border-strong); color: var(--text); padding: 11px 22px; border-radius: 14px; font-size: 14px; opacity: 0; transform: translateY(12px); transition: all 0.3s cubic-bezier(.34,1.56,.64,1); max-width: min(92vw, 520px); white-space: normal; overflow-wrap: anywhere; line-height: 1.4; pointer-events: auto; box-shadow: var(--shadow); }
+.card-hint { margin-top: 12px; font-size: 12px; color: var(--text-muted); opacity: 0.85; }
+.card-hint b { color: var(--text); font-weight: 600; }
+/* fronta: portfolio / horizont / u agentů / filtry */
+.queue-portfolio { display:flex; gap:8px; flex-wrap:wrap; margin: 4px 0 12px; }
+.port-chip { font-size:12px; padding:5px 11px; border-radius:999px; background:var(--surface2); border:1px solid var(--border); color:var(--text-dim); }
+.port-chip b { color:var(--text); margin-left:3px; }
+.queue-inwork { gap:8px; flex-wrap:wrap; align-items:center; margin: 0 0 12px; padding:8px 12px; border:1px dashed var(--border-strong); border-radius:12px; background:rgba(250,204,21,0.06); }
+.iw-label { font-size:12px; font-weight:700; color:#facc15; }
+.iw-chip { font-size:11px; padding:3px 9px; border-radius:999px; background:var(--surface2); border:1px solid var(--border); color:var(--text-dim); }
+.iw-clear { margin-left:auto; background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:13px; }
+.queue-filters { display:flex; gap:7px; flex-wrap:wrap; margin: 0 0 14px; }
+.qf-chip { font-size:12px; padding:6px 12px; border-radius:999px; background:var(--surface2); border:1px solid var(--border); color:var(--text-dim); cursor:pointer; }
+.qf-chip.on { background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#fff; border-color:transparent; }
+.hz-badge { font-size:11px; font-weight:700; padding:3px 9px; border-radius:999px; cursor:pointer; border:1px solid transparent; }
+.hz-none { background:var(--surface2); color:var(--text-muted); border-color:var(--border); }
+.hz-quick { background:rgba(250,204,21,0.16); color:#facc15; border-color:rgba(250,204,21,0.35); }
+.hz-compound { background:rgba(96,165,250,0.16); color:#60a5fa; border-color:rgba(96,165,250,0.35); }
+.published-link { font-size:11px; font-weight:600; color:#4ade80; text-decoration:none; padding:3px 8px; border-radius:999px; background:rgba(74,222,128,0.12); border:1px solid rgba(74,222,128,0.3); }
+.published-link:hover { background:rgba(74,222,128,0.2); }
 .toast.show { opacity: 1; transform: translateY(0); }
 .toast.success { border-color: var(--success); color: var(--success); }
 .toast.error { border-color: var(--danger); color: var(--danger); }
@@ -398,6 +417,9 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
             <h2>Fronta schválení</h2>
             <span style="color:var(--text-muted);font-size:13px" id="queue-count">Prázdná</span>
           </div>
+          <div id="queue-portfolio" class="queue-portfolio"></div>
+          <div id="queue-inwork" class="queue-inwork" style="display:none"></div>
+          <div id="queue-filters" class="queue-filters"></div>
           <div id="queue-list"></div>
         </div>
       </div>
@@ -610,6 +632,8 @@ const API_BASE = '/api/webhook';
 const ENDPOINTS = {
   orchestrator: API_BASE + '/orchestrator',
   adminApprove: API_BASE + '/admin-approve',
+  publishBlog: API_BASE + '/publish-blog',
+  publishProject: API_BASE + '/publish-project',
   saveQueue: API_BASE + '/save-queue',
   readQueue: '/data/queue.json',
   saveSessions: API_BASE + '/save-sessions',
@@ -1076,14 +1100,18 @@ function updateQueueBadge() {
 function renderQueue() {
   const list = document.getElementById('queue-list');
   const active = queueItems.filter(i => !isResolved(i));
+  renderQueueExtras(active);
   if (active.length === 0) {
     list.innerHTML = `<div class="queue-empty"><div class="empty-icon">✓</div><p>Fronta je prázdná. Agenti pracují.</p></div>`;
     return;
   }
-  list.innerHTML = active.map((item, idx) => {
+  const cards = active.map((item, idx) => {
+    if (queueHorizonFilter !== 'all' && (item.horizon || '') !== queueHorizonFilter) return '';
     const isHtml = (item.content || '').trim().startsWith('<') || (item.content || '').includes('<br>');
     const preview = isHtml ? (item.content || '') : escHtml(item.content || '').replace(/\n/g, '<br>');
     const projClass = 'badge-' + (item.project || 'default').toLowerCase();
+    const hz = HORIZONS[item.horizon || ''] || HORIZONS[''];
+    const pub = item.published ? `<a class="published-link" href="${escHtml(item.published.url)}" target="_blank" title="Otevřít commit">✓ Commitnuto ${timeAgo(item.published.at)} ↗</a>` : '';
     return `
     <div class="queue-card" data-idx="${idx}">
       <div class="card-header">
@@ -1091,6 +1119,8 @@ function renderQueue() {
         <span class="card-agent">${escHtml(item.agent || '')}</span>
         <span class="card-time">${timeAgo(item.timestamp)}</span>
         ${item.qa ? `<span class="card-qa ${item.qa >= 7 ? 'good' : 'warn'}">QA ${item.qa}/10</span>` : ''}
+        <button class="hz-badge ${hz.cls}" onclick="cycleHorizon(${idx})" title="Horizont přínosu — klikni pro změnu">${hz.label}</button>
+        ${pub}
       </div>
       <div class="card-title">${escHtml(item.title || '')}</div>
       <div class="card-preview ${isHtml ? 'html-content' : ''}">${preview.slice(0, 600)}</div>
@@ -1112,15 +1142,73 @@ function renderQueue() {
           <button class="btn btn-ghost" onclick="cancelMode(this)">Zrušit</button>
         </div>
       </div>
+      <div class="card-hint">Po schválení: <b>${escHtml(typeActionHint(item.type))}</b></div>
       <div class="card-actions">
         <button class="btn btn-approve" onclick="approveItem(${idx})">✓ Schválit</button>
         <button class="btn btn-edit" onclick="showEditor(this)">✎ Upravit</button>
         <button class="btn btn-feedback" onclick="showFeedback(this)">↩ Přepracovat</button>
+        <button class="btn btn-edit" onclick="blogPreview(${idx})" title="Vygenerovat náhled článku na osobní blog">📝 Na blog</button>
+        <button class="btn btn-edit" onclick="publishToProject(${idx})" title="Commitnout schválený výstup do GitHub repa projektu">📦 Do projektu</button>
         <button class="btn btn-reject" onclick="rejectItem(${idx})">✗</button>
       </div>
     </div>`;
   }).join('');
+  list.innerHTML = cards || `<div class="queue-empty"><div class="empty-icon">🔎</div><p>Žádné položky v tomto filtru.</p></div>`;
 }
+
+// ===== Fronta: portfolio proužek + horizont + „u agentů" =====
+const HORIZONS = {
+  '':        { label: '+ horizont', cls: 'hz-none' },
+  'quick':   { label: '⚡ Rychlý zisk', cls: 'hz-quick' },
+  'compound':{ label: '📈 Kumuluje', cls: 'hz-compound' }
+};
+let queueHorizonFilter = 'all';
+
+function renderQueueExtras(active) {
+  // portfolio: počet čekajících per projekt
+  const port = document.getElementById('queue-portfolio');
+  if (port) {
+    const by = {};
+    active.forEach(i => { const p = i.project || 'Obecné'; by[p] = (by[p]||0)+1; });
+    const keys = Object.keys(by).sort((a,b)=>by[b]-by[a]);
+    port.innerHTML = keys.length
+      ? keys.map(p => `<span class="port-chip">${projectIcon(p)} ${escHtml(p)} <b>${by[p]}</b></span>`).join('')
+      : '';
+  }
+  // „u agentů" (přepracovává se) — z localStorage
+  const iw = document.getElementById('queue-inwork');
+  if (iw) {
+    const work = getInWork();
+    if (work.length) {
+      iw.style.display = 'flex';
+      iw.innerHTML = `<span class="iw-label">🔄 U agentů (${work.length}):</span>` +
+        work.map(w => `<span class="iw-chip" title="odesláno ${timeAgo(w.at)}">${escHtml(w.title||'?').slice(0,40)}</span>`).join('') +
+        `<button class="iw-clear" onclick="clearInWork()" title="Vyčistit">✕</button>`;
+    } else { iw.style.display = 'none'; iw.innerHTML = ''; }
+  }
+  // filtry horizontu
+  const f = document.getElementById('queue-filters');
+  if (f) {
+    const chip = (v,l)=>`<button class="qf-chip ${queueHorizonFilter===v?'on':''}" onclick="setHorizonFilter('${v}')">${l}</button>`;
+    f.innerHTML = active.length ? (chip('all','Vše') + chip('quick','⚡ Rychlý zisk') + chip('compound','📈 Kumuluje')) : '';
+  }
+}
+function setHorizonFilter(v) { queueHorizonFilter = v; renderQueue(); }
+function cycleHorizon(idx) {
+  const item = queueItems.filter(i => !isResolved(i))[idx];
+  if (!item) return;
+  const order = ['', 'quick', 'compound'];
+  item.horizon = order[(order.indexOf(item.horizon || '') + 1) % order.length];
+  persistQueue(); renderQueue();
+}
+// „u agentů" tracker (lokální) — co bylo posláno na přepracování
+function getInWork() { try { return JSON.parse(localStorage.getItem('3r_inwork') || '[]'); } catch(e) { return []; } }
+function addInWork(item) {
+  const w = getInWork().filter(x => x.id !== item.id);
+  w.unshift({ id: item.id, title: item.title, project: item.project, at: new Date().toISOString() });
+  localStorage.setItem('3r_inwork', JSON.stringify(w.slice(0, 12)));
+}
+function clearInWork() { localStorage.removeItem('3r_inwork'); renderQueue(); }
 
 function toggleExpand(btn) {
   const card = btn.closest('.queue-card');
@@ -1151,12 +1239,14 @@ function cancelMode(btn) {
 async function approveItem(idx) {
   const item = queueItems.filter(i => !isResolved(i))[idx];
   if (!item) return;
-  item.resolved = true; item.resolvedAt = new Date().toISOString(); item.resolution = 'approved';
+  item.resolution = 'approved';
+  const r = await postApproval('approve', item);
+  if (!r.ok) { showToast('✗ Neschváleno: ' + r.detail, 'error', 7000); return; }
+  item.resolved = true; item.resolvedAt = new Date().toISOString();
   markResolved(item);
-  await postApproval('approve', item);
   await persistQueue();
   renderQueue(); updateQueueBadge();
-  showToast('✓ Schváleno', 'success');
+  showToast('✓ ' + r.detail, 'success', 7000);
 }
 
 async function saveEdit(idx, btn) {
@@ -1164,12 +1254,14 @@ async function saveEdit(idx, btn) {
   const newContent = card.querySelector('.edit-textarea').value;
   const item = queueItems.filter(i => !isResolved(i))[idx];
   if (!item) return;
-  item.content = newContent; item.resolved = true; item.resolution = 'edited';
+  item.content = newContent; item.resolution = 'edited';
+  const r = await postApproval('approve', item);
+  if (!r.ok) { showToast('✗ Neuloženo: ' + r.detail, 'error', 7000); return; }
+  item.resolved = true; item.resolvedAt = new Date().toISOString();
   markResolved(item);
-  await postApproval('approve', item);
   await persistQueue();
   renderQueue(); updateQueueBadge();
-  showToast('✓ Upravená verze schválena', 'success');
+  showToast('✓ Upravená verze: ' + r.detail, 'success', 7000);
 }
 
 async function sendFeedback(idx, btn) {
@@ -1184,34 +1276,107 @@ async function sendFeedback(idx, btn) {
   if (sessions[currentSession]) {
     sessions[currentSession].messages.push({ role: 'user', content: msg, ts: new Date().toISOString() });
   }
-  item.resolved = true; item.resolution = 'rework';
+  item.resolution = 'rework';
+  const r = await postApproval('rework', item, feedback);
+  if (!r.ok) { btn.disabled = false; btn.textContent = '↩ Přepracovat'; showToast('✗ Neodesláno: ' + r.detail, 'error', 7000); return; }
+  addInWork(item);
+  item.resolved = true; item.resolvedAt = new Date().toISOString();
   markResolved(item);
-  await postApproval('rework', item, feedback);
   await persistQueue();
   renderQueue(); updateQueueBadge();
   setTab('chat');
   appendMessage('user', `↩ Přepracovat (${item.title}): ${feedback}`, true);
-  showToast('↩ Odesláno k přepracování');
+  showToast('↩ Odesláno k přepracování', 'success', 4000);
 }
 
 async function rejectItem(idx) {
   const item = queueItems.filter(i => !isResolved(i))[idx];
   if (!item) return;
-  item.resolved = true; item.resolution = 'rejected';
+  item.resolution = 'rejected';
+  const r = await postApproval('reject', item);
+  if (!r.ok) { showToast('✗ Chyba při zamítnutí: ' + r.detail, 'error', 7000); return; }
+  item.resolved = true; item.resolvedAt = new Date().toISOString();
   markResolved(item);
-  await postApproval('reject', item);
   await persistQueue();
   renderQueue(); updateQueueBadge();
-  showToast('✗ Zamítnuto');
+  showToast('✗ ' + r.detail, '', 4000);
+}
+
+// Commitne schválený výstup do GitHub repa projektu (gream/conflux/recho/axon/weby)
+async function publishToProject(idx) {
+  const item = queueItems.filter(i => !isResolved(i))[idx];
+  if (!item) return;
+  if (!confirm('Commitnout „' + (item.title || '') + '" do repa projektu „' + (item.project || '?') + '"?')) return;
+  showToast('⟳ Commituji do projektu…');
+  try {
+    const res = await fetch(ENDPOINTS.publishProject, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ project: item.project, type: item.type || 'general', title: item.title, content: item.content, agent: item.agent || '' })
+    });
+    let d = {};
+    try { d = await res.json(); } catch(e) {}
+    if (!res.ok) { showToast('✗ Chyba ' + res.status, 'error', 7000); return; }
+    if (d.ok) {
+      item.published = { url: d.commitUrl || d.commitPage || '', at: new Date().toISOString() };
+      await persistQueue(); renderQueue();
+      if (d.commitUrl) window.open(d.commitUrl, '_blank');
+      showToast('✓ ' + d.detail, 'success', 8000);
+    } else {
+      showToast('⚠ ' + (d.detail || 'Necommitnuto'), 'error', 8000);
+    }
+  } catch(e) {
+    showToast('✗ Síťová chyba: ' + (e.message || e), 'error', 7000);
+  }
+}
+
+// Vygeneruje NÁHLED článku na osobní blog (nepublikuje naživo) a otevře ho
+async function blogPreview(idx) {
+  const item = queueItems.filter(i => !isResolved(i))[idx];
+  if (!item) return;
+  const tag = (prompt('Štítek článku (Myšlenky / Zápisky / Povídky / Hudba):', 'Zápisky') || 'Zápisky').trim();
+  const title = (prompt('Titulek článku:', item.title || '') || item.title || '').trim();
+  if (!title) { showToast('Bez titulku nelze vytvořit článek'); return; }
+  showToast('⟳ Generuji náhled…');
+  try {
+    const res = await fetch(ENDPOINTS.publishBlog, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title, tag, content: item.content, mode: 'preview' })
+    });
+    let d = {};
+    try { d = await res.json(); } catch(e) {}
+    if (!res.ok || d.ok === false) { showToast('✗ Náhled selhal: ' + (d.detail || res.status), 'error', 7000); return; }
+    window.open(d.previewUrl, '_blank');
+    showToast('✓ Náhled otevřen v nové záložce', 'success', 5000);
+    // krok 2 — živá publikace až po kontrole náhledu (potvrzení)
+    if (confirm('Náhled se otevřel v nové záložce. Když rendering sedí, publikovat článek NAŽIVO na romanpavlorek.eu?')) {
+      showToast('⟳ Publikuji naživo…');
+      const lr = await fetch(ENDPOINTS.publishBlog, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, tag, content: item.content, mode: 'live' })
+      });
+      let ld = {};
+      try { ld = await lr.json(); } catch(e) {}
+      if (lr.ok && ld.ok) { window.open(ld.liveUrl, '_blank'); showToast('✓ ' + ld.detail, 'success', 9000); }
+      else { showToast('✗ Živá publikace selhala: ' + (ld.detail || lr.status), 'error', 9000); }
+    }
+  } catch(e) {
+    showToast('✗ Síťová chyba: ' + (e.message || e), 'error', 7000);
+  }
 }
 
 async function postApproval(action, item, feedback = '') {
   try {
-    await fetch(ENDPOINTS.adminApprove, {
+    const res = await fetch(ENDPOINTS.adminApprove, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action, sessionId: item.id, type: item.type || 'general', output: item.content, feedback, source: 'admin', project: item.project })
+      body: JSON.stringify({ action, sessionId: item.id, type: item.type || 'general', title: item.title || '', output: item.content, feedback, comment: feedback, source: 'admin', project: item.project, agent: item.agent || '', resolution: item.resolution || '' })
     });
-  } catch(e) {}
+    let data = {};
+    try { data = await res.json(); } catch(e) {}
+    const ok = res.ok && data.ok !== false;
+    return { ok, detail: data.detail || data.message || (ok ? 'Hotovo.' : 'Server vrátil chybu ' + res.status) };
+  } catch(e) {
+    return { ok: false, detail: 'Síťová chyba – server neodpověděl (' + (e.message || e) + ')' };
+  }
 }
 
 async function persistQueue() {
@@ -1447,14 +1612,32 @@ function projectIcon(p) {
   return icons[(p||'').toLowerCase()] || '📋';
 }
 
-function showToast(msg, type = '') {
+function showToast(msg, type = '', ms = 2500) {
   const container = document.getElementById('toast-container');
   const t = document.createElement('div');
   t.className = 'toast ' + type;
   t.textContent = msg;
+  if (type === 'error' || type === 'success') {
+    t.style.cursor = 'pointer';
+    t.title = 'Klikni pro skrytí';
+    t.onclick = () => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); };
+  }
   container.appendChild(t);
   requestAnimationFrame(() => { requestAnimationFrame(() => t.classList.add('show')); });
-  setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, 2500);
+  setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, ms);
+}
+
+// Pravdivý popis, co schválení pro daný typ reálně udělá (zrcadlí n8n Admin Approve)
+function typeActionHint(type) {
+  const t = (type || 'general').toLowerCase();
+  const m = {
+    content: 'uloží se jako schválený obsah do GDrive. Publikace na sítě (TikTok/IG/YT) zatím není napojená.',
+    general: 'uloží se jako schválený výstup (VPS + GDrive system/approved/).',
+    system:  'jen se potvrdí – nic se nepublikuje.',
+    code:    'uloží se jako schválený kód. Auto-commit do repa zatím není napojen.',
+    blog:    'uloží se jako schválený text. Auto-publikace na živý web zatím není napojena.',
+  };
+  return m[t] || m.general;
 }
 
 function autoResize(el) {
