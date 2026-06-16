@@ -341,6 +341,7 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
 .hz-compound { background:rgba(96,165,250,0.16); color:#60a5fa; border-color:rgba(96,165,250,0.35); }
 .published-link { font-size:11px; font-weight:600; color:#4ade80; text-decoration:none; padding:3px 8px; border-radius:999px; background:rgba(74,222,128,0.12); border:1px solid rgba(74,222,128,0.3); }
 .published-link:hover { background:rgba(74,222,128,0.2); }
+.qa-notes { margin:8px 0 0; font-size:12px; color:#f59e0b; background:rgba(245,158,11,0.08); border-left:2px solid #f59e0b; padding:6px 10px; border-radius:6px; }
 .toast.show { opacity: 1; transform: translateY(0); }
 .toast.success { border-color: var(--success); color: var(--success); }
 .toast.error { border-color: var(--danger); color: var(--danger); }
@@ -634,6 +635,7 @@ const ENDPOINTS = {
   adminApprove: API_BASE + '/admin-approve',
   publishBlog: API_BASE + '/publish-blog',
   publishProject: API_BASE + '/publish-project',
+  qa: API_BASE + '/qa-tester',
   saveQueue: API_BASE + '/save-queue',
   readQueue: '/data/queue.json',
   saveSessions: API_BASE + '/save-sessions',
@@ -1112,17 +1114,22 @@ function renderQueue() {
     const projClass = 'badge-' + (item.project || 'default').toLowerCase();
     const hz = HORIZONS[item.horizon || ''] || HORIZONS[''];
     const pub = item.published ? `<a class="published-link" href="${escHtml(item.published.url)}" target="_blank" title="Otevřít commit">✓ Commitnuto ${timeAgo(item.published.at)} ↗</a>` : '';
+    const qs = qaScore(item);
+    const qaCell = qs != null
+      ? `<span class="card-qa ${qs >= 7 ? 'good' : 'warn'}" title="${escHtml(item.qaNotes || '')}">QA ${qs}/10</span>`
+      : `<button class="hz-badge hz-none" onclick="scoreItem(${idx})" title="Obodovat QA Testerem (DeepSeek, levné)">🔍 QA</button>`;
     return `
     <div class="queue-card" data-idx="${idx}">
       <div class="card-header">
         <span class="project-badge ${projClass}">${projectIcon(item.project)} ${escHtml(item.project || 'Obecné')}</span>
         <span class="card-agent">${escHtml(item.agent || '')}</span>
         <span class="card-time">${timeAgo(item.timestamp)}</span>
-        ${item.qa ? `<span class="card-qa ${item.qa >= 7 ? 'good' : 'warn'}">QA ${item.qa}/10</span>` : ''}
+        ${qaCell}
         <button class="hz-badge ${hz.cls}" onclick="cycleHorizon(${idx})" title="Horizont přínosu — klikni pro změnu">${hz.label}</button>
         ${pub}
       </div>
       <div class="card-title">${escHtml(item.title || '')}</div>
+      ${(item.qaNotes && qs != null && qs < 7) ? `<div class="qa-notes">⚠ QA ${qs}/10 — ${escHtml(item.qaNotes)}</div>` : ''}
       <div class="card-preview ${isHtml ? 'html-content' : ''}">${preview.slice(0, 600)}</div>
       ${(item.content || '').length > 600 ? `
         <div class="card-full ${isHtml ? 'html-content' : ''}">${preview}</div>
@@ -1209,6 +1216,36 @@ function addInWork(item) {
   localStorage.setItem('3r_inwork', JSON.stringify(w.slice(0, 12)));
 }
 function clearInWork() { localStorage.removeItem('3r_inwork'); renderQueue(); }
+
+// QA — on-demand obodování položky (lehké, jen na klik; nezatěžuje pipeline)
+function qaScore(item) {
+  const q = item && item.qa;
+  if (q == null) return null;
+  if (typeof q === 'number') return q;
+  if (typeof q === 'object') return (q.score != null ? q.score : (q.skore != null ? q.skore : null));
+  const n = parseFloat(q); return isNaN(n) ? null : n;
+}
+async function scoreItem(idx) {
+  const item = queueItems.filter(i => !isResolved(i))[idx];
+  if (!item) return;
+  showToast('🔍 Boduji (QA Tester)…');
+  try {
+    const res = await fetch(ENDPOINTS.qa, { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: `Oboduj tento výstup. Vrať JSON se "skore" (0-10), "problemy" (pole) a "doporuceni" (text):\n\nProjekt: ${item.project||'-'}\nAgent: ${item.agent||'-'}\nTyp: ${item.type||'-'}\nTitulek: ${item.title||''}\n\nObsah:\n${(item.content||'').slice(0,6000)}` }) });
+    const raw = await res.text();
+    // odpověď: buď JSON envelope ({output|text}) nebo přímo text s ```json blokem
+    let inner = raw;
+    try { const env = JSON.parse(raw); inner = (env.skore != null || env.score != null) ? JSON.stringify(env) : (env.output || env.text || env.data || raw); } catch(e) {}
+    const m = inner.match(/\{[\s\S]*\}/);
+    const q = m ? JSON.parse(m[0]) : null;
+    const score = q ? (q.skore != null ? q.skore : q.score) : null;
+    if (score == null) { showToast('✗ QA: nečekaná odpověď', 'error', 6000); return; }
+    item.qa = score;
+    item.qaNotes = q.doporuceni || (Array.isArray(q.problemy) ? q.problemy.join(' · ') : (q.notes || ''));
+    await persistQueue(); renderQueue();
+    showToast(`✓ QA ${score}/10` + (score >= 7 ? ' — v pořádku' : ' — zvaž přepracování'), score >= 7 ? 'success' : '', 6000);
+  } catch(e) { showToast('✗ QA chyba: ' + (e.message || e), 'error', 6000); }
+}
 
 function toggleExpand(btn) {
   const card = btn.closest('.queue-card');
