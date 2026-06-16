@@ -636,6 +636,7 @@ const ENDPOINTS = {
   publishBlog: API_BASE + '/publish-blog',
   publishProject: API_BASE + '/publish-project',
   qa: API_BASE + '/qa-tester',
+  social: API_BASE + '/social-media',
   saveQueue: API_BASE + '/save-queue',
   readQueue: '/data/queue.json',
   saveSessions: API_BASE + '/save-sessions',
@@ -1156,6 +1157,7 @@ function renderQueue() {
         <button class="btn btn-feedback" onclick="showFeedback(this)">↩ Přepracovat</button>
         <button class="btn btn-edit" onclick="blogPreview(${idx})" title="Vygenerovat náhled článku na osobní blog">📝 Na blog</button>
         <button class="btn btn-edit" onclick="publishToProject(${idx})" title="Commitnout schválený výstup do GitHub repa projektu">📦 Do projektu</button>
+        <button class="btn btn-edit" onclick="repurpose(${idx})" title="Vytvořit varianty pro sociální kanály → do fronty">↗ Rozmnožit</button>
         <button class="btn btn-reject" onclick="rejectItem(${idx})">✗</button>
       </div>
     </div>`;
@@ -1245,6 +1247,42 @@ async function scoreItem(idx) {
     await persistQueue(); renderQueue();
     showToast(`✓ QA ${score}/10` + (score >= 7 ? ' — v pořádku' : ' — zvaž přepracování'), score >= 7 ? 'success' : '', 6000);
   } catch(e) { showToast('✗ QA chyba: ' + (e.message || e), 'error', 6000); }
+}
+
+// Repurpose — jeden výstup → varianty pro sociální kanály (do fronty). On-demand, fail-safe.
+async function queueOne(payload) {
+  return fetch(ENDPOINTS.saveQueue, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+}
+async function repurpose(idx) {
+  const item = queueItems.filter(i => !isResolved(i))[idx];
+  if (!item) return;
+  const chIn = (prompt('Kanály (oddělené čárkou):', 'TikTok, Instagram, YouTube Shorts') || '').trim();
+  if (!chIn) return;
+  if (!confirm('Vytvořit varianty „' + (item.title || '') + '" pro: ' + chIn + '?\n(přidá návrhy do fronty ke schválení)')) return;
+  showToast('↗ Generuji varianty (Social Media)…');
+  try {
+    const brief = `Rozmnož tento obsah na samostatné posty pro kanály: ${chIn}.\nVrať POUZE JSON pole, nic jiného: [{"channel":"...","title":"...","content":"..."}].\nKaždý post přizpůsob kanálu (délka, tón, hashtagy).\n\nZdroj — projekt ${item.project || '-'}, titulek "${item.title || ''}":\n${(item.content || '').slice(0, 6000)}`;
+    const res = await fetch(ENDPOINTS.social, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ brief, message: brief, project: item.project, type: 'content' }) });
+    const raw = await res.text();
+    let inner = raw;
+    try { const env = JSON.parse(raw); inner = env.output || env.text || env.data || raw; } catch(e) {}
+    const m = inner.match(/\[[\s\S]*\]/);
+    let variants = [];
+    if (m) { try { variants = JSON.parse(m[0]); } catch(e) {} }
+    if (!Array.isArray(variants) || !variants.length) {
+      await queueOne({ project: item.project, agent: 'Social Media', title: '[Social varianty] ' + (item.title || ''), content: inner.slice(0, 8000), type: 'content' });
+      await loadQueue(); renderQueue();
+      showToast('⚠ Varianty bez struktury — uloženo jako 1 záznam ke kontrole', '', 8000); return;
+    }
+    let n = 0;
+    for (const v of variants) {
+      const ch = (v.channel || 'kanál').toString();
+      await queueOne({ project: item.project, agent: 'Social Media · ' + ch, title: '[' + ch + '] ' + (v.title || item.title || ''), content: (v.content || '').toString(), type: 'content' });
+      n++;
+    }
+    await loadQueue(); renderQueue();
+    showToast('✓ ' + n + ' variant přidáno do fronty (' + chIn + ')', 'success', 7000);
+  } catch(e) { showToast('✗ Repurpose chyba: ' + (e.message || e), 'error', 7000); }
 }
 
 function toggleExpand(btn) {
