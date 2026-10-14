@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="cs"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pavler — Content Plán</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{--bg:#0a0a12;--bg2:#12121f;--bd:#24243a;--tx:#e8e6f5;--mut:#8f8caa;--ac:#a855f7;--ac2:#22d3ee;--ok:#22c55e;--warn:#f59e0b}
+  body{font-family:system-ui,Segoe UI,sans-serif;background:var(--bg);color:var(--tx);padding:18px;font-size:14px}
+  h1{font-size:20px;margin-bottom:2px}.sub{color:var(--mut);font-size:13px;margin-bottom:14px}
+  .bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;background:var(--bg2);border:1px solid var(--bd);border-radius:10px;padding:12px;margin-bottom:14px}
+  .bar label{color:var(--mut);font-size:12px;margin-right:4px}
+  input,select,button{background:#1b1b2e;color:var(--tx);border:1px solid var(--bd);border-radius:8px;padding:7px 10px;font-size:13px}
+  button{cursor:pointer;background:var(--ac);border-color:var(--ac);color:#fff;font-weight:600}
+  button.ghost{background:#1b1b2e;color:var(--tx);border-color:var(--bd);font-weight:500}
+  .tabs{display:flex;gap:6px;margin-bottom:10px}
+  .tab{padding:6px 14px;border-radius:20px;background:#1b1b2e;border:1px solid var(--bd);cursor:pointer;font-size:13px}
+  .tab.on{background:var(--ac);border-color:var(--ac);color:#fff}
+  table{width:100%;border-collapse:collapse;background:var(--bg2);border:1px solid var(--bd);border-radius:10px;overflow:hidden}
+  th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--bd);vertical-align:top}
+  th{color:var(--mut);font-size:11px;text-transform:uppercase;letter-spacing:.04em;background:#15152400}
+  tr:last-child td{border-bottom:none}
+  .pill{display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600}
+  .t-chorus{background:rgba(168,85,247,.18);color:#c99bff}.t-verse{background:rgba(34,211,238,.15);color:#7fe6f5}
+  .t-bridge{background:rgba(245,158,11,.15);color:#f5c274}.t-drop{background:rgba(34,197,94,.15);color:#86e6a8}.t-hook{background:rgba(255,255,255,.1);color:#ccc}
+  .st{font-size:11px;padding:2px 8px;border-radius:10px}
+  .s-planned{background:#2a2a3e;color:#aaa}.s-scheduled{background:rgba(34,211,238,.15);color:#7fe6f5}.s-posted{background:rgba(34,197,94,.18);color:#86e6a8}.s-skip{background:#3a2020;color:#e08}
+  td input,td select{padding:4px 6px;font-size:12px;width:100%}
+  .plats span{font-size:10px;color:var(--mut);margin-right:4px}
+  .cap{max-width:260px;color:var(--mut);font-size:12px}
+  .cnt{color:var(--mut);font-size:12px;margin-left:auto}
+  a{color:var(--ac2)}
+</style></head>
+<body>
+<h1>Pavler — Content Plán 🎬</h1>
+<div class="sub">Živý dokument klipů (refrén / verš / bridge / drop). Data: <a href="/data/content-plan.json">/data/content-plan.json</a> · CSV: <a href="/data/content-plan.csv">/data/content-plan.csv</a></div>
+
+<div class="bar">
+  <div><label>Start</label><input type="date" id="start"></div>
+  <div><label>Postů/den</label><input type="number" id="ppd" value="1" min="1" max="6" style="width:56px"></div>
+  <div><label>Čas</label><input type="time" id="time" value="18:00" style="width:90px"></div>
+  <button onclick="autoplan()">⚡ Auto-naplánovat frontu</button>
+  <button class="ghost" onclick="save()">💾 Uložit</button>
+  <button class="ghost" onclick="dl()">⬇ Stáhnout JSON</button>
+  <span class="cnt" id="cnt"></span>
+</div>
+
+<div class="tabs">
+  <div class="tab on" data-v="queue" onclick="setv('queue')">Fronta</div>
+  <div class="tab" data-v="posted" onclick="setv('posted')">Historie</div>
+  <div class="tab" data-v="all" onclick="setv('all')">Vše</div>
+</div>
+
+<table><thead><tr>
+  <th>Datum</th><th>Song</th><th>Typ</th><th>Caption</th><th>Platformy</th><th>Stav</th><th>Klip</th>
+</tr></thead><tbody id="rows"></tbody></table>
+
+<script>
+let PLAN=[], VIEW='queue';
+const PT={chorus:0,drop:0,verse:1,hook:1,bridge:2};
+document.getElementById('start').value=new Date(Date.now()+864e5).toISOString().slice(0,10);
+
+async function load(){
+  try{PLAN=await (await fetch('/data/content-plan.json?t='+Date.now())).json();}
+  catch(e){PLAN=[];}
+  render();
+}
+function setv(v){VIEW=v;document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.dataset.v===v));render();}
+
+function autoplan(){
+  const start=new Date(document.getElementById('start').value+'T'+document.getElementById('time').value);
+  const ppd=Math.max(1,+document.getElementById('ppd').value);
+  // seřaď: round-robin přes songy, dle typu (chorus/drop první)
+  const bySong={}; PLAN.forEach(e=>{(bySong[e.song]=bySong[e.song]||[]).push(e)});
+  Object.values(bySong).forEach(a=>a.sort((x,y)=>(PT[x.type]??9)-(PT[y.type]??9)));
+  const songs=Object.keys(bySong); const order=[]; let more=true,i=0;
+  while(more){more=false;for(const s of songs){if(bySong[s][i]){order.push(bySong[s][i]);more=true}}i++}
+  // přiřaď data jen těm, co nejsou posted/skip
+  let slot=0;
+  order.forEach(e=>{
+    if(e.status==='posted'||e.status==='skip')return;
+    const day=Math.floor(slot/ppd); const d=new Date(start); d.setDate(d.getDate()+day);
+    e.scheduled=d.toISOString().slice(0,16); e.status='scheduled'; slot++;
+  });
+  render();
+}
+function upd(id,k,v){const e=PLAN.find(x=>x.id===id);if(e){e[k]=v;if(k==='scheduled'&&v&&e.status==='planned')e.status='scheduled';render()}}
+function render(){
+  let rows=PLAN.slice();
+  if(VIEW==='queue')rows=rows.filter(e=>e.status!=='posted');
+  if(VIEW==='posted')rows=rows.filter(e=>e.status==='posted');
+  rows.sort((a,b)=>((a.scheduled||'9')>(b.scheduled||'9')?1:-1));
+  document.getElementById('cnt').textContent=PLAN.length+' klipů · '+PLAN.filter(e=>e.status==='scheduled').length+' naplánováno · '+PLAN.filter(e=>e.status==='posted').length+' posted';
+  const esc=s=>(s||'').replace(/</g,'&lt;');
+  document.getElementById('rows').innerHTML=rows.map(e=>`<tr>
+    <td><input type="datetime-local" value="${e.scheduled||''}" onchange="upd('${e.id}','scheduled',this.value)"></td>
+    <td>${esc(e.song)}<div style="color:var(--mut);font-size:11px">@${e.start_s}s · ${esc(e.genre)}</div></td>
+    <td><span class="pill t-${e.type}">${e.type}</span></td>
+    <td class="cap">${esc(e.caption)}<div>${(e.hashtags||[]).map(h=>'#'+h).join(' ')}</div></td>
+    <td class="plats">${(e.platforms||[]).map(p=>`<span>${p.slice(0,2).toUpperCase()}</span>`).join('')}</td>
+    <td><select class="st s-${e.status}" onchange="upd('${e.id}','status',this.value)">
+      ${['planned','scheduled','posted','skip'].map(s=>`<option ${s===e.status?'selected':''}>${s}</option>`).join('')}</select></td>
+    <td><a href="/data/clips/${e.clip}" target="_blank">▶</a></td>
+  </tr>`).join('');
+}
+async function save(){
+  try{
+    const r=await fetch('/api/plan-save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(PLAN)});
+    alert(r.ok?'Uloženo (n8n).':'API zatím nenapojené — použij Stáhnout JSON. Stav: '+r.status);
+  }catch(e){alert('API nenapojené — použij Stáhnout JSON.');}
+}
+function dl(){const b=new Blob([JSON.stringify(PLAN,null,1)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='content-plan.json';a.click();}
+load();
+</script>
+</body></html>
