@@ -60,7 +60,7 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'Inter', system-ui, -apple-system, sans-serif; -webkit-font-smoothing: antialiased; }
 @media (min-width: 641px) { html, body { overflow: hidden; } }
-@media (max-width: 640px) { html, body { overflow-x: hidden; overflow-y: auto; } }
+@media (max-width: 640px) { html, body { overflow: hidden; overscroll-behavior: none; } }
 
 /* ===== ŽIVÉ POZADÍ — aurora orby ===== */
 #bg-aurora { position: fixed; inset: 0; z-index: -2; overflow: hidden; background: radial-gradient(140% 120% at 50% 0%, var(--bg2), var(--bg) 70%); }
@@ -77,6 +77,7 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
 
 .app { display: flex; flex-direction: column; height: 100%; min-height: 100dvh; position: relative; z-index: 1; }
 @media (min-width: 641px) { .app { height: 100vh; } }
+@media (max-width: 640px) { .app { height: 100dvh; min-height: 0; overflow: hidden; } }
 
 /* ===== TOPBAR ===== */
 .topbar {
@@ -117,7 +118,7 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
 
 .menu-btn { display: none; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 5px 11px; cursor: pointer; color: var(--text-dim); font-size: 16px; }
 @media (max-width: 640px) { .menu-btn { display: block; } }
-.sidebar-backdrop { display: none; position: fixed; inset: 0; top: 52px; background: rgba(0,0,0,0.5); z-index: 49; opacity: 0; transition: opacity 0.28s; }
+.sidebar-backdrop { display: none; position: fixed; inset: 0; top: var(--topbar-h, 52px); background: rgba(0,0,0,0.5); z-index: 49; opacity: 0; transition: opacity 0.28s; }
 .sidebar-backdrop.show { display: block; opacity: 1; }
 .topbar-right { display: flex; align-items: center; gap: 8px; flex: 1; justify-content: flex-end; }
 .theme-btn { background: var(--surface2); border: 1px solid var(--border); border-radius: 999px; padding: 7px 12px; cursor: pointer; color: var(--text-dim); font-size: 14px; transition: all 0.25s; }
@@ -352,7 +353,7 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
 ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
 
 @media (max-width: 640px) {
-  .sidebar { position: fixed; top: 58px; bottom: 0; left: 0; z-index: 50; width: 80vw; max-width: 300px; box-shadow: var(--shadow); transform: translateX(-105%); transition: transform 0.28s; display: flex; }
+  .sidebar { position: fixed; top: var(--topbar-h, 58px); bottom: 0; left: 0; z-index: 50; width: 80vw; max-width: 300px; box-shadow: var(--shadow); transform: translateX(-105%); transition: transform 0.28s; display: flex; }
   .sidebar.mobile-open { transform: translateX(0); }
   .form-grid { grid-template-columns: 1fr; }
   .topbar { padding: 8px 10px; min-height: 52px; height: auto; gap: 8px; flex-wrap: wrap; overflow: visible; }
@@ -732,7 +733,15 @@ function loadSession(id) {
   if (window.innerWidth <= 640) toggleSidebar(false);
 }
 
+function syncTopbarHeight() {
+  const tb = document.querySelector('.topbar');
+  if (tb) document.documentElement.style.setProperty('--topbar-h', tb.offsetHeight + 'px');
+}
+window.addEventListener('resize', syncTopbarHeight);
+window.addEventListener('load', syncTopbarHeight);
+
 function toggleSidebar(force) {
+  syncTopbarHeight();
   const sb = document.getElementById('sidebar');
   const bd = document.getElementById('sidebar-backdrop');
   if (!sb) return;
