@@ -4,3 +4,4 @@ data/
 config.js
 data/sessions.json
 data/queue.json
+*.bak*

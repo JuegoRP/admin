@@ -60,7 +60,7 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'Inter', system-ui, -apple-system, sans-serif; -webkit-font-smoothing: antialiased; }
 @media (min-width: 641px) { html, body { overflow: hidden; } }
-@media (max-width: 640px) { html, body { overflow-x: hidden; overflow-y: auto; } }
+@media (max-width: 640px) { html, body { overflow: hidden; overscroll-behavior: none; } }
 
 /* ===== ŽIVÉ POZADÍ — aurora orby ===== */
 #bg-aurora { position: fixed; inset: 0; z-index: -2; overflow: hidden; background: radial-gradient(140% 120% at 50% 0%, var(--bg2), var(--bg) 70%); }
@@ -77,6 +77,7 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
 
 .app { display: flex; flex-direction: column; height: 100%; min-height: 100dvh; position: relative; z-index: 1; }
 @media (min-width: 641px) { .app { height: 100vh; } }
+@media (max-width: 640px) { .app { height: 100dvh; min-height: 0; overflow: hidden; } }
 
 /* ===== TOPBAR ===== */
 .topbar {
@@ -117,7 +118,7 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
 
 .menu-btn { display: none; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 5px 11px; cursor: pointer; color: var(--text-dim); font-size: 16px; }
 @media (max-width: 640px) { .menu-btn { display: block; } }
-.sidebar-backdrop { display: none; position: fixed; inset: 0; top: 52px; background: rgba(0,0,0,0.5); z-index: 49; opacity: 0; transition: opacity 0.28s; }
+.sidebar-backdrop { display: none; position: fixed; inset: 0; top: var(--topbar-h, 52px); background: rgba(0,0,0,0.5); z-index: 49; opacity: 0; transition: opacity 0.28s; }
 .sidebar-backdrop.show { display: block; opacity: 1; }
 .topbar-right { display: flex; align-items: center; gap: 8px; flex: 1; justify-content: flex-end; }
 .theme-btn { background: var(--surface2); border: 1px solid var(--border); border-radius: 999px; padding: 7px 12px; cursor: pointer; color: var(--text-dim); font-size: 14px; transition: all 0.25s; }
@@ -352,7 +353,7 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
 ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
 
 @media (max-width: 640px) {
-  .sidebar { position: fixed; top: 58px; bottom: 0; left: 0; z-index: 50; width: 80vw; max-width: 300px; box-shadow: var(--shadow); transform: translateX(-105%); transition: transform 0.28s; display: flex; }
+  .sidebar { position: fixed; top: var(--topbar-h, 58px); bottom: 0; left: 0; z-index: 50; width: 80vw; max-width: 300px; box-shadow: var(--shadow); transform: translateX(-105%); transition: transform 0.28s; display: flex; }
   .sidebar.mobile-open { transform: translateX(0); }
   .form-grid { grid-template-columns: 1fr; }
   .topbar { padding: 8px 10px; min-height: 52px; height: auto; gap: 8px; flex-wrap: wrap; overflow: visible; }
@@ -526,12 +527,12 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
               <span class="label">Aktuální: <strong id="orch-model-cur">…</strong></span>
               <span class="value" style="display:flex;gap:8px;align-items:center">
                 <select id="orch-model-sel" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:6px 10px;font-size:13px">
-                  <option value="opus">Claude Opus 4.8 — nejchytřejší (drahé)</option>
-                  <option value="sonnet">Claude Sonnet 4.6 — vyvážené</option>
-                  <option value="haiku">Claude Haiku 4.5 — rychlé/levné</option>
-                  <option value="fable">Claude Fable 5 — nejnovější</option>
-                  <option value="deepseek">DeepSeek — nejlevnější</option>
-                  <option value="gpt4o">GPT-4o — OpenAI</option>
+                  <option value="opus">Claude Opus 5.5 — nejchytřejší ($4/$20)</option>
+                  <option value="sonnet">Claude Sonnet 5.5 — vyvážené, výchozí ($2/$10)</option>
+                  <option value="haiku">Claude Haiku 5.5 — rychlé/levné ($0,10/$0,50)</option>
+                  <option value="fable">Claude Fable 5.1 — nejschopnější, nejdražší ($10/$50)</option>
+                  <option value="deepseek">DeepSeek Flash — nejlevnější</option>
+                  <option value="deepseekpro">DeepSeek V4 Pro — levný, silnější</option>
                 </select>
                 <button onclick="setOrchModel()" style="background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:600;cursor:pointer">Použít</button>
               </span>
@@ -551,7 +552,7 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
           <div class="info-section">
             <h3>Projekty</h3>
             <div id="info-projects-list">
-              <div class="info-row"><span class="label">📱 Gream</span><span class="value" style="color:var(--danger)">PRIORITA · launch srpen 2026</span></div>
+              <div class="info-row"><span class="label">📱 Gream</span><span class="value" style="color:var(--danger)">PRIORITA · launch konec 2026</span></div>
               <div class="info-row"><span class="label">🎵 Spektrum barev</span><span class="value" style="color:var(--warning)">Album · distribuce srpen 2026</span></div>
               <div class="info-row"><span class="label">⚔️ CONFLUX</span><span class="value">Itch.io → Steam</span></div>
               <div class="info-row"><span class="label">🎬 Pavler</span><span class="value" style="color:var(--success)">● Aktivní · virální obsah</span></div>
@@ -661,6 +662,7 @@ let currentSession = null;
 let sessions = {};
 let queueItems = [];
 let resolvedIds = new Set(JSON.parse(localStorage.getItem('3r_resolved_ids') || '[]'));
+let queueHistory = [];
 let schedules = [];
 let theme = localStorage.getItem('theme') || 'dark';
 let sendLocked = false;
@@ -732,7 +734,15 @@ function loadSession(id) {
   if (window.innerWidth <= 640) toggleSidebar(false);
 }
 
+function syncTopbarHeight() {
+  const tb = document.querySelector('.topbar');
+  if (tb) document.documentElement.style.setProperty('--topbar-h', tb.offsetHeight + 'px');
+}
+window.addEventListener('resize', syncTopbarHeight);
+window.addEventListener('load', syncTopbarHeight);
+
 function toggleSidebar(force) {
+  syncTopbarHeight();
   const sb = document.getElementById('sidebar');
   const bd = document.getElementById('sidebar-backdrop');
   if (!sb) return;
@@ -1069,6 +1079,7 @@ async function loadQueue() {
     if (r.ok) {
       const data = await r.json();
       queueItems = applyResolvedFilter(data.queue || data.items || []);
+      queueHistory = data.history || [];
       updateQueueBadge();
       return;
     }
@@ -1078,16 +1089,35 @@ async function loadQueue() {
     if (r2.ok) {
       const d = await r2.json();
       queueItems = applyResolvedFilter(d.queue || []);
+      queueHistory = d.history || [];
     }
   } catch(e2) {}
   updateQueueBadge();
 }
 
+// Živá obnova: každých 5 s (jen když je okno viditelné) + hned při návratu do okna.
+// Fronta se překreslí jen při změně dat a nikdy, když je otevřený editor/feedback (nepřepíše rozepsaný text).
+let queueSig = '';
+function queueSignature() {
+  return JSON.stringify(queueItems.map(i => [i.id, !!i.resolved, i.qa, i.horizon])) + '|' + queueHistory.length + '|' + ((queueHistory[0] || {}).id || '');
+}
+function queueBusy() {
+  const list = document.getElementById('queue-list');
+  if (!list) return false;
+  if (document.activeElement && list.contains(document.activeElement) && document.activeElement.tagName === 'TEXTAREA') return true;
+  return [...list.querySelectorAll('textarea')].some(t => t.offsetParent !== null);
+}
 function startQueuePolling() {
-  setInterval(async () => {
+  const tick = async () => {
+    if (document.hidden) return;
     await loadQueue();
-    if (currentTab === 'queue') renderQueue();
-  }, 30000);
+    const sig = queueSignature();
+    if (currentTab === 'queue' && sig !== queueSig && !queueBusy()) { queueSig = sig; renderQueue(); }
+    if (currentTab === 'info') refreshInfo();
+  };
+  setInterval(tick, 5000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) tick(); });
+  window.addEventListener('focus', tick);
 }
 
 function updateQueueBadge() {
@@ -1101,6 +1131,7 @@ function updateQueueBadge() {
 }
 
 function renderQueue() {
+  setTimeout(renderQueueHistory, 0);
   const list = document.getElementById('queue-list');
   const active = queueItems.filter(i => !isResolved(i));
   renderQueueExtras(active);
@@ -1163,6 +1194,22 @@ function renderQueue() {
     </div>`;
   }).join('');
   list.innerHTML = cards || `<div class="queue-empty"><div class="empty-icon">🔎</div><p>Žádné položky v tomto filtru.</p></div>`;
+}
+
+// ===== Fronta: vyřízené + propadlé (historie ze serveru) =====
+function renderQueueHistory() {
+  const list = document.getElementById('queue-list'); if (!list) return;
+  let box = document.getElementById('queue-history');
+  if (!box) { box = document.createElement('div'); box.id = 'queue-history'; list.after(box); }
+  const done = queueHistory.filter(x => ['approved', 'rejected', 'rework'].includes(x.status));
+  const lost = queueHistory.filter(x => ['auto-rejected', 'expired'].includes(x.status));
+  const icon = s => s === 'approved' ? '✅' : s === 'rejected' ? '🗑' : '↩';
+  const via = v => v === 'ntfy' ? '📱 telefon' : '🖥 admin';
+  const line = 'border-top:1px solid rgba(127,127,127,.15);font-size:13px;';
+  const row = x => `<div style="display:flex;gap:10px;align-items:baseline;padding:8px 0;${line}"><span>${icon(x.status)}</span><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(x.title || x.id)}</span><span style="opacity:.6;white-space:nowrap">${x.resolvedAt ? via(x.resolvedVia) + ' · ' + timeAgo(x.resolvedAt) : ''}</span></div>`;
+  const lrow = x => `<div style="padding:6px 0;opacity:.75;${line}">${escHtml(x.title || x.id)} <span style="opacity:.6">· ${escHtml(x.agent || '')} · ${timeAgo(x.timestamp)}</span></div>`;
+  box.innerHTML = `<details style="margin-top:24px" ${done.length ? 'open' : ''}><summary style="cursor:pointer;font-weight:600">Nedávno vyřízené (${done.length})</summary>${done.slice(0, 20).map(row).join('') || '<p style="opacity:.6;font-size:13px">Zatím nic. Schválení z adminu i z telefonu se objeví tady.</p>'}</details>` +
+    (lost.length ? `<details style="margin-top:12px"><summary style="cursor:pointer;font-weight:600">Propadlé bez schválení (${lost.length})</summary><p style="opacity:.6;font-size:13px">Vyhozené kvůli starému limitu fronty (30 položek). Od 14. 10. je limit 200 a přetečení se hlásí v ranním přehledu.</p>${lost.map(lrow).join('')}</details>` : '');
 }
 
 // ===== Fronta: portfolio proužek + horizont + „u agentů" =====
